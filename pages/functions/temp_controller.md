@@ -1,7 +1,9 @@
 ---
 title: Temperature Controllers
-nav_order: 3
-layout: home
+nav_order: 22
+layout: page
+permlink: /functions/temp_controller/
+parent: Documentation
 ---
 
 ## Temperature Controller Functions
@@ -15,9 +17,9 @@ layout: home
 - Termodat (RS-485)
 **11M6**; **13KX3**; Tested 04/2021
 - Stanford Research (TCP/IP Socket)
-**PTC10**; 07/2021
+**PTC10**; Tested 07/2021
 - Scientific Instruments (TCP/IP Socket, RS-232)
-**SCM10**; 07/2022
+**SCM10**; Tested 07/2022
 
 ---
 
@@ -164,8 +166,8 @@ tc_state() -> str
 ```
 Example: tc_state('Manual-Manual') sets the device to heater manual, gas manual state.
 ```
-This function can be used to change the state of the device and is available only for Oxford Instruments ITC 503. If an argument is specified the function sets a new state setting. If there is no argument the function returns the current state setting. The state should be one of the following:
-['Manual-Manual', 'Auto-Manual', ' Manual-Auto', 'Auto-Auto']<br/>
+This function can be used to change the state of the device and is available only for Oxford Instruments ITC 503. If an argument is specified the function sets a new state setting. If there is no argument the function returns the current state setting.<br/>
+The state should be one of the following: ['Manual-Manual', 'Auto-Manual', ' Manual-Auto', 'Auto-Auto']<br/>
 The first part corresponds to the heater state setting, the second to the gas state setting.
 
 ---
@@ -222,8 +224,8 @@ tc_lock_keyboard() -> str
 Example: tc_lock_keyboard('Remote-Unlocked') sets the device to remote state with 
 unlocked front panel.
 ```
-This function can be used to change the state of the device keyboard. If an argument is specified the function sets a new keyboard state setting. If there is no argument the function returns the current keyboard state setting. The state should be one of the following:<br/>
-['Local-Locked', 'Remote-Locked', 'Local-Unlocked', 'Remote-Unlocked']<br/>
+This function can be used to change the state of the device keyboard. If an argument is specified the function sets a new keyboard state setting. If there is no argument the function returns the current keyboard state setting.<br/>
+The state should be one of the following: ['Local-Locked', 'Remote-Locked', 'Local-Unlocked', 'Remote-Unlocked']<br/>
 The first part corresponds to the device state, the second to the keyboard state. The default option is 'Remote-Unlocked'.<br/>
 Lakeshore temperature controllers use a 3-digit keypad lock code for locking and unlocking the keypad. The factory default code is 123. To unlock the keypad manually, press and hold the Enter key for 10 seconds. Function [tc_lock_keyboard()](#tc_lock_keyboardlock) uses this code automatically.<br/>
 The function is not available for Termodat-11M6, 13KX3, Stanford Research PTC10, Scientific Instruments SCM10.
@@ -232,8 +234,8 @@ The function is not available for Termodat-11M6, 13KX3, Stanford Research PTC10,
 
 ### tc_proportional(*prop)
 ```python
-tc_proportional(channel: str, proportional: int) -> none
-tc_proportional(channel: str) -> int
+tc_proportional(channel: str, proportional: float) -> none
+tc_proportional(channel: str) -> float
 ```
 ```
 Example: tc_proportional('1', 71) sets the proportional PID parameter for the first channel to 71.
@@ -244,8 +246,8 @@ This function is only available for Termodat-11M6, 13KX3 and can be used to set 
 
 ### tc_derivative(*der)
 ```python
-tc_derivative(channel: str, derivative: int) -> none
-tc_derivative(channel: str) -> int
+tc_derivative(channel: str, derivative: float) -> none
+tc_derivative(channel: str) -> float
 ```
 ```
 Example: tc_derivative('2', 100) sets the derivative PID parameter for the second channel to 100.

@@ -1,8 +1,57 @@
 title: Atomize Docs
+email: anatoly.melnikov@tomo.nsc.ru
 description: Atomize software documentation
-theme: just-the-docs
 
-url: https://just-the-docs.github.io
+# Build settings
+markdown: kramdown
+theme: "just-the-docs"
+#plugins:
+#  - jekyll-feed
 
-#aux_links:
-#  Template Repository: https://github.com/just-the-docs/just-the-docs-template
+# Theme settings
+color_scheme: skhep
+
+url: https://anatoly1010.github.io/atomize_docs/
+
+aux_links:
+    "Atomize on GitHub":
+      - "https://github.com/Anatoly1010/Atomize"
+
+# Enable or disable the site search
+search_enabled: true
+
+gh_edit_link: true
+gh_edit_link_text: "View source for this page on GitHub."
+gh_edit_repository: "https://github.com/anatoly1010/atomize_docs.github.io"
+gh_edit_branch: "main"
+gh_edit_view_mode: "tree" # "tree" or "edit"
+
+# Exclude from processing.
+# The following items will not be processed, by default. Create a custom list
+# to override the default setting.
+# exclude:
+#   - Gemfile
+#   - Gemfile.lock
+#   - node_modules
+#   - vendor/bundle/
+#   - vendor/cache/
+#   - vendor/gems/
+#   - vendor/ruby/
+
+callouts:
+  warning:
+    color: red
+    title: Warning
+  note:
+    color: yellow
+    title: Note
+  important:
+    color: green
+    title: Important
+  highlight:
+    color: blue
+
+# SASS 3 will make stuff break
+sass:
+  quiet_deps: true # https://github.com/just-the-docs/just-the-docs/issues/1541
+  silence_deprecations: ["import"] # https://github.com/just-the-docs/just-the-docs/issues/1607

@@ -1,7 +1,9 @@
 ---
 title: Lock-In Amplifiers
-nav_order: 2
-layout: home
+nav_order: 21
+layout: page
+permlink: /functions/lock_in/
+parent: Documentation
 ---
 
 ## Lock-In Amplifier Functions
@@ -50,7 +52,7 @@ lock_in_ref_frequency() -> float
 Example: lock_in_ref_frequency(100000) sets the modulation frequency to 100 kHz.
 ```
 
-The function for querying or setting the modulation frequency in Hz. If called with no argument the current modulation frequency is returned. If called with an argument the modulation frequency is set. Frequency range is 4 mHz to 102 kHz (SR-810, 830, 850); 1 mHz - 500 kHz (SR-860); 1 mHz - 4 MHz (SR-865a).<br/>
+The function for querying or setting the modulation frequency in Hz. If called with no argument the current modulation frequency in Hz is returned. If called with an argument the modulation frequency is set. Frequency range is 4 mHz to 102 kHz (SR-810, 830, 850); 1 mHz - 500 kHz (SR-860); 1 mHz - 4 MHz (SR-865a).<br/>
 For SR-860, 865a the query command, [lock_in_ref_frequency()](#lock_in_ref_frequencyfrequency), returns the internal reference frequency whenever the reference mode is either Internal, Dual, or Chop. The query returns the external frequency when operating in External mode.<br/>
 
 ---
@@ -129,50 +131,53 @@ For SR-860, 865a 1 nV is also available. If there is no sensitivity setting fitt
 ### lock_in_ref_mode(*mode)
 ```python
 lock_in_ref_mode(mode: str) -> none
-lock_in_ref_mode() -> str
+lock_in_ref_mode() -> str ['Internal', 'External', 'Dual', 'Chop']
 ```
 ```
 Example: lock_in_ref_mode('External') sets the device to external modulation mode.
 ```
 This function queries or sets the modulation mode, i.e. if the internal modulation or an external modulation input is used. If there is no argument the function will return the current modulation mode. If there is an argument the specified modulation mode will be set. Possible modulation modes are the following:<br/>
-SR-810, 830, 850: ['Internal', 'External']<br/>
-SR-860, 865a: ['Internal', 'External', 'Dual', 'Chop']<br/>
+SR-810, 830, 850: ['Internal', 'External'].<br/>
+SR-860, 865a: ['Internal', 'External', 'Dual', 'Chop'].<br/>
 
 ---
 
 ### lock_in_ref_slope(*mode)
 ```python
 lock_in_ref_slope(mode: str) -> none
-lock_in_ref_slope() -> str
+lock_in_ref_slope() -> str ['Sine', 'PosTTL', 'NegTTL']
 ```
 ```
 Example: lock_in_ref_slope('PosTTL') sets the reference trigger to TTL rising edge.
 ```
-This function queries or sets the reference trigger when using the external reference mode. If there is no argument the function will return the current reference trigger. If there is an argument the specified reference trigger mode will be set. Note that at frequencies below 1 Hz, the a TTL reference must be used. Possible reference trigger modes are the following: ['Sine', 'PosTTL', 'NegTTL']. They correspond to sine zero crossing, TTL rising edge, TTL falling edge, respectively.<br/>
+This function queries or sets the reference trigger when using the external reference mode. If there is no argument the function will return the current reference trigger. If there is an argument the specified reference trigger mode will be set. Note that at frequencies below 1 Hz, the a TTL reference must be used.<br/>
+Possible reference trigger modes are the following: ['Sine', 'PosTTL', 'NegTTL']. They correspond to sine zero crossing, TTL rising edge, TTL falling edge, respectively.<br/>
 
 ---
 
 ### lock_in_sync_filter(*mode)
 ```python
 lock_in_sync_filter(mode: str) -> none
-lock_in_sync_filter() -> str
+lock_in_sync_filter() -> str ['Off', 'On']
 ```
 ```
 Example: lock_in_sync_filter('On') turns on synchronous filtering.
 ```
-This function queries or sets the synchronous filter status. If there is no argument the function will return the current status. If there is an argument the specified status will be set. Note that synchronous filtering is turned on only if the detection frequency is less than 200 Hz. Possible synchronous filter status are the following: ['Off', 'On'].<br/>
+This function queries or sets the synchronous filter status. If there is no argument the function will return the current status. If there is an argument the specified status will be set. Note that synchronous filtering is turned on only if the detection frequency is less than 200 Hz.<br/>
+Possible synchronous filter status are the following: ['Off', 'On'].<br/>
 
 ---
 
 ### lock_in_lp_filter(*mode)
 ```python
 lock_in_lp_filter(mode: str) -> none
-lock_in_lp_filter() -> str
+lock_in_lp_filter() -> str ['6 dB', '12 dB', '18 dB', '24 dB']
 ```
 ```
 Example: lock_in_lp_filter('12 dB') sets the low pass filter slope to 12 dB/oct.
 ```
-This function queries or sets the low pass filter slope. If there is no argument the function will return the current slope. If there is an argument the specified slope will be set. Possible low pass filter slopes are the following: ['6 dB', '12 dB', '18 dB', '24 dB']. They correspond to 6 dB/oct, 12 dB/oct, 18 dB/oct, 24 dB/oct, respectively.<br/>
+This function queries or sets the low pass filter slope. If there is no argument the function will return the current slope. If there is an argument the specified slope will be set.<br/>
+Possible low pass filter slopes are the following: ['6 dB', '12 dB', '18 dB', '24 dB']. They correspond to 6 dB/oct, 12 dB/oct, 18 dB/oct, 24 dB/oct, respectively.<br/>
 
 ---
 
@@ -209,5 +214,3 @@ lock_in_query(command: str) -> str
 Example: lock_in_command('OFSL?'). This example queries the low pass filter slope.
 ```
 The function for sending an arbitrary command from a programming guide to the device in a string format. An output in a string format is expected.<br/>
-
----
