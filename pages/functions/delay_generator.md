@@ -6,7 +6,6 @@ permlink: /functions/delay_generator/
 parent: Documentation
 ---
 
-## Delay Generator Functions
 
 ### Devices
 - Stanford Research **DG535** (GPIB); Untested

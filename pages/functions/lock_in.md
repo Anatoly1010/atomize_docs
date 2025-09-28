@@ -6,8 +6,6 @@ permlink: /functions/lock_in/
 parent: Documentation
 ---
 
-## Lock-In Amplifier Functions
-
 ### Devices
 - Stanford Research Lock-In Amplifier (GPIB, RS-232)
 **SR-810**; **SR-830**; **SR-850**; Tested 02/2021

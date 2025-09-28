@@ -6,8 +6,6 @@ permlink: /functions/temp_controller/
 parent: Documentation
 ---
 
-## Temperature Controller Functions
-
 ### Devices
 
 - Lakeshore (GPIB, RS-232)

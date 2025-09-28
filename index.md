@@ -12,11 +12,20 @@ Atomize[^1] uses [liveplot library](https://github.com/PhilReinhold/liveplot) ba
 
 Currently there are more than 200 device specific and general functions available for over 27 different devices, including 6 series of devices. If you would like to write a module for the device that is not currently available, please, read this short [instruction.](https://github.com/Anatoly1010/Atomize/blob/master/atomize/documentation/writing_modules.md)
 
+---
+
 ## Status
 <br/>
 At the moment, Atomize has been tested and is currently used for controlling several EPR spectrometers using a broad range of different devices. Examples of experimental scripts for standard pulsed EPR methods can be found in /atomize/tests/pulse_epr directory. The program has been tested on Ubuntu 18.04 LTS, 20.04 LTS, and 22.04 LTS.
 
 
-----
+---
+
+<!--
+![Alt Text](/images/figure_1.png)
+![Alt Text]({{ site.baseurl }}/images/your-image.jpg)
+
+---
+-->
 
 [^1]: Atomize = A + TOM + ize; A stands for Anatoly, main developer; TOMo stands for the International TOMography center, our organization
