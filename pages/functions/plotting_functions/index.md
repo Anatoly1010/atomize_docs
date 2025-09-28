@@ -15,10 +15,10 @@ The general idea of the Liveplot is a possibitily to see your data as it comes i
 
 The [Liveplot](https://github.com/PhilReinhold/liveplot) provides several possibilities for plotting 1D and 2D data. For raw experimental data plotting mainly four of them are applicable. An additional customizability has been added to these functions in comparison with the original Liveplot library. The functions are the following:
 
-- [plot_1d(*args, **kargs)](/pages/functions/plotting_functions/usage/#1d-plotting)<br/>
-- [plot_2d(*args, **kargs)](/pages/functions/plotting_functions/usage/#2d-plotting)<br/>
-- [text_label('label', DynamicValue)](/pages/functions/plotting_functions/usage/#dynamic-labeling)<br/>
-- [plot_remove('name_of_plot')](/pages/functions/plotting_functions/usage/#clearing)<br/>
+- [plot_1d(*args, **kargs)](/atomize_docs/pages/functions/plotting_functions/usage/#1d-plotting)<br/>
+- [plot_2d(*args, **kargs)](/atomize_docs/pages/functions/plotting_functions/usage/#2d-plotting)<br/>
+- [text_label('label', DynamicValue)](/atomize_docs/pages/functions/plotting_functions/usage/#dynamic-labeling)<br/>
+- [plot_remove('name_of_plot')](/atomize_docs/pages/functions/plotting_functions/usage/#clearing)<br/>
 
 ## GUI features
 In addition to the many features of native pyqtgraph widgets Liveplot has:<br/>
