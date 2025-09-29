@@ -90,7 +90,7 @@ f.close()
 
 ---
 
-## Conccurency example
+## Concurrency example
 ```python
 import time
 import numpy as np

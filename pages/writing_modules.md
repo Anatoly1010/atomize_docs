@@ -12,7 +12,7 @@ Please, read these rules carefully and try to follow them when writing a new mod
 - [Function Naming](#function-naming)<br/>
 - [Function Clustering](#function-clustering)<br/>
 - [Device Class](#device-class)<br/>
-- [Class __init__() function](#class-init-function)<br/>
+- [Class init() function](#class-init-function)<br/>
 - [Limits, Ranges, and Dictionaries](#limits-ranges-and-dictionaries)<br/>
 - [Configuration Files](#configuration-files)<br/>
 - [Device Specific Configuration Parameters](#device-specific-configuration-parameters)<br/>
@@ -54,7 +54,7 @@ class SR_860:
 
 ---
 
-## Class __init__() function
+## Class sinit() function
 The class inizialization function should connect computer to the device. Examples can be found in in atomize/device_modules/ directory. 
 
 ---

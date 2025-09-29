@@ -1,6 +1,6 @@
 ---
 title: Delay Generators
-nav_order: 23
+nav_order: 22
 layout: page
 permlink: /functions/delay_generator/
 parent: Documentation

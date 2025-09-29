@@ -1,6 +1,6 @@
 ---
 title: Temperature Controllers
-nav_order: 22
+nav_order: 35
 layout: page
 permlink: /functions/temp_controller/
 parent: Documentation

@@ -1,6 +1,6 @@
 ---
 title: Digitizers
-nav_order: 24
+nav_order: 23
 layout: page
 permlink: /functions/digitizer/
 parent: Documentation

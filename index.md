@@ -21,11 +21,13 @@ At the moment, Atomize has been tested and is currently used for controlling sev
 
 ---
 
-<!--
-![Alt Text](/images/figure_1.png)
-![Alt Text]({{ site.baseurl }}/images/your-image.jpg)
+## General Structure
+
+The geenral structure of Atomize can be visualized by the following figure:<br/>
+![Alt Text](/atomize_docs/images/your-image.jpg)
+
 
 ---
--->
+
 
 [^1]: Atomize = A + TOM + ize; A stands for Anatoly, main developer; TOMo stands for the International TOMography center, our organization

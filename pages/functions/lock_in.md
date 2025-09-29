@@ -1,6 +1,6 @@
 ---
 title: Lock-In Amplifiers
-nav_order: 21
+nav_order: 26
 layout: page
 permlink: /functions/lock_in/
 parent: Documentation
