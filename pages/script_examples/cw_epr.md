@@ -8,9 +8,8 @@ parent: Examples
 <br/>
 Assume that we have built a continuous wave (CW) EPR spectrometer and now would like to realize the ability to record CW EPR spectra under different experimental conditions. Without going into detail, recording the EPR spectrum is quite simple: using a lock-in amplifier, it is necessary to measure the amplitude of the signal from the detector located in the microwave bridge at different values of the external magnetic field. The signal is caused by microwave power absorption by the spin system, observed under resonant conditions. To increase the signal to noise ratio, external magnetic field modulation is typically used, requiring the use of the lock-in detection scheme. To make the setup slightly more advanced, we will also add the possibility to measure the exact frequency of the microwave source using a frequency counter. A schematic representation of the main principles of CW EPR spectroscopy, a scheme of a possible experimental setup, and the experimental flow are shown in the figure:
 <br/>
-![Figure_3](/atomize_docs/pages/scripts_examples/images/figure_3.png)
+![Figure_3](/atomize_docs/images/Figure_3.png)
 <br/>
-![Figure_32](/atomize_docs/images/figure_3.png)
 
 ---
 
