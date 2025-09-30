@@ -5,7 +5,6 @@ layout: page
 permlink: /protocol_settings/
 ---
 <br/>
-
 - [VXI-11](#vxi-11)
 - [RS-232](#rs-232)
 - [RS-485](#rs-485)
