@@ -20,7 +20,7 @@ aux_links:
 # Enable or disable the site search
 search_enabled: true
 
-gh_edit_link: true
+gh_edit_link: false
 gh_edit_link_text: "View source for this page on GitHub."
 gh_edit_repository: "https://github.com/anatoly1010/atomize_docs"
 gh_edit_branch: "main"
