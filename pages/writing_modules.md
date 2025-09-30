@@ -92,10 +92,11 @@ def __init__(self):
             try:
                 self.status_flag = 1
                 rm = pyvisa.ResourceManager()
-                self.device = rm.open_resource(self.config['serial_address'], read_termination=self.config['read_termination'],
-                                    write_termination=self.config['write_termination'], baud_rate=self.config['baudrate'],
-                                    data_bits=self.config['databits'], parity=self.config['parity'], stop_bits=self.config['stopbits'])
-                                    self.device.timeout = self.config['timeout']
+                self.device = rm.open_resource(self.config['serial_address'], 
+                    read_termination=self.config['read_termination'],
+                    write_termination=self.config['write_termination'], baud_rate=self.config['baudrate'],
+                    data_bits=self.config['databits'], parity=self.config['parity'], 
+                    stop_bits=self.config['stopbits']), self.device.timeout = self.config['timeout']
 
                 # ... #
 
@@ -306,7 +307,9 @@ def lock_in_time_constant(self, *timeconstant):
 ## Test run
 There is a test section in Atomize. During the test software checks that an experimental script has appropriate syntax and does not contain logical errors. It means that all the parameters during script execution do not go beyond the device limits. For instance, the test can detect that the field of the magnet is requested to be set to a value that the magnet cannot produce. During the test run the devices are not accessed, calls of the wait() function do not make the program sleep for the requested time, graphics are not drawn etc.<br/>
 The execution flow of experimental scripts can be illustrated as follows:
+<br/>
 ![Figure_2](/atomize_docs/images/figure_2.png)
+<br/>
 After an experimental script is written and launched in Atomize, a test run is performed, in which there is no access to the devices used. Test runs only check the correctness of device settings, experiment logic, and syntax. If there are no errors in the script, after the test run, the same script is immediately executed in the standard mode with full access to the instruments used.<br/>
 In order to be able to run a test, one should specify inside a module appropriate values for all the device parameters (since the devices are not accessed) and describe what the function should do during the test run. Typically, it is just different assertions and checkings:
 ```python
@@ -317,12 +320,12 @@ self.ref_ampl_min = 0.004
 # maximum amplitude of the sine output
 self.ref_ampl_max = 5
   
-# ... #
+# ...
  
 # special test value for the test run
 self.test_amplitude = 0.3
 
-# ... #
+# ...
 
 # Stanford Research Systems SR-830 module
 # test run part of the lock_in_ref_amplitude() method:

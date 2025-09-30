@@ -23,7 +23,7 @@ At the moment, Atomize has been tested and is currently used for controlling sev
 
 ## General Structure
 <br/>
-The geenral structure of Atomize can be visualized by the following figure:<br/>
+The general structure of Atomize can be visualized by the following figure:<br/>
 ![Figure_1](/atomize_docs/images/figure_1.png)
 
 

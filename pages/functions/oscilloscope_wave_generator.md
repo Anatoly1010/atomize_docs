@@ -82,6 +82,7 @@ wave_gen_function(function: str, channel = '1') -> none
 wave_gen_function() -> str
 wave_gen_function(channel = '1') -> str
 ```
+```
 Example: wave_gen_function('Sq') sets the sqare waveform.
 ```
 This function queries or sets the type of waveform of the wave generator.<br/>

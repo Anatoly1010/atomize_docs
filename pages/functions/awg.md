@@ -138,7 +138,7 @@ awg_pulse(*kagrs) -> none
 ```yml
 name = 'P0' specifies a name of the pulse
 channel = 'CH0' specifies a channel string (['CH0','CH1'])
-func = 'SINE' specifies a type of the function for a pulse (['SINE','GAUSS','SINC','BLANK','WURST','SECH/TANH'])
+func = 'SINE' specifies a type of the function (['SINE','GAUSS','SINC','BLANK','WURST','SECH/TANH'])
 frequency = '200 MHz' specifies a frequency of the pulse (['0-280 MHz'])
 phase = 0 specifies a phase of the pulse (in radians)
 phase_list = [] specifies a phase cycling sequence (['+x', '-x', '+y', '-y'])
