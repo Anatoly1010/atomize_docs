@@ -94,9 +94,10 @@ def __init__(self):
                 rm = pyvisa.ResourceManager()
                 self.device = rm.open_resource(self.config['serial_address'], 
                     read_termination=self.config['read_termination'],
-                    write_termination=self.config['write_termination'], baud_rate=self.config['baudrate'],
-                    data_bits=self.config['databits'], parity=self.config['parity'], 
-                    stop_bits=self.config['stopbits']), self.device.timeout = self.config['timeout']
+                    write_termination=self.config['write_termination'], 
+                    baud_rate=self.config['baudrate'], data_bits=self.config['databits'], 
+                    parity=self.config['parity'], stop_bits=self.config['stopbits']), 
+                    self.device.timeout = self.config['timeout']
 
                 # ... #
 
