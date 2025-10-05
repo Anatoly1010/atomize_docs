@@ -13,9 +13,9 @@ permlink: /instruments/
 	325; 331; 332; 335; 336; 340; Tested 01/2021
 - Oxford Instruments (RS-232)
 	ITC 503; Tested 01/2021
- - Termodat (RS-485)
+- Termodat (RS-485)
     11M6; 13KX3; Tested 04/2021
-  - Stanford Research (TCP/IP Socket)
+- Stanford Research (TCP/IP Socket)
 	PTC10; Tested 07/2021
 - Scientific Instruments (TCP/IP Socket, RS-232)
 	SCM10; Tested 07/2022
@@ -42,6 +42,7 @@ permlink: /instruments/
 
 ## [Digitizers](/atomize_docs/pages/functions/digitizer)
 - Spectrum M4I 4450 X8; Tested 08/2021
+The original [library](https://spectrum-instrumentation.com/en/m4i4450-x8) was written by Spectrum.
 - Spectrum M4I 2211 X8; Tested 01/2021
 The original [library](https://spectrum-instrumentation.com/en/m4i4450-x8) was written by Spectrum.
 - [Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda) as ADC; Tested 03/2025
@@ -62,13 +63,13 @@ The device is available via ctypes. The original library can be found [here](htt
 ## [Arbitrary Wave Generators](/atomize_docs/pages/functions/arbitrary-wave-generator)
 - Spectrum M4I 6631 X8; Tested 07/2021
 The original [library](https://spectrum-instrumentation.com/en/m4i6631-x8) was written by Spectrum. 
--  [Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda) as DAC; Tested 03/2025
+- [Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda) as DAC; Tested 03/2025
 The device is available via ctypes. The original library can be found [here](https://github.com/Anatoly1010/Atomize_ITC/tree/master/libs).
 
 ---
 
 ## [Pulse Programmers](/atomize_docs/pages/functions/pulse-programmer)
-   - Pulse Blaster ESR 500 Pro; Tested 06/2021
+- Pulse Blaster ESR 500 Pro; Tested 06/2021
     The device is available via ctypes. The original [C library](http://www.spincore.com/support/spinapi/using_spin_api_pb.shtml) was written by SpinCore Technologies.
 - Pulse  Programmer Micran based on [Insys FMC126P](https://www.insys.ru/fmc/fmc126p); Tested 12/2023
 - [Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda) as multichannel TTL pulse generator; Tested 03/2025
@@ -109,7 +110,7 @@ The Insys device is available via ctypes. The original library can be found [her
 ## [Power Supplies](/atomize_docs/pages/functions/power-supply)
 - Rigol DP800 Series (RS-232, Ethernet); Tested 01/2021
 - Stanford Research DC205 (RS-232); Untested
- - Stanford Research PS300 High Voltage Series (RS-232, GPIB); Untested
+- Stanford Research PS300 High Voltage Series (RS-232, GPIB); Untested
 
 ---
 
@@ -119,7 +120,7 @@ The Insys device is available via ctypes. The original library can be found [her
 ---
 
 ## [Delay Generators](/atomize_docs/pages/functions/delay_generator)
-   - Stanford Research DG535 (GPIB); Untested
+- Stanford Research DG535 (GPIB); Untested
 
 ---
 
@@ -135,6 +136,6 @@ The Insys device is available via ctypes. The original library can be found [her
 
 ## [Other](/atomize_docs/pages/functions/other)
 - RODOS-10N Solid-State Relay (Ethernet); Tested 01/2021
- - Owen-MK110-220.4DN.4R Discrete IO Module (RS-485); Tested 04/2021
- - Cryomagnetics LM-510 Liquid Cryogen Monitor (TCP/IP Socket); Tested 07/2022
- - Cryomech CPA2896, CPA1110 Digital Panels (RS-485); Tested 07/2022
+- Owen-MK110-220.4DN.4R Discrete IO Module (RS-485); Tested 04/2021
+- Cryomagnetics LM-510 Liquid Cryogen Monitor (TCP/IP Socket); Tested 07/2022
+- Cryomech CPA2896, CPA1110 Digital Panels (RS-485); Tested 07/2022
