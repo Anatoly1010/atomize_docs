@@ -39,7 +39,7 @@ sr830 = sr.SR_830()
 
 # setting the time constant to 30 ms
 sr830.lock_in_time_constant('30 ms')
-# requesting the current value of time constant
+# requesting the current value of the time constant
 current_time_constant = sr830.lock_in_time_constant()
 ```
 In this example the same function lock_in_time_constant() sets and queries the time constant of the SR-830 lock-in amplifier.
