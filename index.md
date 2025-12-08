@@ -32,7 +32,7 @@ The general structure of Atomize can be visualized by the following figure:<br/>
 ## More details
 <br/>
 More details are provided in the [JORS paper](https://doi.org/10.5334/jors.594). Please cite it, if you use Atomize: 
-Melnikov A, Vedkal A, Ishchenko A, Veber S, Atomize: A Modular Software for Control and Automation of Scientific and Industrial Instruments // Journal of Open Research Software, X: X. DOI: https://doi.org/10.5334/jors.594
+Melnikov A, Vedkal A, Ishchenko A, Veber S, Atomize: A Modular Software for Control and Automation of Scientific and Industrial Instruments // Journal of Open Research Software, Vol. 13, Issue 1, Article 26. DOI: https://doi.org/10.5334/jors.594
 
 
 ---
