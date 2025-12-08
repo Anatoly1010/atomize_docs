@@ -18,7 +18,7 @@ The Insys device is available via ctypes. The original library can be found [her
 
 ### Functions
 - [pulser_name()](#pulser_name)<br/>
-- [pulser_pulse(*kagrs)](#pulser_pulsekargs)<br/>
+- [pulser_pulse(*kargs)](#pulser_pulsekargs)<br/>
 - [pulser_update()](#pulser_update)<br/>
 - [pulser_next_phase()](#pulser_next_phase)<br/>
 - [pulser_acquisition_cycle(data1, data2, acq_cycle)](#pulser_acquisition_cycledata1-data2-acq_cycle)<br/>
@@ -48,9 +48,9 @@ The function returns device name.
 
 ---
 
-### pulser_pulse(*kagrs)
+### pulser_pulse(*kargs)
 ```python
-pulser_pulse(*kagrs) -> none
+pulser_pulse(*kargs) -> none
 ```
 ```yml
 name = 'P0' specifies a name of the pulse
@@ -89,7 +89,7 @@ pulser_next_phase() -> none
 ```
 Example: pulser_next_phase() switches all pulses in the sequence to the next phase.
 ```
-This function switches all pulses to the next phase. The phase sequence is declared in the [pulser_pulse()](#pulser_pulsekagrs) in the form of phase_list = ['-y', '+x', '-x', '+x', ...]. By repeatedly calling the function one can run through the complete list of phases for the pulses. The length of all phase lists specified for different MW pulses has to be the same. This function also immediately updates the pulse sequence, as it is done by calling [pulser_update()](#pulser_update). The first call of the function corresponds to the first phase in the phase_list argument of the [pulser_pulse()](#pulser_pulsekagrs).
+This function switches all pulses to the next phase. The phase sequence is declared in the [pulser_pulse()](#pulser_pulsekargs) in the form of phase_list = ['-y', '+x', '-x', '+x', ...]. By repeatedly calling the function one can run through the complete list of phases for the pulses. The length of all phase lists specified for different MW pulses has to be the same. This function also immediately updates the pulse sequence, as it is done by calling [pulser_update()](#pulser_update). The first call of the function corresponds to the first phase in the phase_list argument of the [pulser_pulse()](#pulser_pulsekargs).
 
 ---
 
@@ -164,7 +164,7 @@ pulser_increment(pulses: str ('P0', 'P1', etc.)) -> none
 Example: pulser_increment('P0')
 increments the pulse named 'P0' by the corresponding length_increment value.
 ```
-This function can be called with either no argument or with a list of comma separated pulse names (i.e. 'P0', 'P1'). If no argument is given the lengths of all pulses that have a nonzero length_increment and are currently active (do not have a length of 0) are incremented by their corresponding length_increment value. If there is one argument or a list of comma separated pulse names only the lengths of the listed pulses are changed. Calling this function also resets the phase (if specified in the argument phase_list of the [pulser_pulse()](#pulser_pulsekagrs) to the first phase in the phase_list.
+This function can be called with either no argument or with a list of comma separated pulse names (i.e. 'P0', 'P1'). If no argument is given the lengths of all pulses that have a nonzero length_increment and are currently active (do not have a length of 0) are incremented by their corresponding length_increment value. If there is one argument or a list of comma separated pulse names only the lengths of the listed pulses are changed. Calling this function also resets the phase (if specified in the argument phase_list of the [pulser_pulse()](#pulser_pulsekargs) to the first phase in the phase_list.
 
 ---
 
@@ -286,7 +286,7 @@ pulser_open() -> none
 ```
 Example: pulser_open() opens the board for use.
 ```
-This function should be called only without arguments and is only available for Insys FM214x3GDA. The function should be used after defining pulses and repetition rate with [pulser_pulse()](#pulser_pulsekagrs) and [pulser_repetition_rate()](#pulser_repetition_rater_rate).
+This function should be called only without arguments and is only available for Insys FM214x3GDA. The function should be used after defining pulses and repetition rate with [pulser_pulse()](#pulser_pulsekargs) and [pulser_repetition_rate()](#pulser_repetition_rater_rate).
 
 ---
 
