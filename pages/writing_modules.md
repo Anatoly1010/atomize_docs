@@ -8,7 +8,6 @@ permlink: /writing_modules/
 
 Please, read these rules carefully and try to follow them when writing a new module.<br/>
 
-- [Code Convention](#code-convention)<br/>
 - [Function Naming](#function-naming)<br/>
 - [Function Clustering](#function-clustering)<br/>
 - [Device Class](#device-class)<br/>
@@ -18,11 +17,6 @@ Please, read these rules carefully and try to follow them when writing a new mod
 - [Device Specific Configuration Parameters](#device-specific-configuration-parameters)<br/>
 - [Dimensions](#dimensions)<br/>
 - [Test Run](#test-run)<br/>
-
----
-
-## Code Convention
-Atomize tries to adhere to PEP 8 [code convention.](https://www.python.org/dev/peps/pep-0008/)
 
 ---
 
@@ -137,10 +131,11 @@ self.ref_ampl_max = 5
 ---
 
 ## Configuration Files
-Each device should have a configuration file. In this file the communication [protocol settings](/atomize_docs/pages/protocol_settings) and device specific parameters (module for a series of the devices) should be specified. Examples can be found in atomize/device_modules/config/ directory. Reading of a configuration file should be done inside an __init()__ function of the device class using a special function from the config_utils.py file:
+Each device should have a configuration file. In this file the communication [protocol settings](/atomize_docs/pages/protocol_settings) and device specific parameters in the case of a module for a series of the devices should be specified. Examples can be found in atomize/device_modules/config/ directory with a local copy in ["DEVICE CONFIG DIRECTORY"](/atomize_docs/pages/usage). Reading of a local copy of the configuration file should be done inside an __init()__ function of the device class using special functions from the config_utils and local_config modules:
 ```python
 # Stanford Research Systems SR-860 module
 
+import atomize.main.local_config as lconf
 import atomize.device_modules.config.config_utils as cutil
 
 # ... #
@@ -149,8 +144,8 @@ import atomize.device_modules.config.config_utils as cutil
 def __init__(self):
 
     # setting path to *.ini file
-    self.path_current_directory = os.path.dirname(__file__)
-    self.path_config_file = os.path.join(self.path_current_directory, 'config','SR_860_config.ini')
+    self.path_current_directory = lconf.load_config_device()
+    self.path_config_file = os.path.join(self.path_current_directory, 'SR_860_config.ini')
 
     # getting of the configuration data
     self.config = cutil.read_conf_util(self.path_config_file)
@@ -306,7 +301,7 @@ def lock_in_time_constant(self, *timeconstant):
 ---
 
 ## Test run
-There is a test section in Atomize. During the test software checks that an experimental script has appropriate syntax and does not contain logical errors. It means that all the parameters during script execution do not go beyond the device limits. For instance, the test can detect that the field of the magnet is requested to be set to a value that the magnet cannot produce. During the test run the devices are not accessed, calls of the wait() function do not make the program sleep for the requested time, graphics are not drawn etc.<br/>
+There is a test section in Atomize. During the test software checks that an experimental script has appropriate syntax and does not contain logical errors. It means that all the parameters during script execution do not go beyond the device limits. For instance, the test can detect that the field of the magnet is requested to be set to a value that the magnet cannot produce. During the test run the devices are not accessed, calls of the wait() function do not make the program sleep for the requested time, graphics are not drawn etc. To print a string in the main window in the test run, the function [message_test()](/atomize_docs/pages/functions/general_functions/general_functions) from the general_functions module can be used.<br/>
 The execution flow of experimental scripts can be illustrated as follows:
 <br/>
 ![Figure_2](/atomize_docs/images/figure_2.png)

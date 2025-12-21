@@ -25,7 +25,6 @@ In addition to the many features of native pyqtgraph widgets Liveplot has:<br/>
 - Double click on plots to bring up cross-hair marker<br/>
 - Cross-hair displays cross-section cuts for image plots<br/>
 - Restore closed plots by double-clicking the name in the plot list<br/>
-- Focus on a single plot by maximizing<br/>
 - Right click on image plots<br/>
 - Toggle histogram & levels scale<br/>
 - Enable/disable auto-rescaling of levels when image is updated<br/>

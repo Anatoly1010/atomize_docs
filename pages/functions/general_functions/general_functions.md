@@ -14,7 +14,8 @@ import atomize.general_modules.general_functions as general
 
 The following functions are available:
 
-- [message()](#print-a-line-in-the-main-window)<br/>
+- [message()](#print-a-string-in-the-main-window)<br/>
+- [message_test()](#print-a-string-in-the-main-window-in-the-test-run)<br/>
 - [bot_message()](#send-a-message-via-telegram-bot)<br/>
 - [wait()](#wait-for-the-specified-amount-of-time)<br/>
 - [to_infinity()](#infinite-loop)<br/>
@@ -22,7 +23,7 @@ The following functions are available:
 
 ---
 
-## Print a line in the main window
+## Print a string in the main window
 ```python
 import atomize.general_modules.general_functions as general
 general.message('A message to print', 'One more message', ...)
@@ -30,8 +31,16 @@ general.message('A message to print', 'One more message', ...)
 
 ---
 
+## Print a string in the main window in the test run
+```python
+import atomize.general_modules.general_functions as general
+general.message_test('A message to print in the test run', 'One more message', ...)
+```
+
+---
+
 ## Send a message via Telegram bot
-To call this function Telegram bot token and message chat ID should be specified in the configuration file (/atomize/config.ini). General function module should be imported. After that the function should be used as follows:
+To call this function Telegram bot token and message chat ID should be specified in the configuration [file](/atomize_docs/pages/usage) "MAIN CONFIG PATH". General function module should be imported. After that the function should be used as follows:
 ```python
 import atomize.general_modules.general_functions as general
 general.bot_message('A message to send', 'One more message', ...)
@@ -83,7 +92,7 @@ for i in general.scans( 10 ):
 ---
 
 ## Constant shift
-To match the timescales of the DAC and the pulse generator a function general.сonst_shift( str(initial_position) + ['ns', 'ms', 'us'], shift_in_ns ) can be used as follows:
+To match the timescales of the DAC and the pulse generator a function general.сonst_shift( str(initial_position) + ['ns', 'ms', 'us'], shift_in_ns ) can be used as shown below. The argument "initial_position" should be an integer number.
 ```python
 import atomize.general_modules.general_functions as general
 PULSE_AWG_2_START = '250 ns'

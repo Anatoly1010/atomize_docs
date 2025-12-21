@@ -10,6 +10,6 @@ An experimental script typically consists of four main parts:
 - importing and initializing of the necessary devices
 - configuring the devices
 - defining a sequence of actions to perform a desired measurement 
-- saving and/or processing the data obtained. 
+- saving and/or processing the data obtained
 
 Here we provide several detailed examples of experimental scripts
