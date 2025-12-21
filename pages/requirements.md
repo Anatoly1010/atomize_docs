@@ -11,6 +11,7 @@ permlink: /requirements/
 - [pyqtgraph >= 0.12](http://www.pyqtgraph.org)
 - [PyVisa >= 1.11](https://pyvisa.readthedocs.io/en/latest/)
 - [PyVisa-py >= 0.5](https://github.com/pyvisa/pyvisa-py)
+- [platformdirs >= 4.5](https://pypi.org/project/platformdirs/)
 - [hatchling >= 1.9 ](https://pypi.org/project/hatchling/)<br/>
 <br/>
 Optional:
