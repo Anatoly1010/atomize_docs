@@ -9,7 +9,8 @@ has_children: true
 <br/>
 The description of available general functions in Atomize:
 
-- [message()](/atomize_docs/pages/functions/general_functions/general_functions#print-a-line-in-the-main-window)<br/>
+- [message()](/atomize_docs/pages/functions/general_functions/general_functions#print-a-string-in-the-main-window)<br/>
+- [message_test()](/atomize_docs/pages/functions/general_functions/general_functions#print-a-string-in-the-main-window-in-the-test-run)<br/>
 - [bot_message()](/atomize_docs/pages/functions/general_functions/general_functions#send-a-message-via-telegram-bot)<br/>
 - [wait()](/atomize_docs/pages/functions/general_functions/general_functions#wait-for-the-specified-amount-of-time)<br/>
 - [to_infinity()](/atomize_docs/pages/functions/general_functions/general_functions#infinite-loop)<br/>

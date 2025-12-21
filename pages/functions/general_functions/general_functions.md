@@ -40,7 +40,7 @@ general.message_test('A message to print in the test run', 'One more message', .
 ---
 
 ## Send a message via Telegram bot
-To call this function Telegram bot token and message chat ID should be specified in the configuration [file](/atomize_docs/pages/usage) "MAIN CONFIG PATH". General function module should be imported. After that the function should be used as follows:
+To call this function Telegram bot token and message chat ID should be specified in the configuration file ["MAIN CONFIG PATH"](/atomize_docs/pages/usage). General function module should be imported. After that the function should be used as follows:
 ```python
 import atomize.general_modules.general_functions as general
 general.bot_message('A message to send', 'One more message', ...)
