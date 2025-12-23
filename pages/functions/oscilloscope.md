@@ -1,6 +1,6 @@
 ---
 title: Oscilloscopes
-nav_order: 31
+nav_order: 32
 layout: page
 permlink: /functions/oscilloscope/
 parent: Documentation

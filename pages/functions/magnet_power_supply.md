@@ -1,6 +1,6 @@
 ---
 title: Magnet Power Supplies
-nav_order: 28
+nav_order: 29
 layout: page
 permlink: /functions/magnet_power_supply/
 parent: Documentation

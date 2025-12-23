@@ -1,6 +1,6 @@
 ---
 title: Magnetic Field Controllers
-nav_order: 27
+nav_order: 28
 layout: page
 permlink: /functions/magnet/
 parent: Documentation

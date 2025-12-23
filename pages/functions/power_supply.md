@@ -1,6 +1,6 @@
 ---
 title: Power Supplies
-nav_order: 33
+nav_order: 34
 layout: page
 permlink: /functions/power_suuply/
 parent: Documentation

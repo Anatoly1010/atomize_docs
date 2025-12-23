@@ -22,9 +22,15 @@ permlink: /instruments/
 
 ---
 
+## [Laser Power Meters](/atomize_docs/pages/functions/laser_power_meter)
+- Gentec-EO (RS-232)
+	Solo2; Tested 12/2025
+
+---
+
 ## [Lock-in Amplifiers](/atomize_docs/pages/functions/lock_in)
 - Stanford Research Lock-In Amplifier (GPIB, RS-232)
-	SR-810; SR-830; SR-850; Tested 02/2021
+	SR-810; SR-830; SR-850; Tested 02/2021; SR-844; Untested
 - Stanford Research Lock-In Amplifier (GPIB, RS-232, Ethernet)
 	SR-860; SR-865a; Tested 01/2021
 

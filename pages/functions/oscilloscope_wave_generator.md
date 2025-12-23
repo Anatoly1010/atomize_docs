@@ -1,6 +1,6 @@
 ---
 title: Oscilloscope Wave Generators
-nav_order: 32
+nav_order: 33
 layout: page
 permlink: /functions/oscilloscope_wave_generator/
 parent: Documentation
