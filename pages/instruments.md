@@ -130,6 +130,11 @@ The Insys device is available via ctypes. The original library can be found [her
 
 ---
 
+## [Vector Network Analyzers](/atomize_docs/pages/functions/vector_network_analyzer)
+- Planar C2220, S50024 (Socket); Tested 09/2025
+
+---
+
 ## [Moisture Meters](/atomize_docs/pages/functions/moisture-meter)
 - IVG-1/1 (RS-485); Tested 02/2023
 

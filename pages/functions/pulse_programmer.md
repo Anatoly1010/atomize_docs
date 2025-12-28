@@ -18,7 +18,7 @@ The Insys device is available via ctypes. The original library can be found [her
 
 ### Functions
 - [pulser_name()](#pulser_name)<br/>
-- [pulser_pulse(*kargs)](#pulser_pulsekargs)<br/>
+- [pulser_pulse(**kargs)](#pulser_pulsekargs)<br/>
 - [pulser_update()](#pulser_update)<br/>
 - [pulser_next_phase()](#pulser_next_phase)<br/>
 - [pulser_acquisition_cycle(data1, data2, acq_cycle)](#pulser_acquisition_cycledata1-data2-acq_cycle)<br/>
@@ -48,9 +48,9 @@ The function returns device name.
 
 ---
 
-### pulser_pulse(*kargs)
+### pulser_pulse(**kargs)
 ```python
-pulser_pulse(*kargs) -> none
+pulser_pulse(**kargs) -> none
 ```
 ```yml
 name = 'P0' specifies a name of the pulse
