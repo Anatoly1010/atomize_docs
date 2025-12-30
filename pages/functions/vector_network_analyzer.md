@@ -23,7 +23,7 @@ Planar instruments only work when running [native sofware](https://planarchel.ru
 - [vector_analyzer_send_trigger()](#vector_analyzer_send_trigger)<br/>
 - [vector_analyzer_intermediate_freqiency_bandwith(*freq, channel = 1)](#vector_analyzer_intermediate_freqiency_bandwithfreq-channel--1)<br/>
 - [vector_analyzer_trigger_mode(*md, channel = 1)](#vector_analyzer_trigger_modemd-channel--1)<br>
-- [vector_analyzer_get_curve(s = 'S11', type = 'IQ', channel = 1, data_type = 'COR')](#vector_analyzer_get_curves--S11-type--IQ-channel--1-data_type--COR)<br>
+- [vector_analyzer_get_curve(s = 'S11', type = 'IQ', channel = 1, data_type = 'COR')](#vector_analyzer_get_curves--s11-type--iq-channel--1-data_type--cor)<br>
 - [vector_analyzer_get_frequency_points(channel = 1)](#vector_analyzer_get_frequency_pointschannel--1)<br>
 - [vector_analyzer_measurement_time(channel = 1)](#vector_analyzer_measurement_timechannel--1)<br>
 - [vector_analyzer_command(command)](#vector_analyzer_commandcommand)<br>
