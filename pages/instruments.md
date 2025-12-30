@@ -37,12 +37,13 @@ permlink: /instruments/
 ---
 
 ## [Oscilloscopes](/atomize_docs/pages/functions/oscilloscope)
-- Keysight InfiniiVision 2000 X-Series (Ethernet); Untested
+- Keysight InfiniiVision 2000 X-Series (Ethernet); Tested 07/2021
 - Keysight InfiniiVision 3000 X-Series (Ethernet); Tested 06/2021
 - Keysight InfiniiVision 4000 X-Series (Ethernet); Untested
 - Tektronix 3000 Series (Ethernet); Tested 09/2022
 - Tektronix 4000 Series (Ethernet); Tested 01/2021
 - Tektronix 5 Series MSO (Ethernet); Tested 12/2023
+- Rigol MSO8000 Series (Ethernet); Untested
 
 ---
 

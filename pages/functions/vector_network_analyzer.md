@@ -23,7 +23,7 @@ Planar instruments only work when running [native sofware](https://planarchel.ru
 - [vector_analyzer_send_trigger()](#vector_analyzer_send_trigger)<br/>
 - [vector_analyzer_intermediate_freqiency_bandwith(*freq, channel = 1)](#vector_analyzer_intermediate_freqiency_bandwithfreq-channel--1)<br/>
 - [vector_analyzer_trigger_mode(*md, channel = 1)](#vector_analyzer_trigger_modemd-channel--1)<br>
-- [vector_analyzer_get_curve(s = 'S11', type = 'IQ', channel = 1, data_type = 'COR')](#vector_analyzer_get_datas--S11-type--IQ-channel--1-data_type--COR)<br>
+- [vector_analyzer_get_curve(s = 'S11', type = 'IQ', channel = 1, data_type = 'COR')](#vector_analyzer_get_curves--S11-type--IQ-channel--1-data_type--COR)<br>
 - [vector_analyzer_get_frequency_points(channel = 1)](#vector_analyzer_get_frequency_pointschannel--1)<br>
 - [vector_analyzer_measurement_time(channel = 1)](#vector_analyzer_measurement_timechannel--1)<br>
 - [vector_analyzer_command(command)](#vector_analyzer_commandcommand)<br>
@@ -35,7 +35,7 @@ Planar instruments only work when running [native sofware](https://planarchel.ru
 ```python
 vector_analyzer_name() -> str
 ```
-This function returns device name.
+This function returns device name.<br/>
 
 ---
 
@@ -113,11 +113,12 @@ This function can only be called without arguments and is used to send a single 
 ### vector_analyzer_intermediate_freqiency_bandwith(*freq, channel = 1)
 ```python
 vector_analyzer_intermediate_freqiency_bandwith(freq: str(float + [' Hz',' kHz',' MHz',' GHz']), 
-												channel: int) -> none
+				    channel: int) -> none
 vector_analyzer_intermediate_freqiency_bandwith(channel: int) -> str
 ```
 ```
-Example: vector_analyzer_intermediate_freqiency_bandwith('10 kHz') sets the intermediate frequency bandwidth to 10 kHz.
+Example: vector_analyzer_intermediate_freqiency_bandwith('10 kHz') sets the intermediate frequency 
+bandwidth to 10 kHz.
 ```
 This function queries or sets the intermediate frequency bandwidth for measurement. If there is no argument, the function returns the current bandwidth for the channel specified as the keyword "channel". The output of the function is a string in the format 'number + ['Hz', 'kHz', 'MHz']. If there is an argument, the specified bandwidth will be set for the indicated channel. The intermediate frequency bandwidth argument is a string in the format 'number [Hz, kHz, MHz, GHz]'. The numeric value of the bandwidth should be from the array:<br/>
 [1, 2, 3, 5, 7, 10, 15, 20, 30, 50, 70, 100, 150, 200, 300, 500, 700, 1000].<br/>
@@ -139,12 +140,12 @@ This function queries or sets the trigger initiation mode. If there is no argume
 
 ### vector_analyzer_get_curve(s = 'S11', type = 'IQ', channel = 1, data_type = 'COR')
 ```python
-vector_analyzer_get_curve(s: ['S11','S12','S21','S22','R11','R12','R21','R22','A(1)','A(2)','B(1)','B(2)'], 
-						  type: ['IQ','AP'], channel: int, data_type: ['COR','RAW'])) -> np.array(), np.array()
+vector_analyzer_get_curve(s: ['S11','S12','S21','S22','R11','R12','R21','R22','A(1)','A(2)','B(1)','B(2)'],
+		   type: ['IQ','AP'], channel: int, data_type: ['COR','RAW'])) -> np.array(), np.array()
 ```
 ```
-Example: vector_analyzer_get_curve(s = 'S11', type = 'AP') performs the measurement and returns two 'S11' curves
-in the form of amplitude and phase.
+Example: vector_analyzer_get_curve(s = 'S11', type = 'AP') performs the measurement and returns 
+two 'S11' curves in the form of amplitude and phase.
 ```
 This function runs the measurement for the channel specified as the keyword "channel" and returns the result as two numpy arrays with the number of points specified in the function [the vector_analyzer_points()](#vector_analyzer_pointspnt-channel--1). The number of available channels is given in the configuration file. The following s-parameters are available for measurement: ['S11', 'S12', 'S21', 'S22', 'R11', 'R12', 'R21', 'R22', 'A(1)', 'A(2)', 'B(1)', 'B(2)'].<br>
 The acquired curves can be returned in two different formats: ['IQ', 'AP']. The 'IQ' format corresponds to the real and imagimary parts of the measured signal in mV. The 'AP' format corresponds to the amplitude and phase of the measured signal. The keyword 'data_type' indicates whether the measured signal is corrected using various calibration coefficients or not. The available options are ['COR', 'RAW'].<br>

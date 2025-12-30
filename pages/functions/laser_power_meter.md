@@ -16,7 +16,7 @@ parent: Documentation
 - [laser_power_meter_name()](#laser_power_meter_name)<br/>
 - [laser_power_meter_head_name()](#laser_power_meter_head_name)<br/>
 - [laser_power_meter_get_data()](#laser_power_meter_get_data)<br/>
-- [laser_power_meter_set_wavelength(*wavelength)](#laser_power_meter_set_wavelengthwavelength)<br/>
+- [laser_power_meter_wavelength(*wavelength)](#laser_power_meter_wavelengthwavelength)<br/>
 - [laser_power_meter_zero_offset(*zero_mode)](#laser_power_meter_zero_offsetzero_mode)<br/>
 - [laser_power_meter_analog_output(*analog_output)](#laser_power_meter_analog_outputanalog_output)<br/>
 - [laser_power_meter_energy_mode(*energy_mode)](#laser_power_meter_energy_modeenergy_modey)<br/>
@@ -31,7 +31,7 @@ parent: Documentation
 laser_power_meter_name() -> str
 ```
 
-The function returns device name.
+The function returns device name.<br/>
 
 ---
 
@@ -55,13 +55,13 @@ This function returns the measured value as soon as a new value appears on the d
 
 ---
 
-### laser_power_meter_set_wavelength(*wavelength)
+### laser_power_meter_wavelength(*wavelength)
 ```python
-laser_power_meter_set_wavelength(wavelength: int) -> none
-laser_power_meter_set_wavelength() -> str
+laser_power_meter_wavelength(wavelength: int) -> none
+laser_power_meter_wavelength() -> str
 ```
 ```
-Example: laser_power_meter_set_wavelength(532) sets the wavelength used to 532 nm.
+Example: laser_power_meter_wavelength(532) sets the wavelength used to 532 nm.
 ```
 This function queries or sets the wavelength being used on the detector. If there is no argument the function will return the current wavelength as a string: "Wavelength for correction: xxx nm". If there is an argument the specified wavelength will be set. The available range is 193-2100 nm.<br/>
 
