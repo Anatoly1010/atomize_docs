@@ -141,7 +141,7 @@ This function queries or sets the trigger initiation mode. If there is no argume
 ### vector_analyzer_get_curve(s = 'S11', type = 'IQ', channel = 1, data_type = 'COR')
 ```python
 vector_analyzer_get_curve(s: ['S11','S12','S21','S22','R11','R12','R21','R22','A(1)','A(2)','B(1)','B(2)'],
-		   type: ['IQ','AP'], channel: int, data_type: ['COR','RAW'])) -> np.array(), np.array()
+		   type: ['IQ','AP'], channel: int, data_type: ['COR','RAW'])) -> np.array, np.array
 ```
 ```
 Example: vector_analyzer_get_curve(s = 'S11', type = 'AP') performs the measurement and returns 
@@ -154,7 +154,7 @@ The acquired curves can be returned in two different formats: ['IQ', 'AP']. The 
 
 ### vector_analyzer_get_frequency_points(channel = 1)
 ```python
-vector_analyzer_get_frequency_points(channel: int) -> np.array()
+vector_analyzer_get_frequency_points(channel: int) -> np.array
 ```
 ```
 Example: vector_analyzer_get_frequency_points() returns the array of frequencies of measurement points.
