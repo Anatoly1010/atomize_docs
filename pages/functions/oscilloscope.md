@@ -102,7 +102,7 @@ For Rigol MSO8000 Series the number of averages should be from 2 to 65536 in pow
 
 ### oscilloscope_timebase(*timebase)
 ```python
-oscilloscope_timebase(timebase: str (float + [' s',' ms',' us',' ns'])) -> none
+oscilloscope_timebase(timebase: float + [' s',' ms',' us',' ns']) -> none
 oscilloscope_timebase() -> str
 ```
 ```
@@ -204,7 +204,7 @@ This function returns a value of area (in volt-seconds) between the waveform and
 
 ### oscilloscope_sensitivity(*channel)
 ```python
-oscilloscope_sensitivity(channel: str, sensitivity: str (int + [' V',' mV'])) -> none
+oscilloscope_sensitivity(channel: str, sensitivity: int + [' V',' mV']) -> none
 oscilloscope_sensitivity(channel: ['CH1','CH2','CH3','CH4']) -> str
 ```
 ```
@@ -219,7 +219,7 @@ This function queries (if called with one argument) or sets (if called with two 
 ### oscilloscope_offset(*channel)
 ```python
 oscilloscope_offset(*channel)
-oscilloscope_offset(channel: str, offset: str (float + [' V',' mV'])) -> none
+oscilloscope_offset(channel: str, offset: float + [' V',' mV']) -> none
 oscilloscope_offset(channel: ['CH1','CH2','CH3','CH4']) -> str
 ```
 ```
@@ -232,7 +232,7 @@ This function queries (if called with one argument) or sets (if called with two 
 
 ### oscilloscope_horizontal_offset(*h_offset)
 ```python
-oscilloscope_horizontal_offset(h_offset: str (float + [' s',' ms',' us',' ns'])) -> none
+oscilloscope_horizontal_offset(h_offset: float + [' s',' ms',' us',' ns']) -> none
 oscilloscope_horizontal_offset() -> str
 ```
 ```
@@ -244,7 +244,7 @@ This function queries or sets the horizontal delay time (position). This delay i
 
 ### oscilloscope_coupling(*coupling)
 ```python
-oscilloscope_coupling(channel: str, coupling: str ['AC','DC'])) -> none
+oscilloscope_coupling(channel: str, coupling: str ['AC','DC']) -> none
 oscilloscope_coupling(channel: ['CH1','CH2','CH3','CH4']) -> str
 ```
 ```
@@ -258,7 +258,7 @@ This function queries (if called with one argument) or sets (if called with two 
 ### oscilloscope_impedance(*impedance)
 ```python
 oscilloscope_impedance(*impedance)
-oscilloscope_impedance(channel: str, impedance: str ['1 M','50'])) -> none
+oscilloscope_impedance(channel: str, impedance: str ['1 M','50']) -> none
 oscilloscope_impedance(channel: ['CH1','CH2','CH3','CH4']) -> str
 ```
 ```
@@ -272,7 +272,7 @@ For Keysight 2000 X-Series the only available option is 1 MOhm.<br/>
 
 ### oscilloscope_trigger_mode(*mode)
 ```python
-oscilloscope_trigger_mode(mode: ['Auto','Normal'] ) -> str
+oscilloscope_trigger_mode(mode: ['Auto','Normal']) -> str
 oscilloscope_trigger_mode() -> str
 ```
 ```

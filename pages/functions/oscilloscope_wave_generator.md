@@ -48,7 +48,7 @@ The function returns device name.<br/>
 
 ### wave_gen_frequency(*frequency)
 ```python
-wave_gen_frequency(frequency: str (float + [' MHz',' kHz',' Hz',' mHz'])) -> none
+wave_gen_frequency(frequency: float + [' MHz',' kHz',' Hz',' mHz']) -> none
 wave_gen_frequency(frequency: str, channel = '1') -> none
 wave_gen_frequency() -> str
 wave_gen_frequency(channel = '1') -> str
@@ -65,7 +65,7 @@ Please, refer to the device manual for available frequency range.<br/>
 
 ### wave_gen_pulse_width(*width)
 ```python
-wave_gen_pulse_width(width: str (float + [' s',' ms',' us',' ns'])) -> none
+wave_gen_pulse_width(width: float + [' s',' ms',' us',' ns']) -> none
 wave_gen_pulse_width(width: str, channel = '1') -> none
 wave_gen_pulse_width() -> str
 wave_gen_pulse_width(channel = '1') -> str
@@ -81,7 +81,7 @@ For Rigol MSO8000 Series this function sets or queries the duty cycle of the pul
 
 ### wave_gen_function(*function)
 ```python
-wave_gen_function(function: str ) -> none
+wave_gen_function(function: str) -> none
 wave_gen_function(function: str, channel = '1') -> none
 wave_gen_function() -> str
 wave_gen_function(channel = '1') -> str
@@ -97,13 +97,13 @@ The function type for Rigol MSO8000 Series should be from the following array: [
 
 ### wave_gen_amplitude(*amplitude)
 ```python
-wave_gen_amplitude(amplitude: (float + [' V',' mV']) ) -> none
+wave_gen_amplitude(amplitude: float + [' V',' mV']) -> none
 wave_gen_amplitude(amplitude: str, channel = '1') -> none
 wave_gen_amplitude() -> str
 wave_gen_amplitude(channel = '1') -> str
 ```
 ```
-Example: wave_gen_amplitude('200 mV', channel='1') 
+Example: wave_gen_amplitude('200 mV', channel = '1') 
 sets the waveform's amplitude for the first channel to 200 mV.
 ```
 This function queries or sets the waveform amplitude. If there is no argument the function will return the current amplitude in the format 'number + ['V', 'mV']'. If there is an argument the specified amplitude will be set. If the oscilloscope has several wave generator, the number of the generator used should be specified by corresponding keyword argument 'channel': ['1', '2']. Keysight 4000 X-series and Rigol MSO8000 Series can have up to two wave generators. If there is only one wave generator channel keyword argument is absent.<br/>
@@ -113,7 +113,7 @@ Please, refer to the device manual for available amplitude range, since it depen
 
 ### wave_gen_offset(*offset)
 ```python
-wave_gen_offset(offset: (float + [' V',' mV']) ) -> none
+wave_gen_offset(offset: float + [' V',' mV']) -> none
 wave_gen_offset(offset: str, channel = '1') -> none
 wave_gen_offset() -> str
 wave_gen_offset(channel = '1') -> str
@@ -127,7 +127,7 @@ This function queries or sets the waveform offset voltage or the DC level. If th
 
 ### wave_gen_impedance(*impedance)
 ```python
-wave_gen_impedance(impedance: str ['1 M','50'] ) -> none
+wave_gen_impedance(impedance: ['1 M','50']) -> none
 wave_gen_impedance(impedance: str, channel = '1') -> none
 wave_gen_impedance() -> str
 wave_gen_impedance(channel = '1') -> str
@@ -203,10 +203,10 @@ This function clears the arbitrary waveform memory and loads it with the default
 
 ### wave_gen_arbitrary_interpolation(*mode)
 ```python
-wave_gen_arbitrary_interpolation(mode: str) -> none
-wave_gen_arbitrary_interpolation(mode: str, channel = '1') -> none
-wave_gen_arbitrary_interpolation() -> str ['On','Off']
-wave_gen_arbitrary_interpolation(channel = '1') -> str ['On','Off']
+wave_gen_arbitrary_interpolation(mode: ['On','Off']) -> none
+wave_gen_arbitrary_interpolation(mode: ['On','Off'], channel = '1') -> none
+wave_gen_arbitrary_interpolation() -> str
+wave_gen_arbitrary_interpolation(channel = '1') -> str
 ```
 ```
 Example: wave_gen_arbitrary_interpolation('On') turns on the interpolation control.

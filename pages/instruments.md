@@ -103,6 +103,8 @@ The device is available via ctypes. The original library can be found [here](htt
 	Available via corresponding oscilloscope module.
 - Wave Generator of Keysight InfiniiVision 4000 X-Series (Ethernet)
 	Available via corresponding oscilloscope module.
+- Wave Generator of Rigol MSO8000 Series (Ethernet)
+	Available via corresponding oscilloscope module.
 
 ---
 

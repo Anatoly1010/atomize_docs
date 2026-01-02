@@ -34,7 +34,7 @@ The function returns device name.<br/>
 
 ### synthetizer_frequency(*freq)
 ```python
-synthetizer_frequency(freq: str(int + [' Hz',' kHz',' MHz',' GHz'])) -> none
+synthetizer_frequency(freq: int + [' Hz',' kHz',' MHz',' GHz']) -> none
 synthetizer_frequency() -> str
 ```
 ```

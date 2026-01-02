@@ -16,8 +16,8 @@ Planar instruments only work when running [native sofware](https://planarchel.ru
 ### Functions
 - [vector_analyzer_name()](#vector_analyzer_name)<br/>
 - [vector_analyzer_source_power(*pwr, source = 1)](#vector_analyzer_source_powerpwr-source--1)<br/>
-- [vector_analyzer_center_frequency(*frq, channel = 1)](#vector_analyzer_center_frequencyfrq-channel--1)<br/>
-- [vector_analyzer_frequency_range(*frq, channel = 1)](#vector_analyzer_frequency_rangefrq-channel--1)<br/>
+- [vector_analyzer_center_frequency(*freq, channel = 1)](#vector_analyzer_center_frequencyfreq-channel--1)<br/>
+- [vector_analyzer_frequency_range(*freq, channel = 1)](#vector_analyzer_frequency_rangefreq-channel--1)<br/>
 - [vector_analyzer_points(*pnt, channel = 1)](#vector_analyzer_pointspnt-channel--1)<br/>
 - [vector_analyzer_trigger_source(*src)](#vector_analyzer_trigger_sourcesrc)<br/>
 - [vector_analyzer_send_trigger()](#vector_analyzer_send_trigger)<br/>
@@ -41,7 +41,7 @@ This function returns device name.<br/>
 
 ### vector_analyzer_source_power(*pwr, source = 1)
 ```python
-vector_analyzer_source_power(pwr: str(float + ' dBm'), source: int) -> none
+vector_analyzer_source_power(pwr: float + ' dBm', source: int) -> none
 vector_analyzer_source_power(source: int) -> float
 ```
 ```
@@ -51,9 +51,9 @@ This function queries or sets the power of the specified source. If there is no 
 
 ---
 
-### vector_analyzer_center_frequency(*frq, channel = 1)
+### vector_analyzer_center_frequency(*freq, channel = 1)
 ```python
-vector_analyzer_center_frequency(frq: str(float + [' Hz',' kHz',' MHz',' GHz']), channel: int) -> none
+vector_analyzer_center_frequency(freq: float + [' Hz',' kHz',' MHz',' GHz'], channel: int) -> none
 vector_analyzer_center_frequency(channel: int) -> str
 ```
 ```
@@ -63,9 +63,9 @@ This function queries or sets the center frequency for measurement. If there is 
 
 ---
 
-### vector_analyzer_frequency_range(*frq, channel = 1)
+### vector_analyzer_frequency_range(*freq, channel = 1)
 ```python
-vector_analyzer_frequency_range(frq: str(float + [' Hz',' kHz',' MHz',' GHz']), channel: int) -> none
+vector_analyzer_frequency_range(freq: float + [' Hz',' kHz',' MHz',' GHz'], channel: int) -> none
 vector_analyzer_frequency_range(channel: int) -> str
 ```
 ```
@@ -112,7 +112,7 @@ This function can only be called without arguments and is used to send a single 
 
 ### vector_analyzer_intermediate_freqiency_bandwith(*freq, channel = 1)
 ```python
-vector_analyzer_intermediate_freqiency_bandwith(freq: str(float + [' Hz',' kHz',' MHz',' GHz']), 
+vector_analyzer_intermediate_freqiency_bandwith(freq: float + [' Hz',' kHz',' MHz',' GHz'], 
 				    channel: int) -> none
 vector_analyzer_intermediate_freqiency_bandwith(channel: int) -> str
 ```

@@ -143,7 +143,7 @@ The argument is the percentage of the heater power limit that can be set via [tc
 
 ### tc_heater_power_limit(power)
 ```python
-tc_heater_power_limit(power: int 0-40 V) -> none
+tc_heater_power_limit(power: int) -> none
 ```
 ```
 Example: tc_heater_power_limit(10) sets the heater power to 10 V.
@@ -185,7 +185,7 @@ For Termodat-11M6, 13KX3 this function sets or queries the state of specified se
 
 ### tc_sensor(channel, *state)
 ```python
-tc_sensor(channel: str, state: str ['On','Off']) -> none
+tc_sensor(channel: str, state: ['On','Off']) -> none
 tc_sensor(channel: str) -> str
 ```
 ```

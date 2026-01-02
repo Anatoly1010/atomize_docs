@@ -38,21 +38,19 @@ parent: Documentation
 ```python
 lock_in_name() -> str
 ```
-
-The function returns device name.
+This function returns device name.<br/>
 
 ---
 
 ### lock_in_ref_frequency(*frequency)
 ```python
-lock_in_ref_frequency(frequency: float) -> none
-lock_in_ref_frequency() -> float
+lock_in_ref_frequency(frequency: float + [' MHz',' kHz',' Hz',' mHz']) -> none
+lock_in_ref_frequency() -> str
 ```
 ```
-Example: lock_in_ref_frequency(100000) sets the reference frequency to 100 kHz.
+Example: lock_in_ref_frequency('100 kHz') sets the reference frequency to 100 kHz.
 ```
-
-The function for querying or setting the reference frequency in Hz. If called with no argument the current reference frequency in Hz is returned. If called with an argument the reference frequency is set. Frequency range is 4 mHz to 102 kHz (SR-810, 830, 850); 1 mHz - 500 kHz (SR-860); 1 mHz - 4 MHz (SR-865a); 25 kHz - 200 MHz (SR-844, 1F mode); 50 kHz - 200 MHz (SR-844, 2F mode). The details about 2F mode are given in the [lock_in_harmonic()](#lock_in_harmonicharmonic) function.<br/>
+This function sets or queries the reference frequency. If called with no argument the current reference frequency is returned in the format 'number + [' MHz', ' kHz', ' Hz', ' mHz']'. If called with an argument the reference frequency is set. Frequency range is 4 mHz to 102 kHz (SR-810, 830, 850); 1 mHz - 500 kHz (SR-860); 1 mHz - 4 MHz (SR-865a); 25 kHz - 200 MHz (SR-844, 1F mode); 50 kHz - 200 MHz (SR-844, 2F mode). The details about 2F mode are given in the [lock_in_harmonic()](#lock_in_harmonicharmonic) function.<br/>
 For SR-860, 865a the query command, [lock_in_ref_frequency()](#lock_in_ref_frequencyfrequency), returns the internal reference frequency whenever the reference mode is either Internal, Dual, or Chop. The query returns the external frequency when operating in External mode.<br/>
 
 ---
@@ -60,12 +58,12 @@ For SR-860, 865a the query command, [lock_in_ref_frequency()](#lock_in_ref_frequ
 ### lock_in_phase(*degree)
 ```python
 lock_in_phase(degree: float) -> none
-lock_in_phase() -> float
+lock_in_phase() -> str
 ```
 ```
 Example: lock_in_phase(100) sets the phase to 100 degrees.
 ```
-The function for querying or setting the phase of the lock-in in degrees. If there is no argument the function will return the current phase. If called with an argument the specified phase will be set. The phase may be programmed from -360.000 to 719.999 (SR-850), from -360.000 to 729.999 (SR-810, 830), from -360000 to 360000 (SR-860, 865a), from -360 to 360 (SR-844) and will be wrapped around at ±180°.<br/>
+This function sets or queries the phase of the lock-in in degrees. If there is no argument the function will return the current phase in the format 'number + deg'. If called with an argument the specified phase will be set. The phase may be programmed from -360.000 to 719.999 (SR-850), from -360.000 to 729.999 (SR-810, 830), from -360000 to 360000 (SR-860, 865a), from -360 to 360 (SR-844) and will be wrapped around at ±180°.<br/>
 
 ---
 
@@ -83,13 +81,13 @@ time. This function is only available for SR-844, SR-860, SR-865.<br/>
 
 ### lock_in_time_constant(*timeconstant)
 ```python
-lock_in_time_constant(timeconstant: str) -> none
+lock_in_time_constant(timeconstant: int + [' s',' ms', ' us', ' ns']) -> none
 lock_in_time_constant() -> str
 ```
 ```
 Example: lock_in_time_constant('100 ms') sets the time constant to 100 ms.
 ```
-The function for querying or setting the time constant of the lock-in in ms. If there is no argument the function will return the current time constant. If there is an argument the specified time constant will be set.<br/>
+This function sets or queries the time constant of the lock-in in ms. If there is no argument the function will return the current time constant. If there is an argument the specified time constant will be set.<br/>
 Currently for SR-810, 830, 850 the specified time constant should be from the array:<br/>
 [10 us, 30 us, 100 us, 300 us, 1 ms, 3 ms, 10 ms, 30 ms, 100 ms, 300 ms, 1 s, 3 s, 10 s, 30 s, 100 s, 300 s, 1 ks, 10 ks, 30 ks].<br/>
 For SR-860, 865a 1 us and 3 us are also available.<br/>
@@ -101,13 +99,13 @@ If there is no time constant setting fitting the argument the nearest available 
 
 ### lock_in_ref_amplitude(*amplitude)
 ```python
-lock_in_ref_amplitude(amplitude: float) -> none
-lock_in_ref_amplitude() -> float
+lock_in_ref_amplitude(amplitude: float + [' V',' mV']) -> none
+lock_in_ref_amplitude() -> str
 ```
 ```
 Example: lock_in_ref_amplitude(0.150) sets the level of the modulation frequency to 150 mV.
 ```
-This function queries or sets the level of the modulation frequency in V. If there is no argument the function will return the current level. If there is an argument the specified level will be set. For SR-810, 830, 850 the allowed levels are between 4 mV and 5 V. For SR-860, 865a the allowed levels are between 1 nV and 2 V. If the argument is not within this range an error message is printed and the level of 4 mV will be set.<br/>
+This function queries or sets the level of the modulation frequency. If there is no argument the function will return the current level in the format 'number + [' V', ' mV']'. If there is an argument the specified level will be set. For SR-810, 830, 850 the allowed levels are between 4 mV and 5 V. For SR-860, 865a the allowed levels are between 1 nV and 2 V. If the argument is not within this range an error message is printed and the level of 4 mV will be set.<br/>
 This function is not available for SR-844.<br/>
 
 ---
@@ -122,8 +120,7 @@ lock_in_get_data() -> float
 ```
 Example: lock_in_get_data(1, 2, 3) returns 3 float values for X, Y, and R signals in Volts.
 ```
-This function can be used to query measured values from the lock-in amplifier.
-If no argument is specified the 'X' signal is returned. If a parameter is passed to the function the value at the corresponding channel is returned. Possible channel numbers and their meaning are the following:<br/>
+This function can be used to query measured values from the lock-in amplifier. If no argument is specified the 'X' signal is returned. If a parameter is passed to the function the value at the corresponding channel is returned. Possible channel numbers and their meaning are the following:<br/>
 SR-810, 830, 850, 860, 865a:<br/>
 '1' - X signal in Volts; '2' - Y signal in Volts; '3' - R signal in Volts; '4' - Phase 'theta' of data in degrees; ['1', '2'] - X and Y signals in Volts; ['1', '2', '3'] - X, Y, and R signals in Volts.<br/>
 
@@ -131,13 +128,13 @@ SR-810, 830, 850, 860, 865a:<br/>
 
 ### lock_in_sensitivity(*sensitivity)
 ```python
-lock_in_sensitivity(sensitivity: str) -> none
+lock_in_sensitivity(sensitivity: int + [' nV',' uV',' mV',' V']) -> none
 lock_in_sensitivity() -> str
 ```
 ```
 Example: lock_in_sensitivity('10 uV') sets the sensitivity to 10 uV.
 ```
-The function queries or sets the sensitivity of the lock-in. If there is no argument the function will return the current sensitivity as a string. If there is an argument the specified sensitivity will be set.<br/>
+This function queries or sets the sensitivity of the lock-in. If there is no argument the function will return the current sensitivity as a string. If there is an argument the specified sensitivity will be set.<br/>
 Currently for SR-810, 830, 850 the specified sensitivity should be from the array:<br/>
 [2 nV, 5 nV, 10 nV, 20 nV, 50 nV, 100 nV, 200 nV, 500 nV, 1 uV, 2 uV, 5 uV, 10 uV, 20 uV, 50 uV, 100 uV, 200 uV, 500 uV, 1 mV, 2 mV, 5 mV, 10 mV, 20 mV, 50 mV, 100 mV, 200 mV, 500 mV, 1 V].<br/>
 For SR-860, 865a 1 nV is also available.<br/>
@@ -160,8 +157,8 @@ This function automatically sets the sensitivity of the instrument. The measured
 
 ### lock_in_ref_mode(*mode)
 ```python
-lock_in_ref_mode(mode: str) -> none
-lock_in_ref_mode() -> str ['Internal', 'External', 'Dual', 'Chop']
+lock_in_ref_mode(mode: ['Internal','External','Dual','Chop']) -> none
+lock_in_ref_mode() -> str
 ```
 ```
 Example: lock_in_ref_mode('External') sets the device to external modulation mode.
@@ -174,8 +171,8 @@ SR-860, 865a: ['Internal', 'External', 'Dual', 'Chop'].<br/>
 
 ### lock_in_ref_slope(*mode)
 ```python
-lock_in_ref_slope(mode: str) -> none
-lock_in_ref_slope() -> str ['Sine', 'PosTTL', 'NegTTL']
+lock_in_ref_slope(mode: ['Sine','PosTTL','NegTTL']) -> none
+lock_in_ref_slope() -> str
 ```
 ```
 Example: lock_in_ref_slope('PosTTL') sets the reference trigger to TTL rising edge.
@@ -188,8 +185,8 @@ This function is not available for SR-844.<br/>
 
 ### lock_in_sync_filter(*mode)
 ```python
-lock_in_sync_filter(mode: str) -> none
-lock_in_sync_filter() -> str ['Off', 'On']
+lock_in_sync_filter(mode: ['Off','On']) -> none
+lock_in_sync_filter() -> str
 ```
 ```
 Example: lock_in_sync_filter('On') turns on synchronous filtering.
@@ -202,8 +199,8 @@ This function is not available for SR-844.<br/>
 
 ### lock_in_lp_filter(*mode)
 ```python
-lock_in_lp_filter(mode: str) -> none
-lock_in_lp_filter() -> str ['No', '6 dB', '12 dB', '18 dB', '24 dB']
+lock_in_lp_filter(mode: ['No','6 dB','12 dB','18 dB','24 dB']) -> none
+lock_in_lp_filter() -> str
 ```
 ```
 Example: lock_in_lp_filter('12 dB') sets the low pass filter slope to 12 dB/oct.
@@ -236,7 +233,7 @@ lock_in_command(command: str) -> none
 Example: lock_in_command('OFSL 0'). This example sets the low pass filter slope.
 The parameter equals to 0 selects 6 dB/oct.
 ```
-The function for sending an arbitrary command from a programming guide to the device in a string format. No output is expected.<br/>
+This function sends an arbitrary command from a programming guide to the device in a string format. No output is expected.<br/>
 
 ---
 
@@ -247,4 +244,4 @@ lock_in_query(command: str) -> str
 ```
 Example: lock_in_command('OFSL?'). This example queries the low pass filter slope.
 ```
-The function for sending an arbitrary command from a programming guide to the device in a string format. An output in a string format is expected.<br/>
+This function sends an arbitrary command from a programming guide to the device in a string format. An output in a string format is expected.<br/>
