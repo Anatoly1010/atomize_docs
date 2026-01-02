@@ -28,7 +28,7 @@ Available via corresponding oscilloscope module.
 - [wave_gen_impedance(*impedance)](#wave_gen_impedanceimpedance)<br/>
 - [wave_gen_start()](#wave_gen_start)<br/>
 - [wave_gen_stop()](#wave_gen_stop)<br/>
-- [wave_gen_phase(*ph)](#wave_gen_phaseph)<br/>
+- [wave_gen_phase(*phase)](#wave_gen_phasephase)<br/>
 - [wave_gen_arbitrary_function_data(p_list)](#wave_gen_arbitrary_function_datap_list)<br/>
 - [wave_gen_arbitrary_clear()](#wave_gen_arbitrary_clear)<br/>
 - [wave_gen_arbitrary_interpolation(*mode)](#wave_gen_arbitrary_interpolationmode)<br/>
@@ -187,6 +187,7 @@ The setting of an arbitrary function can be done as follow:<br/>
 - [wave_gen_frequency()](#wave_gen_frequencyfrequency) gives the repetition rate of an arbitrary function.
 - All available time interval (depends on the used repetition rate) is splitted by amount of points you indicate as an argument. It gives time per point. For instance, suppose the frequency is 10 Hz and we use 10 points: wave_gen_arbitrary_function_data([-1, -1, -1, 1, 1, 1, 1, -1, -1, -1]). It means the time step for one point will be (100 ms) / (10 points) = 10 ms.
 - If you have the offset equals to 2 V and the amplitude 4 V as a result of wave_gen_arbitrary_function_data([-1, -1, -1, 1, 1, 1, 1, -1, -1, -1]) for 10 Hz frequency one will have a pulse 40 ms long with the low level equals to 0 V and the high level equals to 4 V.<br/>
+<br/>
 Function is not available for Keysight 2000 X-series and Rigol MSO8000 Series oscilloscopes. If the oscilloscope has several wave generator, the number of the generator used should be specified by corresponding keyword argument 'channel': ['1', '2']. Keysight 4000 X-series can have up to two wave generators. If there is only one wave generator channel keyword argument is absent.<br/>
 
 ---
@@ -230,7 +231,7 @@ This function returns the number of points used by the current arbitrary wavefor
 ```python
 wave_gen_command(command: str) -> none
 ```
-This function for sending an arbitrary command from a programming guide to the device in a string format. No output is expected.<br/>
+This function sends an arbitrary command from a programming guide to the device in a string format. No output is expected.<br/>
 
 ---
 
@@ -238,4 +239,4 @@ This function for sending an arbitrary command from a programming guide to the d
 ```python
 wave_gen_query(command: str) -> str
 ```
-This function for sending an arbitrary command from a programming guide to the device in a string format. An output in a string format is expected.<br/>
+This function sends an arbitrary command from a programming guide to the device in a string format. An output in a string format is expected.<br/>

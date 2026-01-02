@@ -324,7 +324,7 @@ oscilloscope_command(command: str) -> none
 Example: oscilloscope_command(':TRIGger:FORCe'). This command causes an acquisition
 to be captured even though the trigger condition has not been met.
 ```
-This function for sending an arbitrary command from a programming guide to the device in a string format. No output is expected.<br/>
+This function sends an arbitrary command from a programming guide to the device in a string format. No output is expected.<br/>
 
 ---
 
@@ -336,4 +336,4 @@ oscilloscope_query(command: str) -> str
 Example: oscilloscope_query(':MEASure:FREQuency?'). This command queries an measurement
 and outputs the frequency of the cycle on the screen closest to the trigger reference.
 ```
-This function for sending an arbitrary command from a programming guide to the device in a string format. An output in a string format is expected.<br/>
+This function sends an arbitrary command from a programming guide to the device in a string format. An output in a string format is expected.<br/>

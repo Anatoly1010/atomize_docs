@@ -1,6 +1,6 @@
 ---
 title: Vector Network Analyzer
-nav_order: 36
+nav_order: 38
 layout: page
 permlink: /functions/vector_network_analyzer/
 parent: Documentation
@@ -192,4 +192,4 @@ vector_analyzer_query(command: str) -> str
 ```
 Example: vector_analyzer_query('SERV:CHAN:ACT?') returns the number of the active channel.
 ```
-The function sends an arbitrary command from a programming guide to the device in a string format. An output in a string format is expected.<br/>
+This function sends an arbitrary command from a programming guide to the device in a string format. An output in a string format is expected.<br/>
