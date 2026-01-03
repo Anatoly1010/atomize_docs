@@ -10,6 +10,8 @@ permlink: /protocol_settings/
 - [RS-485](#rs-485)
 - [GPIB](#gpib)
 
+It is possible to list in the terminal available instruments connected to your computer using pyvisa. This feature is available in the Output dock of the Main window by a right-click.
+
 ---
 
 ## VXI-11
@@ -46,7 +48,7 @@ Typical rs-232 settings are:
     Write termination = n
 ```
 
-Generally, these settings are device specific. Sometimes the user has a possibility to change them on the device, sometimes they are fixed. In both cases correct settings should be specified in the device configuration file. Symbol 'r' in the configuration file means '\r' (carrige return). Symbol 'n' means '\n' (line feed). Their combination should be specified as 'rn' or 'nr' when you use it in the configuration file.
+Generally, these settings are device specific. Sometimes the user has a possibility to change them on the device, sometimes they are fixed. In both cases correct settings should be specified in the device configuration file. Symbol 'r' in the configuration file means '\r' (carrige return). Symbol 'n' means '\n' (line feed). Their combination should be specified as 'rn' or 'nr' when you use it in [the configuration file](/atomize_docs/pages/usage). One can use the special feature in the Output dock of the Main tab to open the local directory with the device configuration files.
 
 Additionally, there are still two types of devices: DTE and DCE. DTE devices typically (but not always!) have male type connectors, while DCE have female connectors. In order to connect DTE device with computer (also DTE device), one needs to use a null-modem cable. For DCE device the standard cable can be used.
 
@@ -68,7 +70,7 @@ Generally, these settings are device specific.
 ---
 
 ## GPIB
-First of all you need to install gpib library on your computer. For linux one can use [linux-gpib](https://linux-gpib.sourceforge.io/). After successfully installing the gpib library, you must specify the board address (usually 0) and the pad of your device in the config file:
+First of all you need to install gpib library on your computer. For linux one can use [linux-gpib](https://linux-gpib.sourceforge.io/). After successfully installing the gpib library, you must specify the board address (usually 0) and the pad of your device in [the configuration file:](/atomize_docs/pages/usage)
 ```yml
     Board = 0
     Address = 12

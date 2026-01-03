@@ -105,30 +105,30 @@ pulser_acquisition_cycle(data1, data2, acq_cycle = []) -> numpy.array, numpy.arr
 ```
 ```yml
 data1, data2 = 1D or 2D numpy arrays;
-acq_cycle = array of mathematical operations, i.e. ['+', '-', '+i', '-i'];
+acq_cycle = array of mathematical operations, i.e. ['+x', '-x', '+y', '-y'];
 ```                                                                                                                                                                                                            
 ```
-Example: pulser_acquisition_cycle(np.array([1, 0]), np.array([0, 1]), acq_cycle = ['+', '-'])
+Example: pulser_acquisition_cycle(np.array([1, 0]), np.array([0, 1]), acq_cycle = ['+x', '-x'])
 performes given mathematical operations on the arrays.
 ```
 This function can be used to shorten the syntax for acquisition in the case of phase cycling. The arguments are (i) two numpy arrays from a quadrature detector, (ii) array of mathematical operations to perform. Data arrays can be both 2D and 1D, representing, respectively, the case of raw oscillograms or integrated data. The length of acq_cycle array and the 1D arrays or the amount of the individual oscillograms in the 2D array should be equal. The data arrays will be treated inside the function as a complex number:
 ```python
 answer = np.zeros( data1.shape ) + 1j*np.zeros( data2.shape )
 ```
-The available mathematical operations are ['+', '-', '+i', '-i']. 
-The sign '+' at the index J of the acq_cycle array means that the corresponding values from the data arrays will be added with a factor '+1' to the resulting array:
+The available mathematical operations are ['+x', '-x', '+y', '-x']. 
+The symbol '+x' at the index J of the acq_cycle array means that the corresponding values from the data arrays will be added with a factor '+1' to the resulting array:
 ```python
 answer = answer + data1[J] + 1j*data2[J]
 ```
-The sign '-' at the index J of the acq_cycle means that the corresponding values from the data arrays will be added with a factor '-1' to the resulting array:
+The symbol '-x' at the index J of the acq_cycle means that the corresponding values from the data arrays will be added with a factor '-1' to the resulting array:
 ```python
 answer = answer - data1[J] - 1j*data2[J]
 ```
-The sign '+i' at the index J of the acq_cycle means that the corresponding values from the data arrays will be added with a factor '+1j' to the resulting array:
+The symbol '+y' at the index J of the acq_cycle means that the corresponding values from the data arrays will be added with a factor '+1j' to the resulting array:
 ```python
 answer = answer + 1j*data1[J] - data2[J]
 ```
-The sign '-i' at the index J of the acq_cycle means that the corresponding values from the data arrays will be added with a factor '-1j' to the resulting array:
+The symbol '-y' at the index J of the acq_cycle means that the corresponding values from the data arrays will be added with a factor '-1j' to the resulting array:
 ```python
 answer = answer - 1j*data1[J] + data2[J]
 ```

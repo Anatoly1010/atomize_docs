@@ -7,7 +7,7 @@ permlink: /usage/
 
 ### 1. Installation
 <br/>
-Install from PyPi:
+Atomize can be installed from PyPi:
 
 ```bash
 pip3 install atomize-py
@@ -59,7 +59,7 @@ message_id =
 <br/>
 To communicate with a device one should:<br/>
 1) Modify the config file located in "DEVICE CONFIG DIRECTORY" of the desired device accordingly. Choose the desired protocol (rs-232, gpib, ethernet, etc.) and correct the settings of the specified protocol in accordance with device settings. A little bit more detailed information about protocol settings can be found [here.](/atomize_docs/pages/protocol_settings)<br/>
-2) Import the module or modules in your script and initialize the appropriate class. A class always has the same name as the module file. Initialization connect the desired device, if the settings are correct.
+2) Import the module or modules in your script and initialize the appropriate class. A class always has the same name as the module file. Initialization connect the desired device, if the settings are correct. For more detailed information, see [documentation.](/atomize_docs/functions)
 
 ```python
 # importing of the instruments
@@ -96,6 +96,29 @@ Python is used to write an experimental script. Examples can be found in the "SC
 
 ### 5. Additional Interactivity
 <br/>
-The Main tab has the following additional features in the Output dock: (i) clear all text from the dock; (ii) open the local directory with the device configuration files. These features are available from the menu that can be opened by a right-click in the Output dock area.<br>
-The Liveplot tab the following additional features in the Current Plots dock: (i) stop the execution of the experimental script; (ii) delete a selected dock with graphs; (iii) open 1d data in csv multi-column format and plot it in a new graph dock; (iv) open 2d data in csv format and plot it in a new graph dock. These features are available from the menu that can be opened by a right-click in the Current Plots dock area.<br>
-The graph docks have the following additional features: (i) delete the selected curve from the graph dock; (ii) vertically shift the selected curve from the graph dock; (iii) open 1d data in csv multi-column format and plot it in this graph dock; (iv) save 2d data from the displayed contour plot. These features are available from the Plot Options menu of pyqtgraph that can be opened by a right-click in the graph dock area.<br>
+The Main tab has the following additional features in the Output dock:
+- clear all text from the dock; 
+- open the local directory with the device configuration files;
+- print in the terminal all available instruments connected to your computer using pyvisa.
+
+These features are available from the menu that can be opened by a right-click in the Output dock area.<br>
+
+---
+
+The Liveplot tab the following additional features in the Current Plots dock:
+- stop the execution of the experimental script; 
+- delete a selected dock with graphs;
+- open 1d data in csv multi-column format and plot it in a new graph dock; 
+- open 2d data in csv format and plot it in a new graph dock. 
+
+These features are available from the menu that can be opened by a right-click in the Current Plots dock area.<br>
+
+---
+
+The graph docks have the following additional features: 
+- delete the selected curve from the graph dock;
+- vertically shift the selected curve from the graph dock; 
+- open 1d data in csv multi-column format and plot it in this graph dock; 
+- save 2d data from the displayed contour plot. 
+
+These features are available from the Plot Options menu of pyqtgraph that can be opened by a right-click in the graph dock area.<br>
