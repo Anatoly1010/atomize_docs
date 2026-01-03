@@ -58,8 +58,8 @@ message_id =
 ### 3. Using Instrument Modules
 <br/>
 To communicate with a device one should:<br/>
-1) Modify the config file located in "DEVICE CONFIG DIRECTORY" of the desired device accordingly. Choose the desired protocol (rs-232, gpib, ethernet, etc.) and correct the settings of the specified protocol in accordance with device settings. A little bit more detailed information about protocol settings can be found [here.](/atomize_docs/pages/protocol_settings)<br/>
-2) Import the module or modules in your script and initialize the appropriate class. A class always has the same name as the module file. Initialization connect the desired device, if the settings are correct. For more detailed information, see [documentation.](/atomize_docs/functions)
+- modify the config file located in "DEVICE CONFIG DIRECTORY" of the desired device accordingly. Choose the desired protocol (rs-232, gpib, ethernet, etc.) and correct the settings of the specified protocol in accordance with device settings. A little bit more detailed information about protocol settings can be found [here.](/atomize_docs/pages/protocol_settings)
+- import the module or modules in your script and initialize the appropriate class. A class always has the same name as the module file. Initialization connect the desired device, if the settings are correct. For more detailed information, see [documentation.](/atomize_docs/functions)
 
 ```python
 # importing of the instruments
