@@ -425,11 +425,13 @@ def lock_in_ref_amplitude(self, *amplitude):
         if len(amplitude) == 1:
             ampl = float(amplitude[0])
             assert(ampl <= self.ref_ampl_max and ampl >= self.ref_ampl_min), 
-                f"Incorrect frequency. The available range is from {self.ref_ampl_min} to {self.ref_ampl_max}"
+            f"Invalid frequency. The available range is from {self.ref_ampl_min} to {self.ref_ampl_max}"
 
         elif len(amplitude) == 0:
             answer = self.test_amplitude
             return answer
+    
+    # ... #
 ```
 
 The test_flag parameter is used to indicate the start of the test and it is usually defined in the inizialization method:
@@ -463,7 +465,7 @@ It is recommended to write detailed assertion error messages, which can include 
 
 # argument types; string with SI unit suffix
 # self.timeconstant_dict = {'10 us': 0, '30 us': 1, '100 us': 2, '300 us': 3, ... }
-assert( val_key in self.timeconstant_dict ), "Incorrect argument; time_constant: int + [' us', ' ms', ' s', ' ks']"
+assert(val_key in self.timeconstant_dict), "Incorrect argument; tc: int + [' us', ' ms', ' s', ' ks']"
 
 # argument limits with pyqtgraph helper function
 # self.ref_ampl_min = 0.004
@@ -481,6 +483,6 @@ assert( md in self.ref_mode_dict ), f"Incorrect mode; mode: {list(self.ref_mode_
 
 # argument types; predefined options
 #self.channel_dict = {'CH1': 'CHAN1', 'CH2': 'CHAN2', 'CH3': 'CHAN3', 'CH4': 'CHAN4'}
-assert(ch in self.channel_dict), f'Invalid trigger channel; channel: {list(self.trigger_channel_dict.keys())}'
+assert(ch in self.channel_dict), f'Invalid channel; channel: {list(self.trigger_channel_dict.keys())}'
 
 ```
