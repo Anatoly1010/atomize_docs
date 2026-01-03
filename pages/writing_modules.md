@@ -18,6 +18,7 @@ Please, read these rules carefully and try to follow them when writing a new mod
 - [Dimensions](#dimensions)<br/>
 - [Pyqtgraph Dimensions](#pyqtgraph-dimensions)<br>
 - [Test Run](#test-run)<br/>
+- [Error Messages](#error-messages)<br>
 
 ---
 
@@ -394,20 +395,22 @@ The execution flow of experimental scripts can be illustrated as follows:
 <br/>
 After an experimental script is written and launched in Atomize, a test run is performed, in which there is no access to the devices used. Test runs only check the correctness of device settings, experiment logic, and syntax. If there are no errors in the script, after the test run, the same script is immediately executed in the standard mode with full access to the instruments used.<br/>
 In order to be able to run a test, one should specify inside a module appropriate values for all the device parameters (since the devices are not accessed) and describe what the function should do during the test run. Typically, it is just different assertions and checkings:
+
 ```python
 # Stanford Research Systems SR-830 module
+
 # a part of the __init__ method:
 # minimum amplitude of the sine output
 self.ref_ampl_min = 0.004
 # maximum amplitude of the sine output
 self.ref_ampl_max = 5
   
-# ...
+# ... #
  
 # special test value for the test run
 self.test_amplitude = 0.3
 
-# ...
+# ... #
 
 # Stanford Research Systems SR-830 module
 # test run part of the lock_in_ref_amplitude() method:
@@ -421,17 +424,18 @@ def lock_in_ref_amplitude(self, *amplitude):
     elif self.test_flag == 'test':
         if len(amplitude) == 1:
             ampl = float(amplitude[0])
-            assert(ampl <= self.ref_ampl_max and 
-                   ampl >= self.ref_ampl_min), 
-                   "Incorrect amplitude is reached"
+            assert(ampl <= self.ref_ampl_max and ampl >= self.ref_ampl_min), 
+                f"Incorrect frequency. The available range is from {self.ref_ampl_min} to {self.ref_ampl_max}"
 
         elif len(amplitude) == 0:
             answer = self.test_amplitude
             return answer
 ```
+
 The test_flag parameter is used to indicate the start of the test and it is usually defined in the inizialization method:
 ```python
 # Stanford Research Systems SR-830 module
+
 import sys
 
 # ... #
@@ -447,5 +451,36 @@ def __init__(self):
         self.test_flag = 'None'
     
     # ... #
+
+```
+
+## Error messages
+
+It is recommended to write detailed assertion error messages, which can include argument types and argument limits. Below are several examples from various device modules:
+
+```python
+# Stanford Research Systems SR-830 module
+
+# argument types; string with SI unit suffix
+# self.timeconstant_dict = {'10 us': 0, '30 us': 1, '100 us': 2, '300 us': 3, ... }
+assert( val_key in self.timeconstant_dict ), "Incorrect argument; time_constant: int + [' us', ' ms', ' s', ' ks']"
+
+# argument limits with pyqtgraph helper function
+# self.ref_ampl_min = 0.004
+# self.ref_ampl_max = 5
+min_a = pg.siFormat( self.ref_ampl_min, suffix = 'V', precision = 3, allowUnicode = False)
+max_a = pg.siFormat( self.ref_ampl_max, suffix = 'V', precision = 3, allowUnicode = False)
+assert(ampl <= self.ref_ampl_max and ampl >= self.ref_ampl_min), \
+            f"Incorrect amplitude. The available range is from {min_a} to {max_a}"
+
+# argument types; predefined options
+# self.ref_mode_dict = {'Internal': 1, 'External': 0}
+assert( md in self.ref_mode_dict ), f"Incorrect mode; mode: {list(self.ref_mode_dict.keys())}"
+
+# Keysight_3000_Xseries module
+
+# argument types; predefined options
+#self.channel_dict = {'CH1': 'CHAN1', 'CH2': 'CHAN2', 'CH3': 'CHAN3', 'CH4': 'CHAN4'}
+assert(ch in self.channel_dict), f'Invalid trigger channel; channel: {list(self.trigger_channel_dict.keys())}'
 
 ```

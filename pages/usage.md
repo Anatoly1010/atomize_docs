@@ -92,4 +92,10 @@ general.plot_1d('1D Plot', data[0], data[1], label = 'test_data', yname = 'Y axi
 
 ### 4. Experimental Scripts
 <br/>
-Python is used to write an experimental script. Examples (with dummy data) can be found in the "SCRIPTS DIRECTORY".
+Python is used to write an experimental script. Examples can be found in the "SCRIPTS DIRECTORY".
+
+### 5. Additional Interactivity
+<br/>
+The Main tab has the following additional features in the Output dock: (i) clear all text from the dock; (ii) open the local directory with the device configuration files. These features are available from the menu that can be opened by a right-click in the Output dock area.<br>
+The Liveplot tab the following additional features in the Current Plots dock: (i) stop the execution of the experimental script; (ii) delete a selected dock with graphs; (iii) open 1d data in csv multi-column format and plot it in a new graph dock; (iv) open 2d data in csv format and plot it in a new graph dock. These features are available from the menu that can be opened by a right-click in the Current Plots dock area.<br>
+The graph docks have the following additional features: (i) delete the selected curve from the graph dock; (ii) vertically shift the selected curve from the graph dock; (iii) open 1d data in csv multi-column format and plot it in this graph dock; (iv) save 2d data from the displayed contour plot. These features are available from the Plot Options menu of pyqtgraph that can be opened by a right-click in the graph dock area.<br>
