@@ -1,5 +1,5 @@
 ---
-title: Vector Network Analyzer
+title: Vector Network Analyzers
 nav_order: 38
 layout: page
 permlink: /functions/vector_network_analyzer/

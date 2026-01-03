@@ -28,6 +28,8 @@ The original [library](https://spectrum-instrumentation.com/en/m4i4450-x8) was w
 The original [library](https://spectrum-instrumentation.com/en/m4i4450-x8) was written by Spectrum.
 - [Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda) as ADC; Tested 03/2025
 The device is available via ctypes. The original library can be found [here](https://github.com/Anatoly1010/Atomize_ITC/tree/master/libs).
+- L card L-502 as ADC; Tested 03/2022
+The L card device is available via ctypes. The original library can be found [here](https://www.lcard.ru/products/boards/l-502?qt-ltab=6#qt-ltab).
 
 ---
 

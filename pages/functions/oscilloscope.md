@@ -31,6 +31,7 @@ parent: Documentation
 - [oscilloscope_stop()](#oscilloscope_stop)<br/>
 - [oscilloscope_run()](#oscilloscope_run)<br/>
 - [oscilloscope_get_curve(channel)](#oscilloscope_get_curvechannel)<br/>
+- [oscilloscope_get_curve(channel, integral = True)](#oscilloscope_get_curvechannel-integral--true)<br/>
 - [oscilloscope_area(channel)](#oscilloscope_areachannel)<br/>
 - [oscilloscope_sensitivity(*channel)](#oscilloscope_sensitivitychannel)<br/>
 - [oscilloscope_offset(*channel)](#oscilloscope_offsetchannel)<br/>
@@ -40,6 +41,8 @@ parent: Documentation
 - [oscilloscope_trigger_mode(*mode)](#oscilloscope_trigger_modemode)<br/>
 - [oscilloscope_trigger_channel(*channel)](#oscilloscope_trigger_channelchannel)<br/>
 - [oscilloscope_trigger_low_level(*level)](#oscilloscope_trigger_low_levellevel)<br/>
+- [oscilloscope_window()](#oscilloscope_window)<br/>
+- [oscilloscope_read_settings()](#oscilloscope_read_settings)<br/>
 - [oscilloscope_command(command)](#oscilloscope_commandcommand)<br/>
 - [oscilloscope_query(command)](#oscilloscope_querycommand)<br/>
 
@@ -191,6 +194,19 @@ This function returns a curve (x (in s) and y (in V) axis independently) from sp
 
 ---
 
+### oscilloscope_get_curve(channel, integral = True)
+```python
+oscilloscope_get_curve(channel: ['CH1','CH2','CH3','CH4'], integral = [True, False]) -> float
+```
+```
+Example: oscilloscope_get_curve('CH1', integral = True) 
+runs acquisition and returns the integrated data from the channel 1.
+```
+This function runs acquisition and returns the data, integrated over a window in the oscillogram for the indicated channel. The window can be indicated by the [oscilloscope_window](#oscilloscope_window) function. The integral is returned in volt-seconds. The default option is False.<br>
+This function is only available for Keysight 2000, 3000, 4000 X-Series and Rigol MSO8000 Series oscilloscopes.<br>
+
+---
+
 ### oscilloscope_area(channel)
 ```python
 oscilloscope_area(channel: ['CH1','CH2','CH3','CH4']) -> float
@@ -198,7 +214,7 @@ oscilloscope_area(channel: ['CH1','CH2','CH3','CH4']) -> float
 ```
 Example: oscilloscope_area('CH2') returs the result of an area measurement for channel 2.
 ```
-This function returns a value of area (in volt-seconds) between the waveform and the ground level for specified channel of the oscilloscope. It expects one argument, namely the channel for which the area should be measured. This function is available for Keysight and Rigol oscilloscopes.<br/>
+This function returns a value of area in volt-seconds between the waveform and the ground level for specified channel of the oscilloscope. It expects one argument, namely the channel for which the area should be measured. This function is available for Keysight 2000, 3000, 4000 X-Series and Rigol MSO8000 Series oscilloscopes.<br/>
 
 ---
 
@@ -313,6 +329,30 @@ oscilloscope_trigger_low_level('CH2') returns the current low trigger level of t
 This function queries (if called with one argument) or sets (if called with two arguments) the low trigger voltage level voltage of one of the channels of the oscilloscope. If there is a second argument it will be set as a new low trigger voltage level. If there is no second argument the current low trigger voltage level for the specified channel is returned in the format 'number + ['mV', 'V']'.<br/>
 For Tektronix 3000 Series and Rigol MSO8000 Series the 'channel string' has no meaning and is kept only for consistency.<br/>
 For Tektronix 3000 and 4000 Series also presets 'ECL' and 'TTL' can be used as the first argument. ECL sets the threshold level to a preset ECL high level of -1.3 V. TTL sets the threshold level to a preset TTL high level of 1.4 V.<br/>
+
+---
+
+### oscilloscope_read_settings()
+```python
+oscilloscope_read_settings() -> none
+```
+```
+Examples: oscilloscope_read_settings() reads all the settings of the oscilloscope.
+```
+This function reads all the settings from a special text file [digitizer.param](https://github.com/Anatoly1010/Atomize_ITC/tree/master/atomize/control_center).<br>
+This function is only available for Keysight 2000, 3000, 4000 X-Series and Rigol MSO8000 Series oscilloscopes.<br>
+
+---
+
+### oscilloscope_window()
+```python
+oscilloscope_window() -> float
+```
+```
+Examples: oscilloscope_window() returns the integration window of the oscilloscope.
+```
+This function returns the integration window of the oscilloscope. The integration window is used in the [oscilloscope_get_curve()](#oscilloscope_get_curvechannel-integral--true)) function and is set via a special text file [digitizer.param](https://github.com/Anatoly1010/Atomize_ITC/tree/master/atomize/control_center).<br>
+This function is only available for Keysight 2000, 3000, 4000 X-Series and Rigol MSO8000 Series oscilloscopes.<br>
 
 ---
 
