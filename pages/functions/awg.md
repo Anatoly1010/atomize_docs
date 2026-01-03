@@ -141,7 +141,7 @@ awg_pulse(**kagrs) -> none
 ```yml
 name = 'P0' specifies a name of the pulse
 channel = 'CH0' specifies a channel string (['CH0','CH1'])
-func = 'SINE' specifies a type of the function (['SINE','GAUSS','SINC','BLANK','WURST','SECH/TANH'])
+func = 'SINE' specifies a function type (['SINE','GAUSS','SINC','BLANK','WURST','SECH/TANH'])
 frequency = '200 MHz' specifies a frequency of the pulse (['0-280 MHz'])
 phase = 0 specifies a phase of the pulse (in radians)
 phase_list = [] specifies a phase cycling sequence (['+x','-x','+y','-y'])
@@ -157,7 +157,7 @@ delta_start = '0 ns' specifies a pulse delta start (['ns','us','ms']) for the
 d_coef = 1 specifies an additional coefficient for adjusting pulse amplitudes
 n = 1 specifies a special coefficient for WURST and SECH/TANH pulse determining the steepness
 of the amplitude function
-b = 0.02 specifies a special parameter for SECH/TANH pulse determining the truncation parameter in 1/ns
+b = 0.02 specifies a parameter for SECH/TANH pulse determining the truncation parameter in 1/ns
 ```
 ```
 Example: awg_pulse(name = 'P0', channel = 'CH0', func = 'SINE', frequency ='200 MHz', 

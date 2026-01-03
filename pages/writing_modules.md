@@ -16,6 +16,7 @@ Please, read these rules carefully and try to follow them when writing a new mod
 - [Configuration Files](#configuration-files)<br/>
 - [Device Specific Configuration Parameters](#device-specific-configuration-parameters)<br/>
 - [Dimensions](#dimensions)<br/>
+- [Pyqtgraph Dimensions](#pyqtgraph-dimensions)<br>
 - [Test Run](#test-run)<br/>
 
 ---
@@ -295,6 +296,91 @@ def lock_in_time_constant(self, *timeconstant):
         # conversion of the raw answer to a readable string
         answer = cutil.search_keys_dictionary(self.timeconstant_dict, raw_answer)
         return answer
+
+```
+
+---
+
+## Pyqtgraph Dimensions
+Another option is to use pyqtgraph helper functions. They can be used to convert numbers to strings with appropriate SI unit suffix:
+```python
+# Keysight_2000_Xseries module
+
+import pyqtgraph as pg
+
+# ... #
+
+# a part of the oscilloscope_time_resolution method
+def oscilloscope_time_resolution(self):
+    raw_answer = float(self.device_query(":TIMebase:RANGe?"))
+
+    # conversion of the raw answer to a string with appropriate SI unit suffix
+    answer = pg.siFormat( raw_answer, suffix = 's', precision = 9, allowUnicode = False)
+
+   # ... #
+
+```
+Pyqtgraph helper functions are also very useful in situations when only a discrete set of values is possible for a parameter. Two special functions from the config_utils.py file can be used in this case. The first one is parse_pg() that parses an input with different suffix; the second one is search_and_limit_keys_dictionary() that can be used to find a closest available value for the parameter within the specified limits:
+```python
+parse_pg(str_to_parse: int/float + 'SI unit suffix', 
+        helper_list: list_of_available_values) -> parsed_value, int_value, int: [0, 1]
+```
+This function parses an input string {str_to_parse}, i.e. '20 ms', to closest available value from the {helper_tc_list}. The outputs are (i) parsed_value: string with SI unit suffix, e.g. '10 ms'; (ii) int_value: integer from the parsed string, e.g. 10; (iii) integer: [0, 1], which can be used to create warning message about a change in value.
+```python
+search_and_limit_keys_dictionary(dict_to_search: dictionary, 
+        search_value: int/float + 'SI unit suffix',
+        min_value: float, max_value: float) -> dict_value, dict_key, int: [0, 1] 
+```
+This function checks that the input value {search_value}, i.e. '10 ms', is within the specified limits {min_value, max_value} and finds appropriate value in the dictionary {dict_to_search} using the input value {search_value} as the key. The outputs are (i) dict_val: value found in the dictionary {dict_to_search}; (ii) val_key: key found for this value; (iii) integer: [0, 1], which can be used to create warning message about a change in value.<br>
+
+The typical example from the device module is as follows:
+```python
+# Stanford Research Systems SR-810 module
+
+import atomize.device_modules.config.config_utils as cutil
+
+# ... #
+
+# a part of the inizialization method
+def __init__(self):
+    # ... #
+    
+    self.timeconstant_dict = {'10 us': 0, '30 us': 1, '100 us': 2, '300 us': 3,
+                        '1 ms': 4, '3 ms': 5, '10 ms': 6, '30 ms': 7, '100 ms': 8, '300 ms': 9,
+                        '1 s': 10, '3 s': 11, '10 s': 12, '30 s': 13, '100 s': 14, '300 s': 15, 
+                        '1 ks': 16, '3 ks': 17, '10 ks': 18, '30 ks': 19}
+    self.helper_tc_list = [1, 3, 10, 30, 100, 300, 1000]
+
+    # ... #
+
+# a part of the lock_in_time_constant method
+def lock_in_time_constant(self, *timeconstant):
+    # ... #
+
+    if len(timeconstant) == 1:
+        tc = timeconstant[0]
+
+        # parse an input string {tc} to closest available value
+        # from the {self.helper_tc_list}
+        # parsed_value: str with SI unit suffix, e.g. '10 ms'
+        # int_value: integer value from the parsed string, e.g. 10
+        # a: integer that can be used to create warning message
+        parsed_value, int_value, a = cutil.parse_pg(tc, self.helper_tc_list)
+        
+        # check that the parsed value is within the specified limits {10e-6, 30e3}
+        # find appropriate value in {self.timeconstant_dict} using the key {parsed_value}
+        # val: value found in the dictionary
+        # val_key: key for this value 
+        # b: integer that can be used to create warning message
+        val, val_key, b = cutil.search_and_limit_keys_dictionary( self.timeconstant_dict, 
+                            parsed_value, 10e-6, 30e3 )
+        self.device_write("OFLT "+ str(val))
+        
+        # warning message about parameter change
+        if ( a == 1 ) or ( b == 1 ):
+            general.message(f"TC cannot be set, the nearest available value of {val_key} is used")
+
+    # ... #
 
 ```
 

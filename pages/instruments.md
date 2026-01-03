@@ -78,7 +78,7 @@ The L card device is available via ctypes. The original library can be found [he
 ## [Microwave Bridge Controllers](/atomize_docs/pages/functions/microwave-bridge-controller)
 - Micran X-band MW Bridge (TCP/IP Socket); Tested 06/2021
 - Micran X-band MW Bridge v2 (TCP/IP Socket); Tested 12/2022
-- Micran Q-band MW Bridge; Tested 12/2023
+- Micran Q-band MW Bridge (TCP/IP Socket); Tested 12/2023
 
 ---
 

@@ -41,7 +41,7 @@ The Insys device is available via ctypes. The original library can be found [her
 - [pulser_phase_reset()](#pulser_phase_reset)<br>
 - [pulser_instruction_from_file(flag, filename)](#pulser_instruction_from_fileflag-filename)<br>
 - [pulser_clear()](#pulser_clear)<br>
-- [pulser_full_stop()(#pulser_full_stop]<br>
+- [pulser_full_stop()](#pulser_full_stop)<br>
 - [pulser_test_flag(flag)](#pulser_test_flagflag)<br>
 
 ---
@@ -221,7 +221,7 @@ In the case of Insys FM214x3GDA length_increment will be rounded to a multiple o
 pulser_reset() -> none
 ```
 ```
-Example: pulser_reset() resets all the pulses to their initial state and updates the pulse programmer.
+Example: pulser_reset() resets all the pulses to their initial state and updates the programmer.
 ```
 The function switches the pulse programmer back to the initial state (including phase) in which it was in at the start of the experiment. This function can be called only without arguments. It includes the complete functionality of [pulser_pulse_reset()](#pulser_pulse_reset), but also immediately updates the pulse programmer as it is done by calling [pulser_update()](#pulser_update).<br/>
 The additional keyword "internal_cycle" can be used with in combination the [pulser_instruction_from_file()](#pulser_instruction_from_fileflag-filename) function to achieve correct update of the pulse programmer. The available options are ['True', 'False']. The default option is 'False'.<br>

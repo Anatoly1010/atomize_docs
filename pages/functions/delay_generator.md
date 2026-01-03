@@ -35,7 +35,7 @@ This function returns device name.<br/>
 ### delay_generator_delay(*delay)
 ```python
 delay_generator_delay(ch1: str, ch2: str, delay: float + [' s',' ms',' us',' ns',' ps']) -> none
-delay_generator_delay(ch1: str) -> '['T0', 'A', 'B', 'C', 'D'] + {float} [' s',' ms',' us',' ns',' ps']'
+delay_generator_delay(ch1: str) -> '['T0','A','B','C','D'] + {float} [' s',' ms',' us',' ns',' ps']'
 ```
 ```
 Example: delay_generator_delay('A', 'T0', '10 us')

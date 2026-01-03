@@ -10,7 +10,7 @@ Atomize[^1] uses [liveplot library](https://github.com/PhilReinhold/liveplot) ba
 
 [Python Programming Language](https://www.python.org/) is used inside experimental scripts, which opens up almost unlimited possibilities for raw experimental data treatment. In addition, with PyQt, one can create experimental scripts with a simple graphical interface, allowing users not familiar with Python to use it. Several examples of scripts (with dummy data) are provided in /atomize/tests/ directory, including a GUI script with extended comments inside. Also a variant of the Atomize with GUI Control Window extension can be found [here.](https://github.com/Anatoly1010/Atomize_NIOCH)<br/>
 
-Currently there are more than 200 instrument specific and general functions available for over 27 different devices, including 6 series of devices. If you would like to write a module for the instrument that is not currently available, please, read this [instruction.](/atomize_docs/pages/writing_modules)
+The list of available instruments can be found [here](/atomize_docs/pages/instruments). If you would like to write a module for the instrument that is not currently available, please, read this [instruction.](/atomize_docs/pages/writing_modules)
 
 ---
 

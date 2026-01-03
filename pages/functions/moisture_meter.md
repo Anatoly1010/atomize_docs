@@ -32,4 +32,4 @@ moisture_meter_meter() -> list(4)
 ```
 Example: moisture_meter_meter() returns the measured data.
 ```
-This function returns a list with the measured data and is only called without arguments. The format of the measured data is the following: ['dew point in deg. C', 'water content in ppm', 'water content in mg/m^3', 'temperature in deg. C'].<br>
+This function returns a list with the measured data and is only called without arguments. The format of the measured data is the following: ['dew point in deg. C', 'water content in ppm', 'water content in mg/m<sub>3</sub>', 'temperature in deg. C'].<br>

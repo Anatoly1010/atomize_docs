@@ -165,7 +165,7 @@ gaussmeter_command(command: str) -> none
 ```
 Example: gaussmeter_command('RDGMODE 1,3,1,1,1') configures Lakeshore 455 for DC field
 measurement, DC resolution of 5 digits, wide band rms filter mode, peak measurement mode
-is periodic, and positive peak readings will be displayed if the measurement mode is changed to peak.
+is periodic, and positive peak readings will be shown if the measurement mode is changed to peak.
 ```
 This function sends an arbitrary command from a programming guide to the device in a string format. No output is expected.<br/>
 This function is not available for Sibir 1 Gaussmeter.<br/>

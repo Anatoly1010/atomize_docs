@@ -351,7 +351,7 @@ oscilloscope_window() -> float
 ```
 Examples: oscilloscope_window() returns the integration window of the oscilloscope.
 ```
-This function returns the integration window of the oscilloscope. The integration window is used in the [oscilloscope_get_curve()](#oscilloscope_get_curvechannel-integral--true)) function and is set via a special text file [digitizer.param](https://github.com/Anatoly1010/Atomize_ITC/tree/master/atomize/control_center).<br>
+This function returns the integration window of the oscilloscope. The integration window is used in the [oscilloscope_get_curve()](#oscilloscope_get_curvechannel-integral--true) function and is set via a special text file [digitizer.param](https://github.com/Anatoly1010/Atomize_ITC/tree/master/atomize/control_center).<br>
 This function is only available for Keysight 2000, 3000, 4000 X-Series and Rigol MSO8000 Series oscilloscopes.<br>
 
 ---
