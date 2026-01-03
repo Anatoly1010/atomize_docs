@@ -401,9 +401,9 @@ In order to be able to run a test, one should specify inside a module appropriat
 
 # a part of the __init__ method:
 # minimum amplitude of the sine output
-self.ref_ampl_min = 0.004
+self.ampl_min = 0.004
 # maximum amplitude of the sine output
-self.ref_ampl_max = 5
+self.ampl_max = 5
   
 # ... #
  
@@ -416,16 +416,16 @@ self.test_amplitude = 0.3
 # test run part of the lock_in_ref_amplitude() method:
 # 1) this method queries or sets the amplitude of the sine output 
 # 2) if there is no argument the function will return the current level
-# 3) if there is an argument the specified amplitude (in V) will be set
-# 4) the argument is a string, such as “0.150,” or a float number
+# 3) if there is an argument the specified amplitude will be set
+# 4) the argument is a string with SI unit suffix, such as “0.150 mV”
 def lock_in_ref_amplitude(self, *amplitude):
     # ... #
 
     elif self.test_flag == 'test':
         if len(amplitude) == 1:
             ampl = float(amplitude[0])
-            assert(ampl <= self.ref_ampl_max and ampl >= self.ref_ampl_min), 
-            f"Invalid frequency. The available range is from {self.ref_ampl_min} to {self.ref_ampl_max}"
+            assert(ampl <= self.ampl_max and ampl >= self.ampl_min), 
+            f"Invalid frequency. The available range is from {self.ampl_min} to {self.ampl_max}"
 
         elif len(amplitude) == 0:
             answer = self.test_amplitude
@@ -465,7 +465,8 @@ It is recommended to write detailed assertion error messages, which can include 
 
 # argument types; string with SI unit suffix
 # self.timeconstant_dict = {'10 us': 0, '30 us': 1, '100 us': 2, '300 us': 3, ... }
-assert(val_key in self.timeconstant_dict), "Incorrect argument; tc: int + [' us', ' ms', ' s', ' ks']"
+assert(val_key in self.timeconstant_dict),
+        "Incorrect argument; tc: int + [' us', ' ms', ' s', ' ks']"
 
 # argument limits with pyqtgraph helper function
 # self.ref_ampl_min = 0.004
@@ -483,6 +484,7 @@ assert( md in self.ref_mode_dict ), f"Incorrect mode; mode: {list(self.ref_mode_
 
 # argument types; predefined options
 #self.channel_dict = {'CH1': 'CHAN1', 'CH2': 'CHAN2', 'CH3': 'CHAN3', 'CH4': 'CHAN4'}
-assert(ch in self.channel_dict), f'Invalid channel; channel: {list(self.trigger_channel_dict.keys())}'
+assert(ch in self.channel_dict), 
+        f'Invalid channel; channel: {list(self.trigger_channel_dict.keys())}'
 
 ```
