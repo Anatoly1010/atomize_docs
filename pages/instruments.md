@@ -4,6 +4,7 @@ nav_order: 4
 layout: page
 permlink: /instruments/
 ---
+<br>
 
 - [Arbitrary Wave Generators](#arbitrary-wave-generators)
 - [Delay Generators](#delay-generators)
@@ -11,7 +12,7 @@ permlink: /instruments/
 - [Frequency Counters](#frequency-counters)
 - [Gaussmeters](#gaussmeters)
 - [Laser Power Meters](#laser-power-meters)
-- [Lock-in Amplifiers](#lockin-amplifiers)
+- [Lock-in Amplifiers](#lock-in-amplifiers)
 - [Magnetic Field Controllers](#magnetic-field-controllers)
 - [Magnet Power Supplies](#magnet-power-supplies)
 - [Microwave Bridge Controllers](#microwave-bridge-controllers)

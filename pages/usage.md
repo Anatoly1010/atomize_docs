@@ -4,6 +4,7 @@ nav_order: 2
 layout: page
 permlink: /usage/
 ---
+<br>
 
 - [Installation](#installation)<br>
 - [General Configuration](#general-configuration)<br>
