@@ -16,7 +16,7 @@ The pulse tables incorporate phase cycling of the pulses, which is a great aid f
 
 ---
 
-Used hardware: Spectrum M4i-4450-x8 PCIe digitizer; Spectrum M4i.6631-x8 PCIe DAC; PulseBlaster ESR-PRO-500 PCI pulse generator; BH-15 magnetic field controller;  Keysight DSOX3034A oscilloscope; Stanford Research PTC10 temperature controller; Micran X-band microwave bridge.
+Used hardware: Spectrum M4i-4450-x8 PCIe digitizer; Spectrum M4i.6631-x8 PCIe DAC; PulseBlaster ESR-PRO-500 PCI pulse generator; BH15 magnetic field controller;  Keysight DSOX3034A oscilloscope; Stanford Research PTC10 temperature controller; Micran X-band microwave bridge.
 
 ---
 

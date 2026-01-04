@@ -28,6 +28,8 @@ Run GUI from terminal:
 atomize
 ```
 
+---
+
 ## General Configuration
 <br/>
 In the terminal where you launched Atomize, the paths to the configuration files and some other details are displayed as follows:
@@ -64,6 +66,8 @@ telegram_bot_token =
 message_id = 
 ```
 
+---
+
 ## Instrument Modules
 <br/>
 To communicate with a device one should:<br/>
@@ -99,9 +103,13 @@ head, data = file_handler.open_1D_dialog(header = 0)
 general.plot_1d('1D Plot', data[0], data[1], label = 'test_data', yname = 'Y axis', yscale = 'V')
 ```
 
+---
+
 ## Experimental Scripts
 <br/>
 Python is used to write an experimental script. Examples can be found in the "SCRIPTS DIRECTORY".
+
+---
 
 ## Additional Interactivity
 <br/>

@@ -14,6 +14,9 @@ permlink: /requirements/
 - [platformdirs >= 4.5](https://pypi.org/project/platformdirs/)
 - [hatchling >= 1.9 ](https://pypi.org/project/hatchling/)<br/>
 <br/>
+
+---
+
 Optional:
 - [PySerial;](https://pypi.org/project/pyserial/) for serial instruments
 - [Minimalmodbus;](https://minimalmodbus.readthedocs.io/en/stable/index.html) for Modbus instruments

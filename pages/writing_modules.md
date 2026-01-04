@@ -456,6 +456,8 @@ def __init__(self):
 
 ```
 
+---
+
 ## Error Messages
 
 It is recommended to write detailed assertion error messages, which can include argument types and argument limits. Below are several examples from various device modules:

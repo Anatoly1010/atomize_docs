@@ -55,7 +55,7 @@ Additionally, there are still two types of devices: DTE and DCE. DTE devices typ
 ---
 
 ## RS-485
-Typical rs-232 settings are:
+Typical rs-485 settings are:
 ```yml
     Baudrate: 19200
     Databits = 8
