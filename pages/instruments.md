@@ -4,11 +4,30 @@ nav_order: 4
 layout: page
 permlink: /instruments/
 ---
-<br/>
+
+- [Arbitrary Wave Generators](#arbitrary-wave-generators)
+- [Delay Generators](#delay-generators)
+- [Digitizers](#digitizers)
+- [Frequency Counters](#frequency-counters)
+- [Gaussmeters](#gaussmeters)
+- [Laser Power Meters](#laser-power-meters)
+- [Lock-in Amplifiers](#lockin-amplifiers)
+- [Magnetic Field Controllers](#magnetic-field-controllers)
+- [Magnet Power Supplies](#magnet-power-supplies)
+- [Microwave Bridge Controllers](#microwave-bridge-controllers)
+- [Moisture Meters](#moisture-meters)
+- [Oscilloscopes](#oscilloscopes)
+- [Oscilloscope Wave Generators](#oscilloscope-wave-generators)
+- [Power Supplies](#power-supplies)
+- [Pulse Programmers](#pulse-programmers)
+- [Synthetizers](#synthetizers)
+- [Temperature Controllers](#temperature-controllers)
+- [Vector Network Analyzers](#vector-network-analyzers)
+- [Other](#other)
 
 ---
 
-## [Arbitrary Wave Generators](/atomize_docs/pages/functions/arbitrary-wave-generator)
+## [Arbitrary Wave Generators](/atomize_docs/pages/functions/awg)
 - Spectrum M4I 6631 X8; Tested 07/2021
 The original [library](https://spectrum-instrumentation.com/en/m4i6631-x8) was written by Spectrum. 
 - [Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda) as DAC; Tested 03/2025
@@ -33,7 +52,7 @@ The L card device is available via ctypes. The original library can be found [he
 
 ---
 
-## [Frequency Counters](/atomize_docs/pages/functions/frequency-counter)
+## [Frequency Counters](/atomize_docs/pages/functions/freq_counter)
 - Agilent Frequency Counter (GPIB, RS-232)
 	53181A; 53131A/132A; Tested 02/2021
 	5343A; GPIB, Tested 02/2023
@@ -62,7 +81,7 @@ The L card device is available via ctypes. The original library can be found [he
 
 ---
 
-## [Magnetic Field Controllers](/atomize_docs/pages/functions/magnetic-field-controller)
+## [Magnetic Field Controllers](/atomize_docs/pages/functions/magnet)
 - Bruker BH15 (GPIB); Tested 01/2021
 - Bruker ER032M (GPIB); Available via BH15 module
 - Bruker ER031M (RS-232 using arduino emulated keyboard); Tested 01/2021
@@ -70,19 +89,19 @@ The L card device is available via ctypes. The original library can be found [he
 
 ---
 
-## [Magnet Power Supplies](/atomize_docs/pages/functions/magnet-power-supply)
+## [Magnet Power Supplies](/atomize_docs/pages/functions/magnet_power_supply)
 - Cryomagnetics 4G (Ethernet); Tested 11/2023
 
 ---
 
-## [Microwave Bridge Controllers](/atomize_docs/pages/functions/microwave-bridge-controller)
+## [Microwave Bridge Controllers](/atomize_docs/pages/functions/microwave_bridge)
 - Micran X-band MW Bridge (TCP/IP Socket); Tested 06/2021
 - Micran X-band MW Bridge v2 (TCP/IP Socket); Tested 12/2022
 - Micran Q-band MW Bridge (TCP/IP Socket); Tested 12/2023
 
 ---
 
-## [Moisture Meters](/atomize_docs/pages/functions/moisture-meter)
+## [Moisture Meters](/atomize_docs/pages/functions/moisture_meter)
 - IVG-1/1 (RS-485); Tested 02/2023
 
 ---
@@ -98,7 +117,7 @@ The L card device is available via ctypes. The original library can be found [he
 
 ---
 
-## [Oscilloscope Wave Generators](/atomize_docs/pages/functions/oscilloscope-wave-generator)
+## [Oscilloscope Wave Generators](/atomize_docs/pages/functions/oscilloscope_wave_generator)
 - Wave Generator of Keysight InfiniiVision 2000 X-Series (Ethernet)
 	Available via corresponding oscilloscope module.
 - Wave Generator of Keysight InfiniiVision 3000 X-Series (Ethernet)
@@ -110,14 +129,14 @@ The L card device is available via ctypes. The original library can be found [he
 
 ---
 
-## [Power Supplies](/atomize_docs/pages/functions/power-supply)
+## [Power Supplies](/atomize_docs/pages/functions/power_supply)
 - Rigol DP800 Series (RS-232, Ethernet); Tested 01/2021
 - Stanford Research DC205 (RS-232); Untested
 - Stanford Research PS300 High Voltage Series (RS-232, GPIB); Untested
 
 ---
 
-## [Pulse Programmers](/atomize_docs/pages/functions/pulse-programmer)
+## [Pulse Programmers](/atomize_docs/pages/functions/pulse_programmer)
 - Pulse Blaster ESR 500 Pro; Tested 06/2021
     The device is available via ctypes. The original [C library](http://www.spincore.com/support/spinapi/using_spin_api_pb.shtml) was written by SpinCore Technologies.
 - Pulse  Programmer Micran based on [Insys FMC126P](https://www.insys.ru/fmc/fmc126p); Tested 12/2023
@@ -150,7 +169,7 @@ The Insys device is available via ctypes. The original library can be found [her
 
 ---
 
-## [Other](/atomize_docs/pages/functions/other)
+## [Other](/atomize_docs/pages/functions/other_device)
 - CPWplus 150 (RS-232); Tested 01/2021
 - RODOS-10N Solid-State Relay (Ethernet); Tested 01/2021
 - Owen-MK110-220.4DN.4R Discrete IO Module (RS-485); Tested 04/2021

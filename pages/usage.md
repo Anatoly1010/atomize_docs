@@ -5,7 +5,15 @@ layout: page
 permlink: /usage/
 ---
 
-### 1. Installation
+- [Installation](#installation)<br>
+- [General Configuration](#general-configuration)<br>
+- [Instrument Modules](#instrument-modules)<br>
+- [Experimental Scripts](#experimental-scripts)<br>
+- [Additional Interactivity](#additional-interactivity)<br>
+
+---
+
+## Installation
 <br/>
 Atomize can be installed from PyPi:
 
@@ -19,7 +27,7 @@ Run GUI from terminal:
 atomize
 ```
 
-### 2. General Configuration
+## General Configuration
 <br/>
 In the terminal where you launched Atomize, the paths to the configuration files and some other details are displayed as follows:
 
@@ -55,7 +63,7 @@ telegram_bot_token =
 message_id = 
 ```
 
-### 3. Using Instrument Modules
+## Instrument Modules
 <br/>
 To communicate with a device one should:<br/>
 - modify the config file located in "DEVICE CONFIG DIRECTORY" of the desired device accordingly. Choose the desired protocol (rs-232, gpib, ethernet, etc.) and correct the settings of the specified protocol in accordance with device settings. A little bit more detailed information about protocol settings can be found [here.](/atomize_docs/pages/protocol_settings)
@@ -90,11 +98,11 @@ head, data = file_handler.open_1D_dialog(header = 0)
 general.plot_1d('1D Plot', data[0], data[1], label = 'test_data', yname = 'Y axis', yscale = 'V')
 ```
 
-### 4. Experimental Scripts
+## Experimental Scripts
 <br/>
 Python is used to write an experimental script. Examples can be found in the "SCRIPTS DIRECTORY".
 
-### 5. Additional Interactivity
+## Additional Interactivity
 <br/>
 The Main tab has the following additional features in the Output dock:
 - clear all text from the dock; 

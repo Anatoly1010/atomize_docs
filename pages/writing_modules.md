@@ -15,8 +15,8 @@ Please, read these rules carefully and try to follow them when writing a new mod
 - [Limits, Ranges, and Dictionaries](#limits-ranges-and-dictionaries)<br/>
 - [Configuration Files](#configuration-files)<br/>
 - [Device Specific Configuration Parameters](#device-specific-configuration-parameters)<br/>
-- [Dimensions](#dimensions)<br/>
-- [Pyqtgraph Dimensions](#pyqtgraph-dimensions)<br>
+- [SI Unit suffix](#si-unit-suffix)<br/>
+- [Pyqtgraph SI Unit Suffix](#pyqtgraph-si-unit-suffix)<br>
 - [Test Run](#test-run)<br/>
 - [Error Messages](#error-messages)<br>
 
@@ -57,7 +57,7 @@ class SR_860:
 
 ---
 
-## Class init() function
+## Class init() Function
 The class inizialization function should connect computer to the device. A general example is given below, more examples can be found in the atomize/device_modules/ directory. 
 ```python
 # Stanford Research Systems SR-860 module
@@ -212,7 +212,7 @@ channels = 3
 
 ---
 
-## Dimensions
+## SI Unit Suffix
 Currently Atomize does not use the dimensions of physical units (current, frequency etc.), instead, special dictionaries are used:
 ```python
 # for parameters with time dimension
@@ -302,7 +302,7 @@ def lock_in_time_constant(self, *timeconstant):
 
 ---
 
-## Pyqtgraph Dimensions
+## Pyqtgraph SI Unit Suffix
 Another option is to use pyqtgraph helper functions. They can be used to convert numbers to strings with appropriate SI unit suffix:
 ```python
 # Keysight_2000_Xseries module
@@ -387,7 +387,7 @@ def lock_in_time_constant(self, *timeconstant):
 
 ---
 
-## Test run
+## Test Run
 There is a test section in Atomize. During the test software checks that an experimental script has appropriate syntax and does not contain logical errors. It means that all the parameters during script execution do not go beyond the device limits. For instance, the test can detect that the field of the magnet is requested to be set to a value that the magnet cannot produce. During the test run the devices are not accessed, calls of the wait() function do not make the program sleep for the requested time, graphics are not drawn etc. To print a string in the main window in the test run, the function [message_test()](/atomize_docs/pages/functions/general_functions/general_functions) from the general_functions module can be used.<br/>
 The execution flow of experimental scripts can be illustrated as follows:
 <br/>
@@ -456,7 +456,7 @@ def __init__(self):
 
 ```
 
-## Error messages
+## Error Messages
 
 It is recommended to write detailed assertion error messages, which can include argument types and argument limits. Below are several examples from various device modules:
 
