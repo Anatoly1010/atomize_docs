@@ -1,5 +1,5 @@
 ---
-title: Arbitrary Wave Generators
+title: Arbitrary Waveform Generators
 nav_order: 21
 layout: page
 permlink: /functions/awg/

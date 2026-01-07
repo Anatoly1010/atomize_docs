@@ -6,7 +6,7 @@ permlink: /instruments/
 ---
 <br>
 
-- [Arbitrary Wave Generators](#arbitrary-wave-generators)
+- [Arbitrary Waveform Generators](#arbitrary-waveform-generators)
 - [Delay Generators](#delay-generators)
 - [Digitizers](#digitizers)
 - [Frequency Counters](#frequency-counters)
@@ -28,7 +28,7 @@ permlink: /instruments/
 
 ---
 
-## [Arbitrary Wave Generators](/atomize_docs/pages/functions/awg)
+## [Arbitrary Waveform Generators](/atomize_docs/pages/functions/awg)
 - Spectrum M4I 6631 X8; Tested 07/2021
 The original [library](https://spectrum-instrumentation.com/en/m4i6631-x8) was written by Spectrum. 
 - [Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda) as DAC; Tested 03/2025
