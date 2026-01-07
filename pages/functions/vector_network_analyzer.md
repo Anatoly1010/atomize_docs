@@ -1,6 +1,6 @@
 ---
 title: Vector Network Analyzers
-nav_order: 38
+nav_order: 37
 layout: page
 permlink: /functions/vector_network_analyzer/
 parent: Documentation

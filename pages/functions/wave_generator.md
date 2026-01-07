@@ -1,19 +1,19 @@
 ---
-title: Oscilloscope Wave Generators
-nav_order: 33
+title: Waveform Generators
+nav_order: 38
 layout: page
-permlink: /functions/oscilloscope_wave_generator/
+permlink: /functions/wave_generator/
 parent: Documentation
 ---
 
 ### Devices
-- Wave Generator of Keysight InfiniiVision 2000 X-Series (Ethernet)
+- Waveform Generator of Keysight InfiniiVision 2000 X-Series (Ethernet)
 Available via corresponding oscilloscope module.
-- Wave Generator of Keysight InfiniiVision 3000 X-Series (Ethernet)
+- Waveform Generator of Keysight InfiniiVision 3000 X-Series (Ethernet)
 Available via corresponding oscilloscope module.
-- Wave Generator of Keysight InfiniiVision 4000 X-Series (Ethernet)
+- Waveform Generator of Keysight InfiniiVision 4000 X-Series (Ethernet)
 Available via corresponding oscilloscope module.
-- Wave Generator of Rigol MSO8000 Series (Ethernet)
+- Waveform Generator of Rigol MSO8000 Series (Ethernet)
 Available via corresponding oscilloscope module.
 
 ---

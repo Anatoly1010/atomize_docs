@@ -1,6 +1,6 @@
 ---
 title: Synthetizers
-nav_order: 36
+nav_order: 35
 layout: page
 permlink: /functions/synthetizer/
 parent: Documentation

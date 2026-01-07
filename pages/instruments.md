@@ -18,12 +18,12 @@ permlink: /instruments/
 - [Microwave Bridge Controllers](#microwave-bridge-controllers)
 - [Moisture Meters](#moisture-meters)
 - [Oscilloscopes](#oscilloscopes)
-- [Oscilloscope Wave Generators](#oscilloscope-wave-generators)
 - [Power Supplies](#power-supplies)
 - [Pulse Programmers](#pulse-programmers)
 - [Synthetizers](#synthetizers)
 - [Temperature Controllers](#temperature-controllers)
 - [Vector Network Analyzers](#vector-network-analyzers)
+- [Waveform Generators](#waveform-generators)
 - [Other](#other)
 
 ---
@@ -118,18 +118,6 @@ The L card device is available via ctypes. The original library can be found [he
 
 ---
 
-## [Oscilloscope Wave Generators](/atomize_docs/pages/functions/oscilloscope_wave_generator)
-- Wave Generator of Keysight InfiniiVision 2000 X-Series (Ethernet)
-	Available via corresponding oscilloscope module.
-- Wave Generator of Keysight InfiniiVision 3000 X-Series (Ethernet)
-	Available via corresponding oscilloscope module.
-- Wave Generator of Keysight InfiniiVision 4000 X-Series (Ethernet)
-	Available via corresponding oscilloscope module.
-- Wave Generator of Rigol MSO8000 Series (Ethernet)
-	Available via corresponding oscilloscope module.
-
----
-
 ## [Power Supplies](/atomize_docs/pages/functions/power_supply)
 - Rigol DP800 Series (RS-232, Ethernet); Tested 01/2021
 - Stanford Research DC205 (RS-232); Untested
@@ -167,6 +155,18 @@ The Insys device is available via ctypes. The original library can be found [her
 
 ## [Vector Network Analyzers](/atomize_docs/pages/functions/vector_network_analyzer)
 - Planar C2220, S50024 (Socket); Tested 09/2025
+
+---
+
+## [Waveform Generators](/atomize_docs/pages/functions/wave_generator)
+- Waveform Generator of Keysight InfiniiVision 2000 X-Series (Ethernet)
+	Available via corresponding oscilloscope module.
+- Waveform Generator of Keysight InfiniiVision 3000 X-Series (Ethernet)
+	Available via corresponding oscilloscope module.
+- Waveform Generator of Keysight InfiniiVision 4000 X-Series (Ethernet)
+	Available via corresponding oscilloscope module.
+- Waveform Generator of Rigol MSO8000 Series (Ethernet)
+	Available via corresponding oscilloscope module.
 
 ---
 
