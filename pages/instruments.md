@@ -167,6 +167,8 @@ The Insys device is available via ctypes. The original library can be found [her
 	Available via corresponding oscilloscope module.
 - Waveform Generator of Rigol MSO8000 Series (Ethernet)
 	Available via corresponding oscilloscope module.
+- Stanford Research DS345 (RS-232); Untested.
+
 
 ---
 
