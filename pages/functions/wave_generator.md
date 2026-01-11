@@ -42,11 +42,14 @@ Available via corresponding oscilloscope module.
 - [wave_gen_modulation_trigger_rate(\*rate)](#wave_gen_modulation_trigger_raterate)<br>
 - [wave_gen_modulation_trigger()](#wave_gen_modulation_trigger)<br>
 - [wave_gen_modulation_burst_count(\*count)](#wave_gen_modulation_burst_countcount)<br>
+- [wave_gen_modulation_hop_frequency(\*frequency)](#wave_gen_modulation_hop_frequencyfrequency)<br> 
+- [wave_gen_modulation_hop_rate(\*rate)](#wave_gen_modulation_hop_raterate)<br>
 - [wave_gen_arbitrary_amplitude_modulation(p_list)](#wave_gen_arbitrary_amplitude_modulationp_list)<br>
 - [wave_gen_arbitrary_frequency_modulation(p_list)](#wave_gen_arbitrary_frequency_modulationp_list)<br>
 - [wave_gen_arbitrary_phase_modulation(p_list)](#wave_gen_arbitrary_phase_modulationp_list)<br>
 - [wave_gen_arbitrary_modulation_rate_divider(\*rate)](#wave_gen_arbitrary_modulation_rate_dividerrate)<br>
 - [wave_gen_arbitrary_function_data(p_list)](#wave_gen_arbitrary_function_datap_list)<br/>
+- [wave_gen_arbitrary_frequency(\*frequency)](#wave_gen_arbitrary_frequencyfrequency)<br>
 - [wave_gen_arbitrary_clear()](#wave_gen_arbitrary_clear)<br/>
 - [wave_gen_arbitrary_interpolation(\*mode)](#wave_gen_arbitrary_interpolationmode)<br/>
 - [wave_gen_arbitrary_number_of_points()](#wave_gen_arbitrary_number_of_points)<br>
@@ -193,7 +196,8 @@ wave_gen_impedance(channel = '1') -> str
 ```
 Example: wave_gen_phase(50) sets the start phase of the signal to 50 degrees.
 ```
-This function queries or sets the start phase of the signalin degrees. If there is no argument the function will return the current start phase in the format 'number + deg'. If there is an argument the specified start phase will be set. If the oscilloscope or waveform generator has several waveform generator, the number of the generator used should be specified by corresponding keyword argument 'channel': ['1', '2']. Keysight 4000 X-series and Rigol MSO8000 Series can have up to two waveform generators. If there is only one waveform generator channel keyword argument is absent. This function is available only for Keysight 4000 X-series, Rigol MSO8000 Series oscilloscopes, and Stanford Research DS345. The available range is from 0 to 360 degrees for Rigol MSO8000 Series, from -360 to 360 degrees for Keysight 4000 X-series, and from 0 to 7199.999 degrees for Stanford Research DS345. The function does not work for Noise, DC, and Arbitrary waveform. In the case of Keysight 4000 X-series oscilloscopes this funtion also swithes on 'TRACK' option. The 'TRACK' option causes frequency, amplitude, offset, and duty cycle adjustments to this waveform generator output signal to be tracked by the other waveform generator output. Please note, that not all waveform shapes can be frequency tracked.<br/>
+This function queries or sets the start phase of the signalin degrees. If there is no argument the function will return the current start phase in the format 'number + deg'. If there is an argument the specified start phase will be set. If the oscilloscope or waveform generator has several waveform generator, the number of the generator used should be specified by corresponding keyword argument 'channel': ['1', '2']. Keysight 4000 X-series and Rigol MSO8000 Series can have up to two waveform generators. If there is only one waveform generator channel keyword argument is absent.  The available range is from 0 to 360 degrees for Rigol MSO8000 Series, from -360 to 360 degrees for Keysight 4000 X-series, and from 0 to 7199.999 degrees for Stanford Research DS345. The function does not work for Noise, DC, and Arbitrary waveform. In the case of Keysight 4000 X-series oscilloscopes this funtion also swithes on 'TRACK' option. The 'TRACK' option causes frequency, amplitude, offset, and duty cycle adjustments to this waveform generator output signal to be tracked by the other waveform generator output. Please note, that not all waveform shapes can be frequency tracked.<br/>
+This function is available only for Keysight 4000 X-series, Rigol MSO8000 Series oscilloscopes, and Stanford Research DS345.<br>
 
 ---
 
@@ -206,8 +210,9 @@ wave_gen_modulation_function() -> str
 Example: wave_gen_modulation_function('Sq') sets the sqare modulation waveform.
 ```
 This function queries or sets the modulation waveform. If there is no argument the function will return the current modulation waveform as a string. The value 'None' will be returned for modulation types that do not have an associated waveform, such as burst [mode](#wave_gen_modulation_typetype). If there is an argument the specified waveform will be set.<br>
-The available modulation waveforms are ['Single', 'Ramp', 'Triangle', 'Sin', 'Sq', 'Arb', 'None']. The value 'Arb' may only be set for amplitude, frequency, and phase modulation [type](#wave_gen_modulation_typetype).<br>
-This function is only available for Stanford Research DS345.<br>
+The available modulation waveforms for Stanford Research DS345 are ['Single', 'Ramp', 'Triangle', 'Sin', 'Sq', 'Arb', 'None']. The value 'Arb' may only be set for amplitude, frequency, and phase modulation [type](#wave_gen_modulation_typetype).<br>
+The available modulation waveforms for Keysight 3000 X-Series are ['Sin', 'Sq', 'Ramp'] <br>
+This function is only available for Stanford Research DS345, Keysight 3000 X-Series.<br>
 
 ---
 
@@ -220,8 +225,9 @@ wave_gen_modulation_type() -> str
 Example: wave_gen_modulation_type('Lin Sweep') sets the linear sweep typy of modulation.
 ```
 This function queries or sets the modulation type. If there is no argument the function will return the current modulation type as a string. If there is an argument the specified modulation type will be set.<br>
-The available modulation types are ['Lin Sweep', 'Log Sweep', 'AM', 'FM', 'PM', 'Burst'].<br>
-This function is only available for Stanford Research DS345.<br>
+The available modulation types for Stanford Research DS345 are ['Lin Sweep', 'Log Sweep', 'AM', 'FM', 'PM', 'Burst'].<br>
+The available modulation types for Keysight 3000 X-Series are ['AM', 'FM', 'Freq-Shift'].<br>
+This function is only available for Stanford Research DS345, Keysight 3000 X-Series.<br>
 
 ---
 
@@ -233,8 +239,9 @@ wave_gen_modulation_depth() -> str
 ```
 Example: wave_gen_modulation_depth(50) sets the AM modulation depth to 50 percent.
 ```
-This function queries or sets the amplitude modulation (AM) depth in percent. If there is no argument the function will return the current modulation depth as a string in the format 'number + %'. If there is an argument the specified modulation depth will be set. If the argument is negative the modulation is set to double sideband suppressed carrier modulation (DSBSC) with the indicated modulation percent.<br>
-This function is only available for Stanford Research DS345.<br>
+This function queries or sets the amplitude modulation (AM) depth in percent. If there is no argument the function will return the current modulation depth as a string in the format 'number + %'. If there is an argument the specified modulation depth will be set.<br>
+In the case of Stanford Research DS345 if the argument is negative the modulation is set to double sideband suppressed carrier modulation (DSBSC) with the indicated modulation percent.<br>
+This function is only available for Stanford Research DS345, Keysight 3000 X-Series.<br>
 
 ---
 
@@ -247,7 +254,7 @@ wave_gen_modulation_frequency_span() -> str
 Example: wave_gen_modulation_frequency_span('50 kHz') sets the FM modulation span to 50 kHz.
 ```
 This function queries or sets the frequency modulation (FM) span in Hz. If there is no argument the function will return the current span as a string in the format 'number + SI suffix'. If there is an argument the specified frequency span will be set. The FM waveform will be centered at the frequency specified by the [wave_gen_frequency()](#wave_gen_frequencyfrequency) function and have a deviation of ±span/2. The maximum value of span is limited so that the frequency is never less than or equal to zero or greater than that allowed for the selected function. Otherwise the corresponding error message will be printed.<br>
-This function is only available for Stanford Research DS345.<br>
+This function is only available for Stanford Research DS345, Keysight 3000 X-Series.<br>
 
 ---
 
@@ -274,7 +281,9 @@ wave_gen_modulation_status() -> str
 Example: wave_gen_modulation_status('On') enables the modulation.
 ```
 This function queries or sets the modulation status. If there is no argument the function will return the current status as a string. If there is an argument the specified status will be set.<br>The available states are ['On', 'Off'].<br>
-This function is only available for Stanford Research DS345.<br>
+For Keysight 3000 X-Series modulation is not available for ['Pulse', 'DC', 'Noise'] function [type](#wave_gen_functionfunction).<br>
+For Stanford Research DS345 modulation is not available for ['Noise'] function [type](#wave_gen_functionfunction).<br>
+This function is only available for Stanford Research DS345, Keysight 3000 X-Series.<br>
 
 ---
 
@@ -294,15 +303,16 @@ This function is only available for Stanford Research DS345.<br>
 
 ### wave_gen_modulation_rate(\*rate)
 ```python
-wave_gen_modulation_rate(rate: float + [' kHz',' Hz',' mHz']) -> none
+wave_gen_modulation_rate(rate: float + [' MHz',' kHz',' Hz',' mHz']) -> none
 wave_gen_modulation_rate() -> str
 ```
 ```
 Example: wave_gen_modulation_rate('5 mHz') sets the modulation rate to 5 mHz. 
 ```
 This function queries or sets the modulation rate in Hz. If there is no argument the function will return the current modulation rate in the format 'number + SI suffix'. If there is an argument the specified rate will be set.<br/>
-The available range is from 1 mHz to 10 kHz.<br/>
-This function is only available for Stanford Research DS345.<br>
+For Keysight 3000 X-Series this function queries or sets the frequency of the modulating signal.<br>
+For Stanford Research DS345 the available range is from 1 mHz to 10 kHz.<br/>
+This function is only available for Stanford Research DS345, Keysight 3000 X-Series.<br>
 
 ---
 
@@ -357,6 +367,32 @@ This function is only available for Stanford Research DS345.<br>
 
 ---
 
+### wave_gen_modulation_hop_frequency(\*frequency)
+```python
+wave_gen_modulation_hop_frequency(frequency: float + [' MHz',' kHz',' Hz',' mHz']) -> none
+wave_gen_modulation_hop_frequency() -> str
+```
+```
+Example: wave_gen_modulation_hop_frequency('1 kHz') sets the current internal trigger rate. 
+```
+This function queries or sets the hop frequency for ['Freq-Shift'](#wave_gen_modulation_typetype) modulation type in Hz. In this modulation type the output frequency "shifts" between the original carrier frequency and this "hop frequency" with the specified in the function [wave_gen_modulation_hop_rate()](#wave_gen_modulation_hop_raterate) rate. If there is no argument the function will return the current hop frequency in the format 'number + SI suffix'. If there is an argument the specified frequency will be set.<br>
+This function is only available for Keysight 3000 X-Series.<br>
+
+---
+
+### wave_gen_modulation_hop_rate(\*rate)
+```python
+wave_gen_modulation_hop_rate(rate: float + [' MHz',' kHz',' Hz',' mHz']) -> none
+wave_gen_modulation_hop_rate() -> str
+```
+```
+Example: wave_gen_modulation_hop_rate() queries the current internal trigger rate. 
+```
+This function queries or sets the hop rate for ['Freq-Shift'](#wave_gen_modulation_typetype) modulation type in Hz. In this modulation type the output frequency "shifts" between the original carrier frequency and ["hop frequency"](#wave_gen_modulation_hop_frequencyfrequency) with the specified rate. If there is no argument the function will return the current hop rate in the format 'number + SI suffix'. If there is an argument the specified rate will be set.<br>
+This function is only available for Keysight 3000 X-Series.<br>
+
+---
+
 ### wave_gen_arbitrary_function_data(p_list)
 ```python
 wave_gen_arbitrary_function_data(p_list: list of floats) -> none
@@ -367,13 +403,27 @@ Example: wave_gen_arbitrary_function_data([0, 0.5, 1, 0.5, 0, -0.5, -1, -0.5, 0]
 sets the specified arbitrary waveform.
 ```
 This function downloads an arbitrary waveform. The values have to be between -1.0 to +1.0. The value -1.0 represents the minimum value, +1.0 is the maximum value, and 0.0 is equal to [the offset](#wave_gen_offsetoffset). The minimum and maximum values are determined by the [amplitude](#wave_gen_amplitudeamplitude).<br/>
-The setting of an arbitrary function can be done as follow:<br/>
-- [wave_gen_frequency()](#wave_gen_frequencyfrequency) gives the repetition rate of an arbitrary function.
-- All available time interval (depends on the used repetition rate) is splitted by amount of points you indicate as an argument. It gives time per point. For instance, suppose the frequency is 10 Hz and we use 10 points: wave_gen_arbitrary_function_data([-1, -1, -1, 1, 1, 1, 1, -1, -1, -1]). It means the time step for one point will be (100 ms) / (10 points) = 10 ms.
-- If you have the offset equals to 2 V and the amplitude 4 V as a result of wave_gen_arbitrary_function_data([-1, -1, -1, 1, 1, 1, 1, -1, -1, -1]) for 10 Hz frequency one will have a pulse 40 ms long with the low level equals to 0 V and the high level equals to 4 V.<br/>
-<br/>
+The setting of an arbitrary function for Keysight 2000 X-series and Keysight 3000 X-series can be done as follow:<br/>
+- [wave_gen_frequency()](#wave_gen_frequencyfrequency) gives the repetition rate of an arbitrary function
+- All available time interval (depends on the used repetition rate) is splitted by amount of points you indicate as an argument. It gives time per point. For instance, suppose the frequency is 10 Hz and we use 10 points: wave_gen_arbitrary_function_data([-1, -1, -1, 1, 1, 1, 1, -1, -1, -1]). It means the time step for one point will be (100 ms) / (10 points) = 10 ms
+- If you have the offset equals to 2 V and the amplitude 4 V as a result of wave_gen_arbitrary_function_data([-1, -1, -1, 1, 1, 1, 1, -1, -1, -1]) for 10 Hz frequency one will have a pulse 40 ms long with the low level equals to 0 V and the high level equals to 4 V<br/>
+In the case of Stanford Research DS345 the [wave_gen_arbitrary_frequency()](#wave_gen_arbitrary_frequencyfrequency) function determines the rate at which each arbitrary waveform point is output. Each point in the waveform is played for a time equal to 1/{frequency}.<br>
 If the oscilloscope or waveform generator has several waveform generator, the number of the generator used should be specified by corresponding keyword argument 'channel': ['1', '2']. Keysight 4000 X-series can have up to two waveform generators. If there is only one waveform generator channel keyword argument is absent.<br/>
 This function is not available for Keysight 2000 X-series, Rigol MSO8000 Series oscilloscopes.<br>
+
+---
+
+### wave_gen_arbitrary_frequency(\*frequency)
+```python
+wave_gen_arbitrary_frequency(frequency: float + [' MHz',' kHz',' Hz',' mHz']) -> none
+wave_gen_arbitrary_frequency() -> str
+```
+```
+Examples: wave_gen_arbitrary_frequency('20 kHz')
+sets the arbitrary waveform sampling frequency to 20 kHz.
+```
+This function queries or sets the arbitrary waveform sampling frequency. If there is no argument the function will return the current sampling frequency in the format 'number + SI suffix'. If there is an argument the specified sampling frequency will be set. This frequency determines the rate at which each arbitrary waveform [point](#wave_gen_arbitrary_function_datap_list) is output. Each point in the waveform is played for a time equal to 1/{frequency}. The allowed range is from 10 mHz to 40 MHz.<br/>
+This function is only available for Stanford Research DS345.<br>
 
 ---
 

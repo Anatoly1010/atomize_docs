@@ -15,7 +15,7 @@ Please, read these rules carefully and try to follow them when writing a new mod
 - [Limits, Ranges, and Dictionaries](#limits-ranges-and-dictionaries)<br/>
 - [Configuration Files](#configuration-files)<br/>
 - [Device Specific Configuration Parameters](#device-specific-configuration-parameters)<br/>
-- [SI Unit suffix](#si-unit-suffix)<br/>
+- [SI Unit Suffix](#si-unit-suffix)<br/>
 - [Pyqtgraph SI Unit Suffix](#pyqtgraph-si-unit-suffix)<br>
 - [Test Run](#test-run)<br/>
 - [Error Messages](#error-messages)<br>
