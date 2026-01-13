@@ -14,7 +14,7 @@ parent: Documentation
 - Tektronix 3000 Series (Ethernet); Tested 09/2022
 - Tektronix 4000 Series (Ethernet); Tested 01/2021
 - Tektronix 5 Series MSO (Ethernet); Tested 12/2023
-- Rigol MSO8000 Series (Ethernet); Untested
+- Rigol MSO8000 Series (Ethernet); Tested 01/2026
 
 ---
 
@@ -147,7 +147,10 @@ This function takes no arguments and returns the time resolution per point in th
 ```python
 oscilloscope_start_acquisition() -> none
 ```
-This function starts an acquisition sequence. Previously measured curves are discarded and new data are sampled until the desired number of averages has been reached. This function acquires all the channels currently displayed on the screen of oscilloscopes and should be called before [oscilloscope_get_curve()](#oscilloscope_get_curvechannel) function.<br/>
+This function starts an acquisition sequence.<br/>
+For Keysight and Tektronix oscilloscopes previously measured curves are discarded and new data are sampled until the desired number of averages has been reached.<br>
+For Rigol MSO8000 Series this function clear all the waveforms on the screen and [runs](#oscilloscope_run the oscilloscope. Note also that for Rigol MSO8000 Series, it is not possible to control the number of averages in the waveform for the 'Average' [acquisition regime](#oscilloscope_acquisition_typeac_type). More details are given in the [oscilloscope_get_curve()](#oscilloscope_get_curvechannel) function.<br>
+This function acquires all the channels currently displayed on the screen of oscilloscopes and should be called before [oscilloscope_get_curve()](#oscilloscope_get_curvechannel) function.<br>
 
 ---
 
@@ -185,12 +188,14 @@ This function starts repetitive acquisitions. This is the same as pressing the r
 
 ### oscilloscope_get_curve(channel)
 ```python
-oscilloscope_get_curve(channel: ['CH1','CH2','CH3','CH4']) -> np.array, np.array
+oscilloscope_get_curve(channel: ['CH1','CH2','CH3','CH4']) -> np.array
 ```
 ```
 Example: oscilloscope_get_curve('CH2') returs the data from the channel 2.
 ```
-This function returns a curve (x (in s) and y (in V) axis independently) from specified channel of the oscilloscope. At the moment, it expects one argument, namely the channel from which the data should be transferred. The data from two channels can be transferred sequentially.<br/>
+This function returns a waveform (y-axis values only) from specified channel of the oscilloscope. Values are given in volts. At the moment, it expects one argument, namely the channel from which the data should be transferred. The data from two channels can be transferred sequentially.<br>
+For Rigol MSO8000 Series,  it is not possible to control the number of averages in the waveform for the 'Average' [acquisition regime](#oscilloscope_acquisition_typeac_type). This function returns the waveform data on the screen or from the internal memory. There is an additional keyword 'mode' = ['Normal', 'Raw'], which is used to specify the data return mode. In 'Normal' mode, the oscilloscope returns the waveform data currently displayed on the screen. In 'Raw' mode, the oscilloscpe returns the waveform data from the internal memory.<br>
+If you need to get both the x- and y-axis, consider using of the [oscilloscope_get_curve(integral = True)](#oscilloscope_get_curvechannel-integral--True)) function.<br>
 
 ---
 
@@ -204,6 +209,7 @@ runs acquisition and returns the integrated data from the channel 1.
 ```
 This function runs acquisition and returns the data, integrated over a window in the oscillogram for the indicated channel. The window can be indicated by the [oscilloscope_window](#oscilloscope_window) function. The integral is returned in volt-seconds. The default option is False.<br>
 This function is only available for Keysight 2000, 3000, 4000 X-Series and Rigol MSO8000 Series oscilloscopes.<br>
+For Rigol MSO8000 Series, it is not possible to control the number of averages in the waveform, and this function returns the waveform data on the screen or from the internal memory. There is an additional keyword 'mode' = ['Normal', 'Raw'], which is used to specify the data return mode. In 'Normal' mode, the oscilloscope returns the waveform data currently displayed on the screen. In 'Raw' mode, the oscilloscpe returns the waveform data from the internal memory.<br>
 
 ---
 
@@ -267,7 +273,9 @@ oscilloscope_coupling(channel: ['CH1','CH2','CH3','CH4']) -> str
 Examples: oscilloscope_coupling('CH2', 'AC') sets the coupling of the channel 2 to AC.
 oscilloscope_coupling('CH2') returns the current coupling of the channel 2.
 ```
-This function queries (if called with one argument) or sets (if called with two arguments) the coupling of one of the channels of the oscilloscope. If there is a second argument it will be set as a new coupling. If there is no second argument the current coupling for the specified channel is returned.<br/>Possible coupling settings are the following: ['AC', 'DC'].<br/>
+This function queries (if called with one argument) or sets (if called with two arguments) the coupling of one of the channels of the oscilloscope. If there is a second argument it will be set as a new coupling. If there is no second argument the current coupling for the specified channel is returned.<br/>
+Possible coupling settings are the following: ['AC', 'DC'].<br/>
+For Rigol MSO8000 Series 'AC' option is only available for '1 M' [impedance](#oscilloscope_impedanceimpedance) setting.<br/>
 
 ---
 

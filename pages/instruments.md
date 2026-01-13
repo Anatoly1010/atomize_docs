@@ -114,7 +114,7 @@ The L card device is available via ctypes. The original library can be found [he
 - Tektronix 3000 Series (Ethernet); Tested 09/2022
 - Tektronix 4000 Series (Ethernet); Tested 01/2021
 - Tektronix 5 Series MSO (Ethernet); Tested 12/2023
-- Rigol MSO8000 Series (Ethernet); Untested
+- Rigol MSO8000 Series (Ethernet); Tested 01/2026
 
 ---
 
