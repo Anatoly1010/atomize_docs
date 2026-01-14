@@ -17,6 +17,12 @@ Available via corresponding oscilloscope module.
 Available via corresponding oscilloscope module.
 - Stanford Research DS345 (RS-232); Untested.
 
+The availability of a waveform generator should be specified in the configuration file located in the ["DEVICE CONFIG DIRECTORY"](/atomize_docs/pages/usage):
+```
+wave_gen = False
+wave_gen = True
+```
+
 ---
 
 ### Functions
