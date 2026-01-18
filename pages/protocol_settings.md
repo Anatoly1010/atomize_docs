@@ -73,7 +73,10 @@ Generally, these settings are device specific.
 First of all you need to install gpib library on your computer. For linux one can use [linux-gpib](https://linux-gpib.sourceforge.io/). After successfully installing the gpib library, you must specify the board address (usually 0) and the pad of your device in [the configuration file:](/atomize_docs/pages/usage)
 ```yml
     Board = 0
+    
+    #@linux-gpib backend:
     Address = 12
+    #@pyvisa-py backend:
+    Address = GPIB0::12::INSTR
 ```
-
-The timeout option corresponds to the following dictionarey: { 'Never': 0, '10 us': 1, '30 us': 2, '100 us': 3, '300 us': 4, '1 ms': 5, '3 ms': 6, '10 ms': 7, '30 ms': 8, '100 ms': 9, '300 ms': 10, '1 s': 11, '3 s': 12, '10 s': 13, '30 s': 14, '100 s': 15, '300 s': 16, '1000 s': 17}. A detailed instruction for the linux-gpib library installation can be found [here](https://gist.github.com/ochococo/8362414fff28fa593bc8f368ba94d46a).
+The timeout setting should be set in the 'number + SI suffix' format and it corresponds to the following dictionary: { 10 us': 1, '30 us': 2, '100 us': 3, '300 us': 4, '1 ms': 5, '3 ms': 6, '10 ms': 7, '30 ms': 8, '100 ms': 9, '300 ms': 10, '1 s': 11, '3 s': 12, '10 s': 13, '30 s': 14, '100 s': 15, '300 s': 16, '1000 s': 17}. If there is no timeout setting fitting the argument the nearest available value is used and warning is printed. A detailed instruction for the linux-gpib library installation can be found [here](https://gist.github.com/ochococo/8362414fff28fa593bc8f368ba94d46a). Usually device modules use @linux-gpib backend, other cases are directly indicated in the documentation.

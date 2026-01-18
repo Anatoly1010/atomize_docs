@@ -120,6 +120,8 @@ The Main tab has the following additional features in the Output dock:
 
 These features are available from the menu that can be opened by a right-click in the Output dock area.<br>
 
+- keyboard shortcuts for pressing buttons on the Main tab. The format is 'Alt + [O, E, U, T, S, H]'.
+
 ---
 
 The Liveplot tab the following additional features in the Current Plots dock:
