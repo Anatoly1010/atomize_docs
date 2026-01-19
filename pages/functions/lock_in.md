@@ -7,9 +7,9 @@ parent: Documentation
 ---
 
 ### Devices
-- Stanford Research Lock-In Amplifier (GPIB, RS-232)
+- Stanford Research Lock-In Amplifier (GPIB: linux-gpib, RS-232)
 **SR-810**; **SR-830**; **SR-850**; Tested 02/2021 **SR-844**; Untested
-- Stanford Research Lock-In Amplifier (GPIB, RS-232, Ethernet)
+- Stanford Research Lock-In Amplifier (GPIB: linux-gpib, RS-232, Ethernet)
 **SR-860**; **SR-865a**; Tested 01/2021
 
 ---

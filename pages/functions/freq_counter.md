@@ -8,10 +8,10 @@ parent: Documentation
 
 ### Devices
 
-- Agilent Frequency Counter (GPIB, RS-232)
+- Agilent Frequency Counter (GPIB: linux-gpib, RS-232)
 **53181A**; **53131A/132A**; Tested 01/2021<br/>
 **5343A**; GPIB, Tested 02/2023
-- Keysight Frequency Counter (GPIB, RS-232, Ethernet)
+- Keysight Frequency Counter (GPIB: linux-gpib, RS-232, Ethernet)
 **53230A/220A**; Untested
 
 ---

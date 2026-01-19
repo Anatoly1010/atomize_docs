@@ -9,8 +9,8 @@ parent: Documentation
 Bruker BH15 module was rewritten from the [FSC2 module](http://users.physik.fu-berlin.de/~jtt/fsc2/fsc2.html) originally created by Jens Thomas Törring in C. Communication with Bruker ER032M field controller can be achieved using the same module.
 
 ### Devices
-- Bruker **BH15** (GPIB); Tested 01/2021
-- Bruker **ER032M** (GPIB); Available via BH15 module
+- Bruker **BH15** (GPIB: linux-gpib); Tested 01/2021
+- Bruker **ER032M** (GPIB: linux-gpib); Available via BH15 module
 - Bruker **ER031M** (RS-232 using arduino emulated keyboard); Tested 01/2021
 - [Homemade](https://patents.google.com/patent/RU2799103C1/en?oq=RU2799103C1) magnetic field controller **ITC1** (RS-232); Tested 04/2023
 

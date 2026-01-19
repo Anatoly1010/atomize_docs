@@ -8,7 +8,7 @@ parent: Documentation
 
 
 ### Devices
-- Stanford Research **DG535** (GPIB); Untested
+- Stanford Research **DG535** (GPIB: linux-gpib); Untested
 
 ---
 

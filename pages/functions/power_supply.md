@@ -11,7 +11,7 @@ parent: Documentation
 Available devices:
 - Rigol **DP800** Series (RS-232, Ethernet); Tested 01/2021
 - Stanford Research **DC205** (RS-232); Untested
-- Stanford Research **PS300** High Voltage Series (RS-232, GPIB); Untested
+- Stanford Research **PS300** High Voltage Series (RS-232, GPIB: linux-gpib); Untested
 
 Please note, that since SR PS310 and PS325 have only GPIB interface, while SR PS350, PS355, PS365, PS370, PS375 have both RS-232 and GPIB, this setting should be specified in the configuration file:
 ```python

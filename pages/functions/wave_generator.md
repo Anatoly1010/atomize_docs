@@ -15,7 +15,7 @@ Available via corresponding oscilloscope module.
 Available via corresponding oscilloscope module.
 - Waveform Generator of Rigol MSO8000 Series (Ethernet)
 Available via corresponding oscilloscope module.
-- Stanford Research DS345 (RS-232); Untested.
+- Stanford Research DS345 (RS-232; GPIB: linux-gpib; pyvisa-py); Tested 01/2026.
 
 The availability of a waveform generator should be specified in the configuration file located in the ["DEVICE CONFIG DIRECTORY"](/atomize_docs/pages/usage):
 ```yml

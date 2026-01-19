@@ -8,7 +8,7 @@ parent: Documentation
 
 ### Devices
 
-- Lakeshore (GPIB, RS-232)
+- Lakeshore (GPIB: linux-gpib, RS-232)
 **325**; **331**; **332**; **335**; **336**; **340**; Tested 01/2021
 - Oxford Instruments (RS-232)
 **ITC 503**; Tested 01/2021
