@@ -124,14 +124,14 @@ These features are available in the menu that can be opened by a right-click in 
 
 ---
 
-The script editor dock has the following features:
+The Script Editor dock has the following features:
 - press 'Ctrl + G' to jump to specified line;
 - press 'Ctrl + F' to search for the specified text; press 'N' to show the next occurrence;
 - hidden characters can be displayed by selecting any part of text;
 
 ---
 
-The queue dock is used to create an execution queue by pressing 'Add to Queue' button. All scripts will be [tested](/atomize_docs/pages/writing_modules) before being added to the queue. The execution oreder is from top to bottom. If there are items in the queue, pressing the 'Stop Experiment' button will stop the execution of the current script and clear the queue. Additional features:
+The Queue dock is used to create an execution queue by pressing 'Add to Queue' button. All scripts will be [tested](/atomize_docs/pages/writing_modules#test-run) before being added to the queue. The execution oreder is from top to bottom. If there are items in the queue, pressing the 'Stop Experiment' button will stop the execution of the current script and clear the queue. Additional features:
 - delete the selected file from the queue;
 - clear the queue;
 - drag and drop files to change the execution order;
@@ -141,7 +141,7 @@ The removal features are available in the menu that can be opened by a right-cli
 ---
 
 The Liveplot tab the following additional features in the Current Plots dock:
-- abort the execution of the experimental script; 
+- stop the execution of the experimental script; 
 - delete a selected dock with graphs;
 - open 1d data in csv multi-column format and plot it in a new graph dock; 
 - open 2d data in csv format and plot it in a new graph dock. 
