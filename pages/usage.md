@@ -126,7 +126,7 @@ These features are available in the menu that can be opened by a right-click in 
 
 The Script Editor dock has the following features:
 - press 'Ctrl + G' to jump to specified line;
-- press 'Ctrl + F' to search for the specified text; press 'N' to show the next occurrence;
+- press 'Ctrl + F' to search for the specified text; press 'Ctrl + N' to show the next occurrence;
 - hidden characters can be displayed by selecting any part of text;
 
 ---
