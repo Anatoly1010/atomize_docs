@@ -154,6 +154,9 @@ The graph docks have the following additional features:
 - delete the selected curve from the graph dock;
 - vertically shift the selected curve from the graph dock; 
 - open 1d data in csv multi-column format and plot it in this graph dock; 
-- save 2d data from the displayed contour plot. 
+- save 2d data from the displayed contour plot;
 
 These features are available in the Plot Options menu of pyqtgraph that can be opened by a right-click in the graph dock area.<br>
+
+- double-click the left mouse button to display / hide the cross-hair widget (for 1D plots) or the cross-section widget (for 2D plots);
+- click the middle mouse button to lock the cross-hair or cross-section widget in its current position.
