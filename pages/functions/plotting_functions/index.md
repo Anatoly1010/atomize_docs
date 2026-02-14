@@ -7,7 +7,6 @@ parent: Documentation
 has_children: true
 ---
 <br/>
-
 ## General information
 Plotting of raw experimental data is available via [Liveplot](https://github.com/PhilReinhold/liveplot) library modified according to the aims of the project. The general idea of the Liveplot is a possibitily to see your data as it comes in to your script, with minimal effort using an appropriate shell to cover verbose syntax.
 
