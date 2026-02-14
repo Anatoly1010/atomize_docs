@@ -93,11 +93,12 @@ The same idea is valid for plotting and file handling modules.
 ```python
 # importing of the general purpose modules
 import atomize.general_modules.general_functions as general
-import atomize.general_modules.csv_opener_saver_tk_kinter as openfile
+import atomize.general_modules.csv_opener_saver as openfile
 
 # initialization
 file_handler = openfile.Saver_Opener()
-head, data = file_handler.open_1D_dialog(header = 0)
+file_data = file_handler.open_file_dialog()
+header, data = file_handler.open_1d(file_data, header = 0)
 
 # using
 general.plot_1d('1D Plot', data[0], data[1], label = 'test_data', yname = 'Y axis', yscale = 'V')

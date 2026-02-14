@@ -19,11 +19,11 @@ Bruker BH15 module was rewritten from the [FSC2 module](http://users.physik.fu-b
 ### Functions
 - [magnet_name()](#magnet_name)<br/>
 - [magnet_setup(start_field, step_field)](#magnet_setupstart_field-step_field)<br/>
-- [magnet_field(*field)](#magnet_fieldfield)<br/>
+- [magnet_field(\*field)](#magnet_fieldfield)<br/>
 - [magnet_sweep_up()](#magnet_sweep_up)<br/>
 - [magnet_sweep_down()](#magnet_sweep_down)<br/>
 - [magnet_reset_field()](#magnet_reset_field)<br/>
-- [magnet_field_step_size(*step)](#magnet_field_step_sizestep)<br/>
+- [magnet_field_step_size(\*step)](#magnet_field_step_sizestep)<br/>
 - [magnet_command(command)](#magnet_commandcommand)<br/>
 
 ---
@@ -50,7 +50,7 @@ The function is available for ITC1 field controller but has no meaning.<br/>
 
 ---
 
-### magnet_field(*field)
+### magnet_field(\*field)
 ```python
 magnet_field(field: float) -> none
 magnet_field() -> float
@@ -103,7 +103,7 @@ The function is not available for Bruker ER031M and ITC1 field controllers.<br/>
 
 ---
 
-### magnet_field_step_size(*step)
+### magnet_field_step_size(\*step)
 ```python
 magnet_field_step_size(step: float) -> none
 magnet_field_step_size() -> float
