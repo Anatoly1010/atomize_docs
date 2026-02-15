@@ -142,7 +142,6 @@ The removal features are available in the menu that can be opened by a right-cli
 ---
 
 The Liveplot tab the following additional features in the Current Plots dock:
-- stop the execution of the experimental script; 
 - delete a selected dock with graphs;
 - open 1d data in csv multi-column format and plot it in a new graph dock; 
 - open 2d data in csv format and plot it in a new graph dock. 

@@ -22,7 +22,6 @@ The [Liveplot](https://github.com/PhilReinhold/liveplot) provides several possib
 ## GUI features
 
 The Liveplot tab the following additional features in the Current Plots dock:
-- stop the execution of the experimental script; 
 - delete a selected dock with graphs;
 - open 1d data in csv multi-column format and plot it in a new graph dock; 
 - open 2d data in csv format and plot it in a new graph dock. 
