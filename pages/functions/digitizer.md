@@ -51,6 +51,7 @@ The L card device is available via ctypes. The original library can be found [he
 - [digitizer_read_settings()](#digitizer_read_settings)<br/>
 - [digitizer_window()](#digitizer_window)<br/>
 - [digitizer_window_points()](#digitizer_window_points)<br/>
+- [digitizer_at_exit(integral = False)](#digitizer_at_exitintegral--false)<br/>
 
 ---
 
@@ -424,5 +425,16 @@ digitizer_window_points() -> int
 ```
 Examples: digitizer_window_points() returns the number of points in the digitizer window.
 ```
-This function returns the number of points in the digitizer window. The window is used in the [digitizer_get_curve()](#digitizer_get_curveintegral--true) function. The number of points in the window can be set as the length of the [DETECTION pulse](/atomize_docs/pages/functions/pulse_programmer#pulser_pulsekargs).<br>
-This function is not available for L card L-502.<br>
+This function returns the number of points in the digitizer window. The window is used in the [digitizer_get_curve()](#digitizer_get_curvepoints-phases-integral--false-current_scan--1-total_scan--1) function. The number of points in the window can be set as the length of the [DETECTION pulse](/atomize_docs/pages/functions/pulse_programmer#pulser_pulsekargs).<br>
+This function is available only for Insys FM214x3GDA.<br>
+
+---
+
+### digitizer_at_exit(integral = False)
+```python
+digitizer_at_exit(integral = [True, False]) -> numpy.array, numpy.array
+```
+```
+Examples: digitizer_at_exit() returns current accumulated arrays from the device module.
+```
+This function is available only for Insys FM214x3GDA and is similar to the [digitizer_get_curve()](#digitizer_get_curveintegral--true) function. The main difference is that this function always return the current accumulated arrays, while [digitizer_get_curve()](#digitizer_get_curveintegral--true) may return np.nan if no new buffer has been transferred from the card to the computer at the time of execution.<br>
