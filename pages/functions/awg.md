@@ -255,7 +255,7 @@ awg_redefine_delta_phase(name: ['P0', 'P1', etc.], delta_phase: float) -> none
 Example: awg_redefine_delta_phase(name = 'P0', delta_phase = pi) 
 changes delta_phase setting of the 'P0' pulse to pi radians.
 ```
-This function should be called with two keyword arguments, namely name and delta_phase. The first argument specifies the name of the pulse as a string. The second argument defines a new value of delta_phase in radians. The main purpose of the function is non-uniform sampling. Please note, that the function does not update the AWG card. The [awg_update()](#awg_update) function should be called to apply changes. The function has no meaning for the 'Single Joined' and Sequence' card mode, since phases of the pulses are calculated from the pulse positions automatically.<br>
+This function should be called with two keyword arguments, namely name and delta_phase. The first argument specifies the name of the pulse as a string. The second argument defines a new value of delta_phase in radians. Arguments can be either single strings or lists, for example: name = ['P0', 'P1'], delta_phase = [0, np.pi]. The main purpose of the function is non-uniform sampling. Please note, that the function does not update the AWG card. The [awg_update()](#awg_update) function should be called to apply changes. The function has no meaning for the 'Single Joined' and Sequence' card mode, since phases of the pulses are calculated from the pulse positions automatically.<br>
 
 ---
 
@@ -268,7 +268,7 @@ awg_redefine_phase(name: ['P0', 'P1', etc.], phase: float) -> none
 Example: awg_redefine_phase(name = 'P0', phase = pi) 
 changes phase setting of the 'P0' pulse to pi radians.
 ```
-This function should be called with two keyword arguments, namely name and phase. The first argument specifies the name of the pulse as a string. The second argument defines a new value of phase in radians. The main purpose of the function is phase cycling. Please note, that the function does not update the AWG card. The [awg_update()](#awg_update) function should be called to apply changes. The function has no meaning for the 'Sequence' card mode. One should redefine all the sequence instead.<br>
+This function should be called with two keyword arguments, namely name and phase. The first argument specifies the name of the pulse as a string. The second argument defines a new value of phase in radians. Arguments can be either single strings or lists, for example: name = ['P0', 'P1'], phase = [0, np.pi]. The main purpose of the function is phase cycling. Please note, that the function does not update the AWG card. The [awg_update()](#awg_update) function should be called to apply changes. The function has no meaning for the 'Sequence' card mode. One should redefine all the sequence instead.<br>
 
 ---
 
@@ -280,7 +280,7 @@ awg_redefine_frequency(name: ['P0', 'P1', etc.], freq: float + [' MHz']) -> none
 Example: awg_redefine_frequency(name = 'P0', freq = '10 MHz') 
 changes frequency setting of the 'P0' pulse to '10 MHz'.
 ```
-This function should be called with two keyword arguments, namely name and frequency. The first argument specifies the name of the pulse as a string. The second argument defines a new value of frequency as a string, i.e. '100 MHz' or a list of string ('0 MHz', '100' MHz) for WURST and SECH/TANH pulses, see [awg_pulse()](#awg_pulse) for more details. Please note, that the function does not update the AWG card. The [awg_update()](#awg_update) function should be called to apply changes. The function has no meaning for the 'Sequence' card mode. One should redefine all the sequence instead.<br>
+This function should be called with two keyword arguments, namely name and frequency. The first argument specifies the name of the pulse as a string. The second argument defines a new value of frequency as a string, i.e. '100 MHz' or a list of string ('0 MHz', '100' MHz) for WURST and SECH/TANH pulses, see [awg_pulse()](#awg_pulse) for more details. Arguments can be either single strings or lists, for example: name = ['P0', 'P1'], freq = ['10 MHz', ('0 MHz', '50 MHz')]. Please note, that the function does not update the AWG card. The [awg_update()](#awg_update) function should be called to apply changes. The function has no meaning for the 'Sequence' card mode. One should redefine all the sequence instead.<br>
 
 ---
 
@@ -293,7 +293,7 @@ awg_redefine_delta_start(
 Example: awg_redefine_delta_start(name = 'P0', delta_start = '10 ns') 
 changes delta_start setting of the 'P0' pulse to 10 ns.
 ```
-This function should be called with two keyword arguments, namely name and delta_start. The first argument specifies the name of the pulse as a string. The second argument defines a new value of delta_start as a string in the format 'number + [' ns', ' us', ' ms']. The main purpose of the function is non-uniform sampling. Please note, that the function does not update the AWG card. The [awg_update()](#awg_update) function should be called to apply changes. The function has no meaning for the 'Single', 'Multi', and 'Sequence' card mode, since in these modes the start of the pulse is determined by the trigger event.<br>
+This function should be called with two keyword arguments, namely name and delta_start. The first argument specifies the name of the pulse as a string. The second argument defines a new value of delta_start as a string in the format 'number + [' ns', ' us', ' ms']. Arguments can be either single strings or lists, for example: name = ['P0', 'P1'], delta_start = ['0 ns', '32 ns']. The main purpose of the function is non-uniform sampling. Please note, that the function does not update the AWG card. The [awg_update()](#awg_update) function should be called to apply changes. The function has no meaning for the 'Single', 'Multi', and 'Sequence' card mode, since in these modes the start of the pulse is determined by the trigger event.<br>
 
 ---
 
@@ -306,7 +306,7 @@ awg_redefine_length_increment(
 Example: awg_redefine_length_increment(name = 'P2', length_increment = '10 ns')
 changes length increment setting of the 'P2' pulse to 10 ns.
 ```
-This function should be called with two keyword arguments, namely name and length increment. The first argument specifies the name of the pulse as a string. The second argument defines a new value of length increment as a string in the format 'number + [' ns', ' us', ' ms']. The main purpose of the function is non-uniform sampling. Please note, that the function does not update the AWG card. The [awg_update()](#awg_update) function should be called to apply changes. The function has no meaning for the 'Sequence' card mode. One should redefine all the sequence instead.<br>
+This function should be called with two keyword arguments, namely name and length increment. The first argument specifies the name of the pulse as a string. The second argument defines a new value of length increment as a string in the format 'number + [' ns', ' us', ' ms']. Arguments can be either single strings or lists, for example: name = ['P0', 'P1'], length_increment = ['0 ns', '32 ns']. The main purpose of the function is non-uniform sampling. Please note, that the function does not update the AWG card. The [awg_update()](#awg_update) function should be called to apply changes. The function has no meaning for the 'Sequence' card mode. One should redefine all the sequence instead.<br>
 
 ---
 

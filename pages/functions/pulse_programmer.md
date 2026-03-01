@@ -183,7 +183,7 @@ pulser_redefine_start(
 Example: pulser_redefine_start(name = 'P0', start = '100 ns') changes 
 the start setting of the 'P0' pulse to 100 ns.
 ```
-This function should be called with two keyword arguments, namely name and start. The first argument specifies the name of the pulse as a string. The second argument defines a new value of pulse start as a string in the format 'number + [' ms', ' us', ' ns']'. The main purpose of the function is non-uniform sampling. Please note, that the function does not update the pulse programmer. The [pulser_update()](#pulser_update) function should be called to apply changes.<br/>
+This function should be called with two keyword arguments, namely name and start. The first argument specifies the name of the pulse as a string. The second argument defines a new value of pulse start as a string in the format 'number + [' ms', ' us', ' ns']'. Arguments can be either single strings or lists, for example: name = ['P0', 'P1'], start = ['0 ns', '320 ns']. The main purpose of the function is non-uniform sampling. Please note, that the function does not update the pulse programmer. The [pulser_update()](#pulser_update) function should be called to apply changes.<br/>
 In the case of Insys FM214x3GDA start will be rounded to a multiple of 3.2.<br>
 
 ---
@@ -197,7 +197,7 @@ pulser_redefine_delta_start(
 Example: pulser_redefine_delta_start(name = 'P0', delta_start = '10 ns') 
 changes the delta_start setting of the 'P0' pulse to 10 ns.
 ```
-This function should be called with two keyword arguments, namely name and delta_start. The first argument specifies the name of the pulse as a string. The second argument defines a new value of delta_start as a string in the format 'number + [' ms', ' us', ' ns']'. The main purpose of the function is non-uniform sampling. Please note, that the function does not update the pulse programmer. The [pulser_update()](#pulser_update) function should be called to apply changes.<br/>
+This function should be called with two keyword arguments, namely name and delta_start. The first argument specifies the name of the pulse as a string. The second argument defines a new value of delta_start as a string in the format 'number + [' ms', ' us', ' ns']'. Arguments can be either single strings or lists, for example: name = ['P0', 'P1'], delta_start = ['0 ns', '32 ns']. The main purpose of the function is non-uniform sampling. Please note, that the function does not update the pulse programmer. The [pulser_update()](#pulser_update) function should be called to apply changes.<br/>
 In the case of Insys FM214x3GDA delta_start will be rounded to a multiple of 3.2.<br>
 
 ---
@@ -211,7 +211,7 @@ pulser_redefine_length_increment(
 Example: pulser_redefine_length_increment(name = 'P2', length_increment = '2 ns') 
 changes the length increment setting of the 'P2' pulse to 2 ns.
 ```
-This function should be called with two keyword arguments, namely name and length_increment. The first argument specifies the name of the pulse as a string. The second argument defines a new value of length increment as a string in the format 'number + [' ms', ' us', ' ns']'. The main purpose of the function is non-uniform sampling. Please note, that the function does not update the pulse programmer. The [pulser_update()](#pulser_update) function should be called to apply changes.<br/>
+This function should be called with two keyword arguments, namely name and length_increment. The first argument specifies the name of the pulse as a string. The second argument defines a new value of length increment as a string in the format 'number + [' ms', ' us', ' ns']'. Arguments can be either single strings or lists, for example: name = ['P0', 'P1'], length_increment = ['0 ns', '3.2 ns']. The main purpose of the function is non-uniform sampling. Please note, that the function does not update the pulse programmer. The [pulser_update()](#pulser_update) function should be called to apply changes.<br/>
 In the case of Insys FM214x3GDA length_increment will be rounded to a multiple of 3.2.<br>
 
 ---
