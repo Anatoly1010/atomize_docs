@@ -31,12 +31,16 @@ These features are available in the menu that can be opened by a right-click in 
 ---
 
 The graph docks have the following additional features: 
-- delete the selected curve from the graph dock;
-- vertically shift the selected curve from the graph dock; 
-- open 1d data in csv multi-column format and plot it in this graph dock; 
-- save 2d data from the displayed contour plot.
+- Delete: Middle-click a curve name in the legend to remove it from the graph;
+- Bring to Front: Left-click a curve name in the legend to move it to the top layer;
+- Shift: Drag a curve with the mouse to shift it vertically or horizontally; 
+- Scale: Hold 'Ctrl' while dragging a curve to scale it vertically;
+- Reset: 'Alt' + Left-click on a curve to reset its shift and scale to their original values;
+- Toggle Widgets: Double-click to show/hide the cross-hair widget (for 1D plots) or the cross-section widget (for 2D plots);
+- Lock Position: Middle-click to lock the cross-hair or cross-section widget in its current position;
 
-These features are available in the Plot Options menu of pyqtgraph that can be opened by a right-click in the graph dock area.<br>
+Additional features are available in the menu that can be opened by a right-click in the graph dock area:<br>
+- Import Data: Open 1D data in multi-column CSV format and plot it directly in the graph dock; 
+- Export Data: Save 2D data from the displayed contour plot;
+- Hide Label: The Hide Label combo box can be used to toggle the visibility of labels on the cross-hair or cross-section widgets.
 
-- double-click the left mouse button to display / hide the cross-hair widget (for 1D plots) or the cross-section widget (for 2D plots);
-- click the middle mouse button to lock the cross-hair or cross-section widget in its current position.
