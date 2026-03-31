@@ -372,14 +372,14 @@ This function is not available for M4I 2211 X8, Insys FM214x3GDA, and L card L-5
 
 ### digitizer_decimation(\*dec)
 ```python
-digitizer_decimation(decimation: int) -> none
+digitizer_decimation(decimation: int [1,2,4]) -> none
 digitizer_decimation() -> int
 ```
 ```
-Example: digitizer_decimation(4) sets the decimation coefficient to 128.
+Example: digitizer_decimation(4) sets the decimation coefficient to 4.
 ```
 This function queries or sets the decimation coefficient for Insys FM214x3GDA. If there is no argument the function will return the decimation coefficient of the digitizer. If there is an argument the specified decimation will be set. It can be used instead of the function [digitizer_sample_rate()](#digitizer_sample_rates_rate).<br/>
-The available range is 1-4, which corresponds to 0.4 ns/point - 1.6 ns/point. This function should be called before [pulser_open()](/atomize_docs/pages/functions/pulse_programmer#pulser_open).<br>
+The available coefficients are 1, 2, 4, which corresponds to 0.4 ns/point, 0.8 ns/point, and 1.6 ns/point. This function should be called before [pulser_open()](/atomize_docs/pages/functions/pulse_programmer#pulser_open).<br>
 
 ---
 
