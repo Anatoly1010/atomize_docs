@@ -158,10 +158,12 @@ The graph docks have the following additional features:
 - Reset: 'Alt' + Left-click on a curve to reset its shift and scale to their original values;
 - Toggle Widgets: Double-click to show/hide the cross-hair widget (for 1D plots) or the cross-section widget (for 2D plots);
 - Lock Position: Middle-click to lock the cross-hair or cross-section widget in its current position.
+- Ruler: Hold 'Shift' and left-drag to measure distance between two points. For 1D plots the endpoints snap to the nearest data point of the curve under the press position, and the ruler adopts that curve's color; the label shows ΔX, ΔY, and the (X, Y) of both endpoints. For 2D plots the endpoints snap to the nearest pixel center, and the label shows ΔX, ΔY, ΔZ, and the (X, Y, Z) of both endpoints. Hold 'Shift + Ctrl' while dragging to use free coordinates without snapping. The ruler is removed automatically when the cross-hair or cross-section widget is hidden.
 
 Additional features are available in the menu that can be opened by a right-click in the graph dock area:<br>
 - Import Data: Open 1D data in multi-column CSV format and plot it directly in the graph dock; 
 - Export Data: Save 2D data from the displayed contour plot;
 - Hide Label: The Hide Label combo box can be used to toggle the visibility of labels on the cross-hair or cross-section widgets.
+- Clear Ruler: Removes the current ruler overlay from the 1D or 2D plot.
 
 
