@@ -8,6 +8,8 @@ docs_dir: mkdocs_poc
 
 theme:
   name: material
+  logo: images/Atomize-mark.svg
+  favicon: images/Atomize-mark.svg
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -52,7 +54,23 @@ markdown_extensions:
   - toc:
       permalink: true
 
+extra_css:
+  - stylesheets/extra.css
+
 nav:
   - Home: index.md
+  - Requirements: requirements.md
+  - Usage: usage.md
+  - Instruments: instruments.md
+  - Protocol settings: protocol_settings.md
+  - Writing modules: writing_modules.md
   - Documentation:
       - Digitizers: functions/digitizer.md
+      - Pulse Programmers: functions/pulse_programmer.md
+  - Projects:
+      - X-band pulsed EPR: projects/xband.md
+      - Q-band pulsed EPR: projects/qband.md
+      - EPR endstation: projects/endstation.md
+  - Examples:
+      - CW EPR: script_examples/cw_epr.md
+  - Contributors: contributors.md

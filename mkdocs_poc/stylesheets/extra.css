@@ -1,0 +1,50 @@
+/* ---------- Right-hand table of contents ---------- */
+
+/* Wider so most function signatures fit on a single line. The flex layout
+   in .md-main__inner adjusts the main content width automatically — don't
+   add a margin-right override (an earlier version did, and it broke the
+   horizontal centering of the whole layout). */
+.md-sidebar--secondary {
+  width: 16rem;
+}
+
+/* Let long entries wrap at natural breakpoints (spaces, commas) instead of
+   being truncated. Don't break inside tokens — a few long single-token
+   entries may overflow the box slightly, but most read cleanly. The sidebar
+   shows a vertical scrollbar when total height exceeds the viewport. */
+.md-sidebar--secondary .md-ellipsis {
+  white-space: normal;
+  text-overflow: clip;
+  overflow: visible;
+  line-height: 1.35;
+}
+
+/* ---------- Tables ---------- */
+
+/* Don't break inline `code` across lines inside tables — short tokens like
+   `'DETECTION'` were splitting on the leading quote when the column was
+   narrow. The column grows to fit instead. */
+.md-typeset table:not([class]) td code,
+.md-typeset table:not([class]) th code {
+  white-space: nowrap;
+}
+
+/* ---------- Code blocks ---------- */
+
+/* Suppress the unnecessary vertical scrollbar gutter that some browsers
+   reserve when `overflow: auto` is set, even on blocks that don't overflow.
+   Horizontal scrolling for long lines is still allowed. */
+.md-typeset pre > code {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Tighter code blocks — reduce vertical space taken by long snippets
+   without harming readability. Material's defaults use line-height ≈ 1.6
+   for code which is generous; 1.35 fits 18% more lines per screen. */
+.md-typeset pre > code {
+  font-size: 0.74rem;
+  line-height: 1.35;
+  padding-top: 0.6em;
+  padding-bottom: 0.6em;
+}

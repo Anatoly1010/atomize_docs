@@ -1,33 +1,31 @@
 # Atomize
 
-Atomize is a modular software designed to control a wide range of scientific
-and industrial instruments, integrate them into a unified multifunctional
-setup, and automate routine experimental work.
+Atomize is a modular software designed to control a wide range of scientific and industrial instruments, integrate them into a unified multifunctional setup, and automate routine experimental work. The general idea is close to [FSC2 software](http://users.physik.fu-berlin.de/~jtt/fsc2.phtml) developed by Jens Thomas Törring. Remote control of spectrometers is usually carried out using home-written programs, which are often restricted to doing a certain experiment with a specific set of devices. In contrast, the programs like [FSC2](http://users.physik.fu-berlin.de/~jtt/fsc2.phtml) and [Atomize](https://github.com/Anatoly1010/Atomize) are much more flexible, since they are based on a modular approach for communication with instruments and scripting language (EDL in FSC2; Python in Atomize) for data measuring.
 
-!!! note "Proof-of-concept"
-    This is an MkDocs Material rendering of the Atomize documentation, set up
-    side-by-side with the existing Jekyll site for comparison. Only the
-    [Digitizers](functions/digitizer.md) page has been converted so far.
+Atomize[^1] uses [liveplot library](https://github.com/PhilReinhold/liveplot) based on pyqtgraph as a main graphics library. [Liveplot](https://github.com/PhilReinhold/liveplot) was originally developed by Phil Reinhold. Since then, several improvements have been made to use it in Atomize, and it has been directly embedded into Atomize.
 
-The general idea is close to [FSC2 software](http://users.physik.fu-berlin.de/~jtt/fsc2.phtml)
-developed by Jens Thomas Törring. In contrast to home-written control programs
-that are restricted to a single experiment, Atomize is based on a modular
-approach for communication with instruments and uses Python as the scripting
-language for data measurement.
+[Python Programming Language](https://www.python.org/) is used inside experimental scripts, which opens up almost unlimited possibilities for raw experimental data treatment. In addition, with PyQt, one can create experimental scripts with a simple graphical interface, allowing users not familiar with Python to use it. Several examples of scripts are provided in /atomize/tests/ directory, including a GUI script with extended comments inside. Also a variant of the Atomize with GUI Control Window extension can be found [here.](https://github.com/Anatoly1010/Atomize_ITC)
 
-Atomize uses the [liveplot library](https://github.com/PhilReinhold/liveplot)
-based on pyqtgraph as its main graphics library.
+The list of available instruments is given [here.](instruments.md) Information about protocol settings for instruments can be found [here.](protocol_settings.md) If you would like to write a module for the instrument that is not currently available, please, read this [instruction.](writing_modules.md)
 
 ## Status
 
-Atomize has been tested and is currently used for controlling several EPR
-spectrometers using a broad range of different devices. The program has been
-tested on Ubuntu 18.04 / 20.04 / 22.04 LTS and Windows 10.
+At the moment, Atomize has been tested and is currently used for controlling several EPR spectrometers using a broad range of different devices. The program has been tested on Ubuntu 18.04 LTS, 20.04 LTS, and 22.04 LTS; Windows 10.
 
-## Citation
+## General Structure
 
-Melnikov A, Vedkal A, Ishchenko A, Veber S.
-*Atomize: A Modular Software for Control and Automation of Scientific and
-Industrial Instruments.*
-Journal of Open Research Software, Vol. 13, Issue 1, Article 26.
-DOI: <https://doi.org/10.5334/jors.594>
+The general structure of Atomize can be visualized by the following figure:
+
+![Figure_1](images/figure_1.png)
+
+## More Details
+
+More details are provided in the [JORS paper](https://doi.org/10.5334/jors.594). Please cite it, if you use Atomize:
+
+> Melnikov A., Vedkal A., Ishchenko A., Veber S.
+> *Atomize: A Modular Software for Control and Automation of Scientific
+> and Industrial Instruments.*
+> Journal of Open Research Software, Vol. 13, Issue 1, Article № 26.
+> DOI: <https://doi.org/10.5334/jors.594>
+
+[^1]: Atomize = A + TOM + ize; A stands for Anatoly, main developer; TOMo stands for the International TOMography center, our organization

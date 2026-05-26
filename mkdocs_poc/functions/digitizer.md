@@ -2,12 +2,14 @@
 
 ## Devices
 
-- Spectrum M4I **4450 X8**; Tested 08/2021
-- Spectrum M4I **2211 X8**; Tested 01/2023
+| Device                                                                          | Tested  | Library                                                                                       |
+| ------------------------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------- |
+| **Spectrum M4I 4450 X8**                                                        | 08/2021 | [Spectrum](https://spectrum-instrumentation.com/en/m4i4450-x8)                                |
+| **Spectrum M4I 2211 X8**                                                        | 01/2023 | [Spectrum](https://spectrum-instrumentation.com/en/m4i4450-x8)                                |
+| **[Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda)**               | 03/2025 | [Atomize_ITC libs](https://github.com/Anatoly1010/Atomize_ITC/tree/master/libs)               |
+| **L card L-502**                                                                | 03/2022 | [L card](https://www.lcard.ru/products/boards/l-502?qt-ltab=6#qt-ltab)                        |
 
-The original [library](https://spectrum-instrumentation.com/en/m4i4450-x8) was
-written by Spectrum. The library header files (`pyspcm.py`, `spcm_tools.py`)
-should be added to the path directly in the module file:
+The original [library](https://spectrum-instrumentation.com/en/m4i4450-x8) was written by Spectrum. The library header files (`pyspcm.py`, `spcm_tools.py`) should be added to the path directly in the module file:
 
 ```python
 sys.path.append('/path/to/python/header/of/Spectrum/library')
@@ -15,666 +17,453 @@ from pyspcm import *
 from spcm_tools import *
 ```
 
-- [Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda) as ADC; Tested 03/2025
+The Insys device is available via `ctypes`. The original library can be found [here](https://github.com/Anatoly1010/Atomize_ITC/tree/master/libs).
 
-    The Insys device is available via `ctypes`. The original library can be
-    found [here](https://github.com/Anatoly1010/Atomize_ITC/tree/master/libs).
-
-- L card L-502 as ADC; Tested 03/2022
-
-    The L card device is available via `ctypes`. The original library can be
-    found [here](https://www.lcard.ru/products/boards/l-502?qt-ltab=6#qt-ltab).
-    The path to the installed library should be provided directly in the
-    device module file.
+The L card device is available via `ctypes`. The original library can be found [here](https://www.lcard.ru/products/boards/l-502?qt-ltab=6#qt-ltab). The path to the installed library should be provided directly in the device module file.
 
 ## Functions
 
 ### digitizer_name() { #digitizer_name }
 
 ```python
-digitizer_name() -> str
+digitizer_name()    # -> str; device name
 ```
 
-Returns the device name.
+This function returns device name.
 
 ---
 
 ### digitizer_setup() { #digitizer_setup }
 
 ```python
-digitizer_setup() -> None
+digitizer_setup()   # write all settings into the digitizer
 ```
 
-!!! example
-    `digitizer_setup()` writes all the settings into the digitizer.
+This function writes all the settings modified by other functions to the digitizer. The function should be called only without arguments. One must initialize the settings before calling [`digitizer_get_curve()`](#digitizer_get_curve).
 
-Writes all the settings modified by other functions to the digitizer. The
-function should be called only without arguments. One must initialize the
-settings before calling [`digitizer_get_curve()`](#digitizer_get_curve).
-
-The default settings (if no other function was called) are:
-
-| Setting          | M4I 4450 X8 | M4I 2211 X8 |
-| ---------------- | ----------- | ----------- |
-| Sample clock     | 500 MHz     | 1250 MHz    |
-| Number of points | 128         | 256         |
-| Input mode       | `HF`        | —           |
-
-Common defaults for both: clock mode `Internal`; reference clock 100 MHz; card
-mode `Single`; trigger channel `External`; trigger mode `Positive`; number of
-averages 2; trigger delay 0; enabled channels CH0 and CH1; coupling `DC` on
-both; impedance `50` Ω on both; horizontal offset 0 % on both; range `500 mV`
-on both; posttrigger points 64.
+The default settings (if no other function was called) are the following: Sample clock is 500 MHz (M4I 4450 X8) or 1250 MHz (M4I 2211 X8); Clock mode is `Internal`; Reference clock is 100 MHz; Card mode is `Single`; Trigger channel is `External`; Trigger mode is `Positive`; Number of averages is 2; Trigger delay is 0; Enabled channels are CH0 and CH1; Input mode is `HF` (M4I 4450 X8); Coupling of CH0 and CH1 is `DC`; Impedance of CH0 and CH1 is `50`; Horizontal offset of CH0 and CH1 is 0%; Range of CH0 is `500 mV`; Range of CH1 is `500 mV`; Number of points is 128 (M4I 4450 X8) or 256 (M4I 2211 X8); Posttrigger points is 64.
 
 !!! note
-    This function is not available for Insys FM214x3GDA — initialization is
-    done by [`pulser_open()`](../pulse_programmer.md#pulser_open) instead.
+    This function is not available for Insys FM214x3GDA. This is done by
+    [`pulser_open()`](pulse_programmer.md#pulser_open) function.
 
 ---
 
 ### digitizer_get_curve() { #digitizer_get_curve }
 
 ```python
-digitizer_get_curve() -> numpy.array, numpy.array
-digitizer_get_curve() -> numpy.array, numpy.array, numpy.array
+# Two channels enabled -> 3 arrays
+xs, data_ch0, data_ch1 = digitizer_get_curve()
+
+# One channel enabled  -> 2 arrays
+xs, data_ch0 = digitizer_get_curve()
 ```
 
-!!! example
-    `digitizer_get_curve()` runs acquisition and returns the data.
+This function runs acquisition and returns the data obtained. If two channels are enabled by the function [`digitizer_channel()`](#digitizer_channel) the output of the function is three numpy arrays (`xs`, `data_ch0`, `data_ch1`). If one channel is enabled the output of the function is two numpy array (`xs`, `data_ch0`). The `xs` array is returned in s, data arrays are returned in V. The function should be called only without arguments.
 
-Runs acquisition and returns the data obtained. If two channels are enabled by
-[`digitizer_channel()`](#digitizer_channel) the output is three numpy arrays
-(`xs`, `data_ch0`, `data_ch1`). If one channel is enabled the output is two
-numpy arrays (`xs`, `data_ch0`). The `xs` array is returned in seconds; data
-arrays are returned in volts. Call without arguments.
-
-!!! note
-    For Insys FM214x3GDA, use the
-    [`digitizer_get_curve(points, phases, ...)`](#digitizer_get_curve-points) variant.
+In the case of Insys FM214x3GDA one should use the modification of this function [`digitizer_get_curve(points, phases, ...)`](#digitizer_get_curve-points).
 
 ---
 
 ### digitizer_get_curve(integral=True) { #digitizer_get_curve-integral }
 
 ```python
-digitizer_get_curve(integral: bool = False) -> float
-digitizer_get_curve(integral: bool = True)  -> float, float
+# Two channels -> 2 floats (volt-seconds)
+i_ch0, i_ch1 = digitizer_get_curve(integral=True)
+
+# One channel  -> 1 float
+i_ch0 = digitizer_get_curve(integral=True)
 ```
 
-!!! example
-    `digitizer_get_curve(integral=True)` runs acquisition and returns the
-    integrated data.
+This function runs acquisition and returns the data, integrated over a window in the oscillogram, indicated by the [`digitizer_window`](#digitizer_window) function. If two channels are enabled by the function [`digitizer_channel()`](#digitizer_channel) the output of the function is two numbers (`integral_ch0`, `integral_ch1`). If one channel is enabled the output of the function is one number (`integral_ch0`). The integral is returned in volt-seconds. The default option is `False`.
 
-Runs acquisition and returns the data integrated over a window in the
-oscillogram (the window is set via [`digitizer_window`](#digitizer_window)).
-If two channels are enabled, returns two numbers (`integral_ch0`,
-`integral_ch1`); with one channel, returns one number (`integral_ch0`). The
-integral is returned in volt-seconds. Default is `False`.
-
-!!! note
-    For Insys FM214x3GDA, use the
-    [`digitizer_get_curve(points, phases, ...)`](#digitizer_get_curve-points) variant.
+In the case of Insys FM214x3GDA one should use the modification of this function [`digitizer_get_curve(points, phases, ...)`](#digitizer_get_curve-points).
 
 ---
 
 ### digitizer_get_curve(points, phases, ...) { #digitizer_get_curve-points }
 
 ```python
-digitizer_get_curve(
-    points: int,
-    phases: int,
-    integral: bool = False,
-    current_scan: int = 1,
-    total_scan: int = 1,
-) -> numpy.array, numpy.array
+# Phase-cycled acquisition: 100 points, 2 phases
+data_i, data_q = digitizer_get_curve(100, 2)
+
+# With explicit keyword arguments
+data_i, data_q = digitizer_get_curve(
+    100, 2, integral=False, current_scan=1, total_scan=1)
 ```
 
-!!! example
-    ```python
-    digitizer_get_curve(100, 2, integral=False, current_scan=1, total_scan=1)
-    ```
-    runs acquisition and returns the phase-cycled data.
-
-Starts data acquisition and [phase cycles](../pulse_programmer.md#pulser_acquisition_cycle)
-the data. `points` is the total number of points in the pulse experiment;
-`phases` is the total number of phases. Data is phase-cycled according to the
-phase list given in the [`DETECTION` pulse](../pulse_programmer.md#pulser_pulse).
-The keyword `integral` integrates the data over the configured window.
-`current_scan` and `total_scan` indicate the current/total number of
-repetitive scans in the experiment to maximize the efficiency of the
-Insys FM214x3GDA. `current_scan` should increase during the experiment.
+This function starts the data acquisition and [phase cycling](pulse_programmer.md#pulser_acquisition_cycle) the data. The argument `points` indicates the total number of points in the pulse experiment and the argument `phases` corresponds to the total number of phases in the pulse experiment. The data will be phase cycled according to the phase list given in the [`DETECTION` pulse](pulse_programmer.md#pulser_pulse). The details of phase cycling are given in the function [`pulser_acquisition_cycle()`](pulse_programmer.md#pulser_acquisition_cycle). A keyword `integral` allows integrating the data over a given [window](#digitizer_read_settings). The keywords `current_scan` and `total_scan` indicate the current and total number of repetitive scans in the experiment to maximize the efficiency of the Insys FM214x3GDA. The value of the keyword `current_scan` should increase during the experiment.
 
 ---
 
 ### digitizer_close() { #digitizer_close }
 
 ```python
-digitizer_close() -> None
+digitizer_close()   # close the digitizer driver
 ```
 
-!!! example
-    `digitizer_close()` closes the digitizer driver.
-
-Closes the digitizer driver. Call only without arguments. Should always be
-called at the end of an experimental script.
+This function closes the digitizer driver and should be called only without arguments. The function should always be called at the end of an experimental script.
 
 !!! note
-    Not available for Insys FM214x3GDA — use
-    [`pulser_close()`](../pulse_programmer.md#pulser_close) instead.
+    This function is not available for Insys FM214x3GDA. This is done with
+    [`pulser_close()`](pulse_programmer.md#pulser_close).
 
 ---
 
 ### digitizer_stop() { #digitizer_stop }
 
 ```python
-digitizer_stop() -> None
+digitizer_stop()    # stop the digitizer
 ```
 
-!!! example
-    `digitizer_stop()` stops the digitizer.
-
-Stops the digitizer. Call only without arguments. Should always be called
-before redefining digitizer settings with
-[`digitizer_setup()`](#digitizer_setup).
+This function stops the digitizer and should be called only without arguments. The function should always be called before redefining digitizer settings by the [`digitizer_setup()`](#digitizer_setup) function.
 
 !!! note
-    Not available for Insys FM214x3GDA or L card L-502 — there is no need to
-    stop these ADCs.
+    This function is not available for Insys FM214x3GDA, L card L-502.
+    There is no need to stop these ADC.
 
 ---
 
 ### digitizer_number_of_points(*points) { #digitizer_number_of_points }
 
 ```python
-digitizer_number_of_points(points: int) -> None
-digitizer_number_of_points() -> int
+digitizer_number_of_points()      # -> int (query)
+digitizer_number_of_points(128)   # set value
 ```
 
-!!! example
-    `digitizer_number_of_points(128)` sets the number of points to 128.
-
-Queries or sets the number of points (samples) in the returned oscillogram.
-
-| Constraint      | M4I 4450 X8 | M4I 2211 X8 |
-| --------------- | ----------- | ----------- |
-| Divisible by    | 16 samples  | 32 samples  |
-| Minimum         | 32 samples  | 64 samples  |
-| Default         | 128         | 256         |
-
-If no setting matches the argument, the nearest available value is used and a
-warning is printed. The difference between number of points and
-[posttrigger points](#digitizer_posttrigger) must be less than 8000; otherwise
-the nearest valid value is used and a warning is printed.
+This function queries or sets the number of points in samples in the returned oscillogram. The number of points should be divisible by 16 samples (M4I 4450 X8) or by 32 samples (M4I 2211 X8), the minimum available value is 32 samples (M4I 4450 X8) or 64 samples (M4I 2211 X8). If there is no setting fitting the argument the nearest available value is used and warning is printed. Default value is 128 (M4I 4450 X8) or 256 (M4I 2211 X8). The difference between number of points and [posttrigger points](#digitizer_posttrigger) should be less than 8000. If it is not the case the nearest available number of points is used and warning is printed.
 
 !!! note
-    Not available for Insys FM214x3GDA — the number of points is controlled
-    by the trigger pulse length.
+    This function is not available for Insys FM214x3GDA. The number of
+    points is controlled by the trigger pulse length.
 
 ---
 
 ### digitizer_posttrigger(*post_points) { #digitizer_posttrigger }
 
 ```python
-digitizer_posttrigger(post_points: int) -> None
-digitizer_posttrigger() -> int
+digitizer_posttrigger()           # -> int (query)
+digitizer_posttrigger(64)         # default
 ```
 
-!!! example
-    `digitizer_posttrigger(64)` sets the number of posttrigger points to 64.
-
-Queries or sets the number of posttrigger (horizontal offset) points. Must be
-divisible by 16 samples (M4I 4450 X8) or 32 samples (M4I 2211 X8); minimum is
-16 / 32 samples respectively. In [`Average`](#digitizer_card_mode) card mode
-the maximum is [number of points](#digitizer_number_of_points) minus 16 / 32
-samples. Default value is 64. The difference between number of points and
-posttrigger points must be less than 8000.
+This function queries or sets the number of posttriger (horizontal offset) points in samples in the returned oscillogram. The number of posttriger points should be divisible by 16 samples (M4I 4450 X8) or by 32 samples (M4I 2211 X8), the minimum available value is 16 samples (M4I 4450 X8) or 32 samples (M4I 2211 X8). In the [`Average`](#digitizer_card_mode) card mode, the maximum available value is [number of points](#digitizer_number_of_points) in the oscillogram minus 16 samples (M4I 4450 X8) or minus 32 samples (M4I 2211 X8). If there is no setting fitting the argument the nearest available value is used and warning is printed. Default value is 64. The difference between [number of points](#digitizer_number_of_points) and posttrigger points should be less than 8000. If it is not the case the nearest available value of posttrigger points is used and warning is printed.
 
 !!! note
-    Not available for Insys FM214x3GDA, L card L-502.
+    This function is not available for Insys FM214x3GDA, L card L-502.
 
 ---
 
 ### digitizer_channel(*channel) { #digitizer_channel }
 
 ```python
-digitizer_channel(channel: ['CH0', 'CH1']) -> None
-digitizer_channel() -> str
+digitizer_channel()                 # -> str (query)
+digitizer_channel('CH0', 'CH1')     # default: both
+digitizer_channel('CH0')            # only CH0
 ```
 
-!!! example
-    `digitizer_channel('CH0', 'CH1')` enables CH0 and CH1.
+This function enables the specified channel or queries enabled channels. If there is no argument the function will return the currently enabled channels. If there is an argument the output from the specified channel will be enabled.
 
-Enables the specified channel or queries enabled channels. Channel must be
-one of `['CH0','CH1']`. Default: both channels enabled.
+The channel should be one of the following: `CH0`, `CH1`. Default option is when both channels are enabled.
 
 !!! note
-    Not available for Insys FM214x3GDA, L card L-502.
+    This function is not available for Insys FM214x3GDA, L card L-502.
 
 ---
 
 ### digitizer_sample_rate(*s_rate) { #digitizer_sample_rate }
 
 ```python
-digitizer_sample_rate(sample_rate: float) -> None
-digitizer_sample_rate() -> float
+digitizer_sample_rate()             # -> float, MHz (query)
+digitizer_sample_rate(500)          # 500 MHz
 ```
 
-!!! example
-    `digitizer_sample_rate(500)` sets the digitizer sample rate to 500 MHz.
+This function queries or sets the digitizer sample rate (in MHz). If there is no argument the function will return the current sample rate. If there is an argument the specified sample rate will be set. The minimum available sample rate is 1.907 kHz (M4I 4450 X8) or 9.536 kHz (M4I 2211 X8). The maximum available sample rate is 500 MHz (M4I 4450 X8) or 1250 MHz (M4I 2211 X8).
 
-Queries or sets the digitizer sample rate (in MHz).
-
-| Device      | Minimum     | Maximum  | Available values                  |
-| ----------- | ----------- | -------- | --------------------------------- |
-| M4I 4450 X8 | 1.907 kHz   | 500 MHz  | `[500, 250, 125, …, 0.001907]`    |
-| M4I 2211 X8 | 9.536 kHz   | 1250 MHz | `[1250, 625, 312.5, …, 0.009536]` |
-
-If no setting matches the argument, the nearest available value is used and a
-warning is printed.
+The available sample rate should be from the following array: `[500, 250, 125, ..., 0.001907]` for M4I 4450 X8 or `[1250, 625, 312.5, ..., 0.009536]` for M4I 2211 X8. If there is no setting fitting the argument the nearest available value is used and warning is printed. Default value is 500 MHz (M4I 4450 X8) or 1250 MHz (M4I 2211 X8).
 
 !!! note
-    For Insys FM214x3GDA this function only returns the current sample rate —
-    see [`digitizer_decimation()`](#digitizer_decimation). Not available for
-    L card L-502.
+    This function only returns the current sample rate for Insys FM214x3GDA.
+    See also [`digitizer_decimation()`](#digitizer_decimation).
+    This function is not available for L card L-502.
 
 ---
 
 ### digitizer_clock_mode(*mode) { #digitizer_clock_mode }
 
 ```python
-digitizer_clock_mode(mode: ['Internal', 'External']) -> None
-digitizer_clock_mode() -> str
+digitizer_clock_mode()              # -> str (query)
+digitizer_clock_mode('Internal')    # default
+digitizer_clock_mode('External')
 ```
 
-!!! example
-    `digitizer_clock_mode('Internal')` sets the Internal clock mode.
+This function queries or sets the digitizer clock mode. If there is no argument the function will return the current clock mode setting. If there is an argument the specified clock mode will be set.
 
-Queries or sets the digitizer clock mode. Must be `'Internal'` or `'External'`.
+The clock mode should be one of the following: `Internal`, `External`.
 
-In Internal mode the sampling clock is generated by a programmable high
-precision quartz. In External mode the input is fed through a PLL — acting as
-a reference clock input, allowing the driver to either use a copy of the
-external clock or generate any sampling clock within the allowed range from
-the reference clock. The external reference frequency must be set via
-[`digitizer_reference_clock()`](#digitizer_reference_clock). Default:
-`'Internal'`.
+According to the documentation, the internal sampling clock is generated in default mode by a programmable high precision quartz. The external clock input of the M3i/M4i series is fed through a PLL to the clock system. Therefore the input will act as a reference clock input thus allowing to either use a copy of the external clock or to generate any sampling clock within the allowed range from the reference clock. Due to the fact that the driver needs to know the external fed in frequency for an exact calculation of the sampling rate the reference clock should be set by the [`digitizer_reference_clock()`](#digitizer_reference_clock) function. Default setting is `Internal`.
 
 !!! note
-    Not available for Insys FM214x3GDA.
+    This function is not available for Insys FM214x3GDA.
 
 ---
 
 ### digitizer_reference_clock(*ref_clock) { #digitizer_reference_clock }
 
 ```python
-digitizer_reference_clock(ref_clock: int) -> None
-digitizer_reference_clock() -> int
+digitizer_reference_clock()         # -> int, MHz (query)
+digitizer_reference_clock(100)      # default: 100 MHz
 ```
 
-!!! example
-    `digitizer_reference_clock(100)` sets the digitizer reference clock to
-    100 MHz.
+This function queries or sets the digitizer reference clock (in MHz) for `External` mode of the [`digitizer_clock_mode()`](#digitizer_clock_mode) function. If there is no argument the function will return the current reference clock. If there is an argument the specified reference clock will be set.
 
-Queries or sets the digitizer reference clock (in MHz) for `External` mode of
-[`digitizer_clock_mode()`](#digitizer_clock_mode). Minimum 10 MHz, maximum
-100 MHz. Default: 100 MHz.
+The minimum available reference clock is 10 MHz. The maximum available reference clock is 100 MHz. Default value is 100 MHz.
 
 !!! note
-    Not available for Insys FM214x3GDA.
+    This function is not available for Insys FM214x3GDA.
 
 ---
 
 ### digitizer_card_mode(*mode) { #digitizer_card_mode }
 
 ```python
-digitizer_card_mode(mode: ['Single', 'Average']) -> None
-digitizer_card_mode() -> str
+digitizer_card_mode()               # -> str (query)
+digitizer_card_mode('Single')       # default
+digitizer_card_mode('Average')
 ```
 
-!!! example
-    `digitizer_card_mode('Single')` sets the Single mode of the digitizer.
+This function queries or sets the digitizer mode. If there is no argument the function will return the current digitizer mode. If there is an argument the specified mode will be set.
 
-Queries or sets the digitizer mode. Must be `'Single'` or `'Average'`.
+The mode should be one of the following: `Single`, `Average`.
 
-In `Single` mode, data acquisition runs to on-board memory for one trigger
-event. In `Average` (Multi) mode the memory is segmented and one segment is
-acquired per trigger; data is then transferred to the PC and either
-[averaged](#digitizer_get_curve) or
-[averaged and integrated](#digitizer_get_curve-integral). The number of
-segments is set by
-[`digitizer_number_of_averages()`](#digitizer_number_of_averages). Default:
-`'Single'`.
+According to the documentation, in the `Single` mode data acquisition is carried out to on-board memory for one single trigger event. In `Average` (Multi) mode the memory is segmented and with each trigger condition one segment is acquired. After that the data is transfer to the PC memory and [averaged](#digitizer_get_curve) or [averaged and integrated](#digitizer_get_curve-integral). The number of segments to acquire can be set by the [`digitizer_number_of_averages()`](#digitizer_number_of_averages) function. Default setting is `Single`.
 
 !!! note
-    Not available for Insys FM214x3GDA, L card L-502.
+    This function is not available for Insys FM214x3GDA, L card L-502.
 
 ---
 
 ### digitizer_trigger_channel(*ch) { #digitizer_trigger_channel }
 
 ```python
-digitizer_trigger_channel(channel: ['Software', 'External']) -> None
-digitizer_trigger_channel() -> str
+digitizer_trigger_channel()             # -> str (query)
+digitizer_trigger_channel('External')   # default; = Trg0
+digitizer_trigger_channel('Software')
 ```
 
-!!! example
-    `digitizer_trigger_channel('Software')` sets the Software trigger.
+This function queries or sets the digitizer trigger channel. If there is no argument the function will return the current trigger channel. If there is an argument the specified channel will be used as trigger.
 
-Queries or sets the digitizer trigger channel. Must be `'Software'` or
-`'External'`. `External` corresponds to the `Trg0` channel of the digitizer.
-Default: `'External'`.
+The channel should be one of the following: `Software`, `External`. Trigger channel `External` corresponds to `Trg0` channel of the digitizer. Default setting is `External`.
 
 !!! note
-    Not available for Insys FM214x3GDA, L card L-502.
+    This function is not available for Insys FM214x3GDA, L card L-502.
 
 ---
 
 ### digitizer_trigger_mode(*mode) { #digitizer_trigger_mode }
 
 ```python
-digitizer_trigger_mode(mode: ['Positive', 'Negative', 'High', 'Low']) -> None
-digitizer_trigger_mode() -> str
+digitizer_trigger_mode()            # -> str (query)
+digitizer_trigger_mode('Positive')  # default
 ```
 
-!!! example
-    `digitizer_trigger_mode('Positive')` sets the trigger detection for
-    positive edges.
+This function queries or sets the digitizer trigger mode. If there is no argument the function will return the current trigger mode. If there is an argument the specified trigger mode will be set.
 
-Queries or sets the digitizer trigger mode.
-
-| Mode       | Meaning                                              |
-| ---------- | ---------------------------------------------------- |
-| `Positive` | Trigger on positive edges (crossing 0 from below).   |
-| `Negative` | Trigger on negative edges (crossing 0 from above).   |
-| `High`     | Trigger on HIGH levels (signal above 0).             |
-| `Low`      | Trigger on LOW levels (signal below 0).              |
-
-Default: `'Positive'`.
+The trigger mode should be one of the following: `Positive`, `Negative`, `High`, `Low`. Mode `Positive` corresponds to trigger detection for positive edges (crossing level 0 from below to above). `Negative` to trigger detection for negative edges (crossing level 0 from above to below). `High` to trigger detection for HIGH levels (signal above level 0). `Low` to trigger detection for LOW levels (signal below level 0). Default setting is `Positive`.
 
 !!! note
-    Not available for Insys FM214x3GDA, L card L-502.
+    This function is not available for Insys FM214x3GDA, L card L-502.
 
 ---
 
 ### digitizer_number_of_averages(*averages) { #digitizer_number_of_averages }
 
 ```python
-digitizer_number_of_averages(averages: int) -> None
-digitizer_number_of_averages() -> int
+digitizer_number_of_averages()      # -> int (query)
+digitizer_number_of_averages(2)     # default
 ```
 
-!!! example
-    `digitizer_number_of_averages(2)` sets the number of averages to 2.
+This function queries or sets the number of averages for [`Average`](#digitizer_card_mode) card mode. If there is no argument the function will return the current number of averages. If there is an argument the specified number of averages will be set.
 
-Queries or sets the number of averages for
-[`Average`](#digitizer_card_mode) card mode. Maximum 10000. For very large
-[number of points](#digitizer_number_of_points), the maximum may be limited
-by the digitizer memory (1 GS). Default: 2.
+The maximum available number of averages is 10000. If a very large number of [points](#digitizer_number_of_points) are set, the maximum available number of averages may be limited by the digitizer memory. This limit is 1 Gs. Default value is 2.
 
 !!! note
-    Not available for L card L-502.
+    This function is not available for L card L-502.
 
 ---
 
 ### digitizer_trigger_delay(*delay) { #digitizer_trigger_delay }
 
 ```python
-digitizer_trigger_delay(delay: str) -> None
-digitizer_trigger_delay() -> str
+digitizer_trigger_delay()           # -> str (query)
+digitizer_trigger_delay('32 ns')    # default: '0 ns'
 ```
 
-!!! example
-    `digitizer_trigger_delay('32 ns')` sets the trigger delay to 32 ns.
-
-Queries or sets the digitizer trigger delay. The delay step is 16 samples
-(M4I 4450 X8) or 32 samples (M4I 2211 X8). Non-divisible inputs are rounded
-and a warning is printed. Default: `'0 ns'`.
+This function queries or sets the digitizer trigger delay. If there is no argument the function will return the current trigger delay. If there is an argument the specified trigger delay will be set. The delay step is 16 samples (M4I 4450 X8) or 32 samples (M4I 2211 X8). If an input is not divisible by 16 samples (M4I 4450 X8) or by 32 samples (M4I 2211 X8) the delay will be rounded and a warning message will be printed. Default value is `0 ns`.
 
 !!! note
-    Not available for Insys FM214x3GDA, L card L-502.
+    This function is not available for Insys FM214x3GDA, L card L-502.
 
 ---
 
 ### digitizer_input_mode(*mode) { #digitizer_input_mode }
 
 ```python
-digitizer_input_mode(mode: ['HF', 'Buffered']) -> None
-digitizer_input_mode() -> str
+digitizer_input_mode()              # -> str (query)
+digitizer_input_mode('HF')          # default
+digitizer_input_mode('Buffered')
 ```
 
-!!! example
-    `digitizer_input_mode('HF')` sets the HF input mode.
+This function queries or sets the input mode for the channels of the digitizer. If there is no argument the function will return the current input mode. If there is an argument the specified input mode will be set.
 
-Queries or sets the input mode for the channels. Must be `'HF'` or
-`'Buffered'`; applies to both channels.
-
-- **HF**: 50 Ω path, full bandwidth and best dynamic performance.
-- **Buffered**: buffered path with all features but limited bandwidth and
-  dynamic performance.
-
-Default: `'HF'`.
+The input mode should be one of the following: `HF`, `Buffered`. The input mode will be used for both channels. According to the documentation, HF mode allows using a high frequency 50 Ohm path to have full bandwidth and best dynamic performance. Buffered mode allows using a buffered path with all features but limited bandwidth and dynamic performance. Default value is `HF`.
 
 !!! note
-    Not available for M4I 2211 X8, Insys FM214x3GDA, L card L-502.
+    This function is not available for M4I 2211 X8, Insys FM214x3GDA, and
+    L card L-502.
 
 ---
 
 ### digitizer_amplitude(*ampl) { #digitizer_amplitude }
 
 ```python
-digitizer_amplitude(amplitude: int) -> None
-digitizer_amplitude() -> str
+digitizer_amplitude()       # -> str (query)
+digitizer_amplitude(500)    # default: ±500 mV
+digitizer_amplitude(1000)   # ±1 V
 ```
 
-!!! example
-    `digitizer_amplitude(500)` sets the range of the digitizer channels to
-    ±500 mV.
+This function queries or sets the input ranges of the digitizer channels. If there is no argument the function will return the range of the digitizer channels. If there is an argument the specified range (in mV) will be set. The given range will be used for both channels.
 
-Queries or sets the input range of the digitizer channels (in mV). Applies to
-both channels.
+In the [`Buffered` input mode](#digitizer_input_mode) the range for M4I 4450 X8 should be one of the following: `[200, 500, 1000, 2000, 5000, 10000]`. In the [`HF` input mode](#digitizer_input_mode) the range should be one of the following: `[500, 1000, 2500, 5000]`.
 
-| Device / mode                                                | Allowed ranges (mV)              |
-| ------------------------------------------------------------ | -------------------------------- |
-| M4I 4450 X8, [Buffered input mode](#digitizer_input_mode)   | `[200, 500, 1000, 2000, 5000, 10000]` |
-| M4I 4450 X8, [HF input mode](#digitizer_input_mode)         | `[500, 1000, 2500, 5000]`        |
-| M4I 2211 X8                                                  | `[200, 500, 1000, 2500]`         |
-
-If no setting matches, the nearest is used and a warning is printed. Default:
-`500 mV`.
+For M4I 2211 X8 the range should be one of the following: `[200, 500, 1000, 2500]`. If there is no range setting fitting the argument the nearest available value is used and warning is printed. Default value is `500 mV`.
 
 !!! note
-    Not available for Insys FM214x3GDA (max ≈ 1500 mV) or L card L-502.
+    This function is not available for Insys FM214x3GDA, the maximum
+    amplitude in this case of about 1500 mV.
+    This function is not available for L card L-502.
 
 ---
 
 ### digitizer_offset(*offset) { #digitizer_offset }
 
 ```python
-digitizer_offset(ch0: str, offset0: int) -> None
-digitizer_offset(ch0: str, offset0: int, ch1: str, offset1: int) -> None
-digitizer_offset() -> str, str
+digitizer_offset()                            # -> (str, str)
+digitizer_offset('CH0', '1', 'CH1', '50')     # both channels
+digitizer_offset('CH0', '1')                  # only CH0
 ```
 
-!!! example
-    ```python
-    digitizer_offset('CH0', '1', 'CH1', '50')
-    ```
-    sets the offset of CH0 to 1 % of the input range and the offset of CH1 to
-    50 % of the input range.
-
-Queries or sets the vertical offset of the channels (as a percentage of the
-input range). For M4I 4450 X8 the value of the offset (range × argument) is
-always **subtracted** from the signal. Step is 1 %.
-
-!!! warning
-    No offset can be used for the 1000 mV and 10000 mV ranges in the
-    [Buffered input mode](#digitizer_input_mode) (per M4I 4450 X8 docs).
-
-Default: `0` for both channels.
+This function queries or sets the vertical offset of the digitizer channels. If there is no argument the function will return the offset of the both digitizer channels. If there is an argument the specified offset (as a percentage of the input range) will be set for the specified channel. For M4I 4450 X8 the value of the offset (range × argument) is ALWAYS substracted from the signal. The step is 1%. According to the M4I 4450 X8 documentation, no offset can be used for 1000 mV and 10000 mV range in the [`Buffered` input mode](#digitizer_input_mode). Default value is `0` for both channels.
 
 !!! note
-    Not available for Insys FM214x3GDA, L card L-502.
+    This function is not available for Insys FM214x3GDA, L card L-502.
 
 ---
 
 ### digitizer_coupling(*coupling) { #digitizer_coupling }
 
 ```python
-digitizer_coupling(ch0: str, coupling0: ['AC', 'DC']) -> None
-digitizer_coupling(ch0: str, coupling0: str, ch1: str, coupling1: str) -> None
-digitizer_coupling() -> str, str
+digitizer_coupling()                              # -> (str, str)
+digitizer_coupling('CH0', 'DC', 'CH1', 'DC')      # default
+digitizer_coupling('CH0', 'AC', 'CH1', 'DC')
 ```
 
-!!! example
-    ```python
-    digitizer_coupling('CH0', 'AC', 'CH1', 'DC')
-    ```
-    sets the coupling of CH0 to AC and the coupling of CH1 to DC.
+This function queries or sets the coupling of the digitizer channels. If there is no argument the function will return the coupling of the both digitizer channels. If there is an argument the specified coupling will be set for the specified channel.
 
-Queries or sets the coupling of the digitizer channels. Coupling must be
-`'AC'` or `'DC'`. Default: `'DC'` for both channels.
+The offset should be one of the following: `AC`, `DC`. Default value is `DC` for both channels.
 
 !!! note
-    Not available for Insys FM214x3GDA, L card L-502.
+    This function is not available for Insys FM214x3GDA, L card L-502.
 
 ---
 
 ### digitizer_impedance(*impedance) { #digitizer_impedance }
 
 ```python
-digitizer_impedance(ch0: str, impedance0: ['1 M', '50']) -> None
-digitizer_impedance(ch0: str, impedance0: str, ch1: str, impedance1: str) -> None
-digitizer_impedance() -> str, str
+digitizer_impedance()                              # -> (str, str)
+digitizer_impedance('CH0', '50', 'CH1', '50')      # default
+digitizer_impedance('CH0', '50', 'CH1', '1 M')
 ```
 
-!!! example
-    ```python
-    digitizer_impedance('CH0', '50', 'CH1', '1 M')
-    ```
-    sets CH0 impedance to 50 Ω and CH1 impedance to 1 MΩ.
+This function queries or sets the impedance of the digitizer channels. If there is no argument the function will return the impedance of the both digitizer channels. If there is an argument the specified impedance will be set for the specified channel.
 
-Queries or sets the channel impedance. Must be `'1 M'` or `'50'`. In
-[HF input mode](#digitizer_input_mode) the impedance is fixed at 50 Ω.
-Default: `'50'` for both channels.
+The impedance should be one of the following: `1 M`, `50`. Please note that in the [HF input mode](#digitizer_input_mode) impedance is fixed at 50 Ohm. Default value is `50` for both channels.
 
 !!! note
-    Not available for M4I 2211 X8, Insys FM214x3GDA, L card L-502 — for these
-    digitizers the impedance is fixed at 50 Ω.
+    This function is not available for M4I 2211 X8, Insys FM214x3GDA, and
+    L card L-502. For these digitizers the impedance is fixed at 50 Ohm.
 
 ---
 
 ### digitizer_decimation(*dec) { #digitizer_decimation }
 
 ```python
-digitizer_decimation(decimation: int) -> None  # 1, 2, or 4
-digitizer_decimation() -> int
+digitizer_decimation()      # -> int (query)
+digitizer_decimation(1)     # 0.4 ns/point
+digitizer_decimation(2)     # 0.8 ns/point
+digitizer_decimation(4)     # 1.6 ns/point
 ```
 
-!!! example
-    `digitizer_decimation(4)` sets the decimation coefficient to 4.
+This function queries or sets the decimation coefficient for Insys FM214x3GDA. If there is no argument the function will return the decimation coefficient of the digitizer. If there is an argument the specified decimation will be set. It can be used instead of the function [`digitizer_sample_rate()`](#digitizer_sample_rate).
 
-Queries or sets the decimation coefficient for Insys FM214x3GDA. Available
-coefficients are 1, 2, 4 — corresponding to 0.4, 0.8, and 1.6 ns/point.
-Can be used instead of
-[`digitizer_sample_rate()`](#digitizer_sample_rate).
-
-!!! warning
-    Must be called **before**
-    [`pulser_open()`](../pulse_programmer.md#pulser_open).
+The available coefficients are 1, 2, 4, which corresponds to 0.4 ns/point, 0.8 ns/point, and 1.6 ns/point. This function should be called before [`pulser_open()`](pulse_programmer.md#pulser_open).
 
 ---
 
 ### digitizer_flow(*flow) { #digitizer_flow }
 
 ```python
-digitizer_flow(flow: ['ADC', 'DIN', 'DAC1', 'DAC2', 'DOUT', 'AIN', 'AOUT']) -> None
+digitizer_flow()            # -> str (query)
+digitizer_flow('ADC')       # default
 ```
 
-!!! example
-    `digitizer_flow()` reads the enabled flow of data.
-
-Queries or sets enabled flows of data. Available options:
-`['ADC', 'DIN', 'DAC1', 'DAC2', 'DOUT', 'AIN', 'AOUT']`. Default: `'ADC'`.
-
-!!! note
-    Available only for L card L-502.
+This function sets or queries enabled flows of data. If there is no argument the function will return the enabled flow of data of the digitizer. If there is an argument the specified flow will be set. The available options are `ADC`, `DIN`, `DAC1`, `DAC2`, `DOUT`, `AIN`, `AOUT`. The default option is `ADC`. This function is available only for L card L-502.
 
 ---
 
 ### digitizer_read_settings() { #digitizer_read_settings }
 
 ```python
-digitizer_read_settings() -> None
+digitizer_read_settings()   # read settings from digitizer.param
 ```
 
-!!! example
-    `digitizer_read_settings()` reads all the settings of the digitizer.
-
-Reads all the settings from a special text file
-[`digitizer.param`](https://github.com/Anatoly1010/Atomize_ITC/tree/master/atomize/control_center)
-and writes them to the digitizer using
-[`digitizer_setup()`](#digitizer_setup).
+This function reads all the settings from a special text file [`digitizer.param`](https://github.com/Anatoly1010/Atomize_ITC/tree/master/atomize/control_center) and writes them to the digitizer using the [`digitizer_setup()`](#digitizer_setup) function.
 
 !!! note
-    Not available for L card L-502.
+    This function is not available for L card L-502.
 
 ---
 
 ### digitizer_window() { #digitizer_window }
 
 ```python
-digitizer_window() -> float
+digitizer_window()          # -> float; integration window
 ```
 
-!!! example
-    `digitizer_window()` returns the integration window of the digitizer.
-
-Returns the integration window of the digitizer. The window is used in
-[`digitizer_get_curve(integral=True)`](#digitizer_get_curve-integral) and is
-set via the
-[`digitizer.param`](https://github.com/Anatoly1010/Atomize_ITC/tree/master/atomize/control_center)
-text file.
+This function returns the integration window of the digitizer. The integration window is used in the [`digitizer_get_curve()`](#digitizer_get_curve-integral) function and is set via a special text file [`digitizer.param`](https://github.com/Anatoly1010/Atomize_ITC/tree/master/atomize/control_center).
 
 !!! note
-    Not available for L card L-502.
+    This function is not available for L card L-502.
 
 ---
 
 ### digitizer_window_points() { #digitizer_window_points }
 
 ```python
-digitizer_window_points() -> int
+digitizer_window_points()   # -> int; points in the window
 ```
 
-!!! example
-    `digitizer_window_points()` returns the number of points in the digitizer
-    window.
-
-Returns the number of points in the digitizer window. The window is used in
-[`digitizer_get_curve(points, phases, ...)`](#digitizer_get_curve-points). The
-number of points in the window can be set as the length of the
-[`DETECTION` pulse](../pulse_programmer.md#pulser_pulse).
+This function returns the number of points in the digitizer window. The window is used in the [`digitizer_get_curve()`](#digitizer_get_curve-points) function. The number of points in the window can be set as the length of the [`DETECTION` pulse](pulse_programmer.md#pulser_pulse).
 
 !!! note
-    Available only for Insys FM214x3GDA.
+    This function is available only for Insys FM214x3GDA.
 
 ---
 
 ### digitizer_at_exit(integral=False) { #digitizer_at_exit }
 
 ```python
-digitizer_at_exit(integral: bool = False) -> numpy.array, numpy.array
+digitizer_at_exit()                 # -> arrays
+digitizer_at_exit(integral=True)    # -> integrated arrays
 ```
 
-!!! example
-    `digitizer_at_exit()` returns current accumulated arrays from the device
-    module.
-
-Similar to
-[`digitizer_get_curve(integral=...)`](#digitizer_get_curve-integral), but
-always returns the current accumulated arrays — while `digitizer_get_curve`
-may return `np.nan` if no new buffer has been transferred from the card to
-the computer at the time of execution.
-
-!!! note
-    Available only for Insys FM214x3GDA.
+This function is available only for Insys FM214x3GDA and is similar to the [`digitizer_get_curve()`](#digitizer_get_curve-integral) function. The main difference is that this function always return the current accumulated arrays, while [`digitizer_get_curve()`](#digitizer_get_curve-integral) may return `np.nan` if no new buffer has been transferred from the card to the computer at the time of execution.

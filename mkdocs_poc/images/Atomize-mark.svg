@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 495">
+  <style>
+    .nucleus  { fill: #2B3F7F; }
+    .orbit-r  { fill: none; stroke: #ED4C4C; stroke-width: 12; stroke-linecap: round; }
+    .orbit-b  { fill: none; stroke: #457FF4; stroke-width: 12; stroke-linecap: round; }
+    .orbit-g  { fill: none; stroke: #79F279; stroke-width: 12; stroke-linecap: round; }
+  </style>
+  <circle class="nucleus" cx="261.35" cy="230.41" r="91.18"/>
+  <path class="orbit-r" d="M66.39,250.72C91.3,124.51,117.35,27.45,149.05,26.93c78.42-1.28,75.78,429.34,157.13,439.64 c36.07,4.57,58.03-18.69,94.86-169.18"/>
+  <path class="orbit-b" d="M17.15,196.94c95.8-82.24,114.59-170.21,153.61-170.73c96.46-1.28,94.68,441.15,193.28,441.41 c50.68,0.14,78.49-101.94,100.9-203.71"/>
+  <path class="orbit-g" d="M29.47,262.71C95.91,72.88,150.66,26.73,197.33,26.21c115.69-1.28,107.82,429.21,225.44,441.41 c41.91,4.35,67.97-73.86,107.08-247.76"/>
+</svg>
