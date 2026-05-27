@@ -14,7 +14,7 @@ The Insys device is available via `ctypes`. The original library can be found [h
 
 ## Functions
 
-### pulser_name() { #pulser_name }
+### pulser_name() { #pulser_name data-toc-label="pulser_name" }
 
 ```python
 pulser_name()    # -> str; device name
@@ -24,7 +24,7 @@ This function returns device name.
 
 ---
 
-### pulser_pulse(**kargs) { #pulser_pulse }
+### pulser_pulse(**kargs) { #pulser_pulse data-toc-label="pulser_pulse" }
 
 ```python
 # Default DETECTION pulse, no phase cycling
@@ -72,27 +72,27 @@ In the case of Pulse Blaster ESR 500 Pro `DETECTION` pulse should have an empty 
 
 ---
 
-### pulser_update() { #pulser_update }
+### pulser_update() { #pulser_update data-toc-label="pulser_update" }
 
 ```python
-pulser_update()   # commit pulse-sequence changes to the programmer
+pulser_update()    # commit pulse-sequence changes to the programmer
 ```
 
 This function updates a pulse sequence and sends instructions to the pulse programmer. It has to be called after changes have been applied to pulses either via any of the pulser functions or by changing a pulse property directly. Only by calling the function the changes are committed and the real pulses will change.
 
 ---
 
-### pulser_next_phase() { #pulser_next_phase }
+### pulser_next_phase() { #pulser_next_phase data-toc-label="pulser_next_phase" }
 
 ```python
-pulser_next_phase()   # advance all pulses to the next phase
+pulser_next_phase()    # advance all pulses to the next phase
 ```
 
 This function switches all pulses to the next phase. The phase sequence is declared in the [`pulser_pulse()`](#pulser_pulse) in the form of `phase_list = ['-y', '+x', '-x', '+x', ...]`. By repeatedly calling the function one can run through the complete list of phases for the pulses. The length of all phase lists specified for different MW pulses has to be the same. This function also immediately updates the pulse sequence, as it is done by calling [`pulser_update()`](#pulser_update). The first call of the function corresponds to the first phase in the `phase_list` argument of the [`pulser_pulse()`](#pulser_pulse).
 
 ---
 
-### pulser_acquisition_cycle(data1, data2, acq_cycle) { #pulser_acquisition_cycle }
+### pulser_acquisition_cycle(data1, data2, acq_cycle) { #pulser_acquisition_cycle data-toc-label="pulser_acquisition_cycle" }
 
 ```python
 # Two-step phase cycle (+x, -x)
@@ -125,11 +125,11 @@ Although this function is available for Insys FM214x3GDA, it is better to use a 
 
 ---
 
-### pulser_repetition_rate(*r_rate) { #pulser_repetition_rate }
+### pulser_repetition_rate(*r_rate) { #pulser_repetition_rate data-toc-label="pulser_repetition_rate" }
 
 ```python
-pulser_repetition_rate()         # -> str (query)
-pulser_repetition_rate('2 Hz')   # set to 2 Hz
+pulser_repetition_rate()          # -> str (query)
+pulser_repetition_rate('2 Hz')    # set to 2 Hz
 ```
 
 This function queries (if called without argument) or sets (if called with one argument) the repetition rate of the pulse sequence. If there is an argument it will be set as a repetition rate. If there is no argument the current repetition rate is returned as a string. The maximum available repetition rate depends on the total length of the pulse sequence.
@@ -139,10 +139,10 @@ This function queries (if called without argument) or sets (if called with one a
 
 ---
 
-### pulser_shift(*pulses) { #pulser_shift }
+### pulser_shift(*pulses) { #pulser_shift data-toc-label="pulser_shift" }
 
 ```python
-pulser_shift()           # shift all active pulses by their delta_start
+pulser_shift()    # shift all active pulses by their delta_start
 pulser_shift('P0', 'P1') # shift only the named pulses
 ```
 
@@ -150,7 +150,7 @@ This function can be called with either no argument or with a list of comma sepa
 
 ---
 
-### pulser_increment(*pulses) { #pulser_increment }
+### pulser_increment(*pulses) { #pulser_increment data-toc-label="pulser_increment" }
 
 ```python
 pulser_increment()        # increment all active pulses by their length_increment
@@ -161,7 +161,7 @@ This function can be called with either no argument or with a list of comma sepa
 
 ---
 
-### pulser_redefine_start(*, name, start) { #pulser_redefine_start }
+### pulser_redefine_start(*, name, start) { #pulser_redefine_start data-toc-label="pulser_redefine_start" }
 
 ```python
 pulser_redefine_start(name='P0', start='100 ns')
@@ -176,7 +176,7 @@ In the case of Insys FM214x3GDA `start` will be rounded to a multiple of 3.2.
 
 ---
 
-### pulser_redefine_delta_start(*, name, delta_start) { #pulser_redefine_delta_start }
+### pulser_redefine_delta_start(*, name, delta_start) { #pulser_redefine_delta_start data-toc-label="pulser_redefine_delta_start" }
 
 ```python
 pulser_redefine_delta_start(name='P0', delta_start='10 ns')
@@ -192,7 +192,7 @@ In the case of Insys FM214x3GDA `delta_start` will be rounded to a multiple of 3
 
 ---
 
-### pulser_redefine_length_increment(*, name, length_increment) { #pulser_redefine_length_increment }
+### pulser_redefine_length_increment(*, name, length_increment) { #pulser_redefine_length_increment data-toc-label="pulser_redefine_length_increment" }
 
 ```python
 pulser_redefine_length_increment(name='P2', length_increment='2 ns')
@@ -208,11 +208,11 @@ In the case of Insys FM214x3GDA `length_increment` will be rounded to a multiple
 
 ---
 
-### pulser_reset() { #pulser_reset }
+### pulser_reset() { #pulser_reset data-toc-label="pulser_reset" }
 
 ```python
-pulser_reset()                          # default
-pulser_reset(internal_cycle=True)       # for use with pulser_instruction_from_file
+pulser_reset()                       # default
+pulser_reset(internal_cycle=True)    # for use with pulser_instruction_from_file
 ```
 
 The function switches the pulse programmer back to the initial state (including phase) in which it was in at the start of the experiment. This function can be called only without arguments. It includes the complete functionality of [`pulser_pulse_reset()`](#pulser_pulse_reset), but also immediately updates the pulse programmer as it is done by calling [`pulser_update()`](#pulser_update).
@@ -228,11 +228,11 @@ The additional keyword `internal_cycle` can be used in combination with the [`pu
 
 ---
 
-### pulser_pulse_reset(*pulses) { #pulser_pulse_reset }
+### pulser_pulse_reset(*pulses) { #pulser_pulse_reset data-toc-label="pulser_pulse_reset" }
 
 ```python
-pulser_pulse_reset()              # reset all pulses (incl. phases)
-pulser_pulse_reset('P1')          # reset only the named pulses
+pulser_pulse_reset()        # reset all pulses (incl. phases)
+pulser_pulse_reset('P1')    # reset only the named pulses
 ```
 
 This function switches the pulse programmer back to the initial state in which it was in at the start of the experiment. This function can be called with either no argument or with a list of comma separated pulse names. If no argument is given all pulses are reset to their initial states (including phases). The function does not update the pulser, if you want to reset all pulses and also update the pulser use the function [`pulser_reset()`](#pulser_reset) instead.
@@ -244,7 +244,7 @@ The additional keyword `internal_cycle` can be used in combination with the [`pu
 
 ---
 
-### pulser_stop() { #pulser_stop }
+### pulser_stop() { #pulser_stop data-toc-label="pulser_stop" }
 
 ```python
 pulser_stop()    # stop the pulse programmer
@@ -258,10 +258,10 @@ This function stops the pulse programmer. The function should always be called a
 
 ---
 
-### pulser_state() { #pulser_state }
+### pulser_state() { #pulser_state data-toc-label="pulser_state" }
 
 ```python
-pulser_state()   # -> str; current programmer state
+pulser_state()    # -> str; current programmer state
 ```
 
 This function queries the pulse programmer state and should be called only without arguments.
@@ -271,27 +271,27 @@ This function queries the pulse programmer state and should be called only witho
 
 ---
 
-### pulser_visualize() { #pulser_visualize }
+### pulser_visualize() { #pulser_visualize data-toc-label="pulser_visualize" }
 
 ```python
-pulser_visualize()   # opens a 2D plot of the current pulse sequence
+pulser_visualize()    # opens a 2D plot of the current pulse sequence
 ```
 
 This function visualizes the pulse sequence as 2D plot and should be called only without arguments.
 
 ---
 
-### pulser_pulse_list() { #pulser_pulse_list }
+### pulser_pulse_list() { #pulser_pulse_list data-toc-label="pulser_pulse_list" }
 
 ```python
-pulser_pulse_list()   # -> list of str; the declared pulse sequence
+pulser_pulse_list()    # -> list of str; the declared pulse sequence
 ```
 
 This function should be called only without arguments and it returns the declared pulse sequence as an array.
 
 ---
 
-### pulser_open() { #pulser_open }
+### pulser_open() { #pulser_open data-toc-label="pulser_open" }
 
 ```python
 pulser_open()    # open the board for use
@@ -301,21 +301,21 @@ This function should be called only without arguments and is only available for 
 
 ---
 
-### pulser_close() { #pulser_close }
+### pulser_close() { #pulser_close data-toc-label="pulser_close" }
 
 ```python
-pulser_close()   # gracefully close the board
+pulser_close()    # gracefully close the board
 ```
 
 This function should be called only without arguments and is only available for Insys FM214x3GDA and Pulse Blaster Micran. The function must be used at the end of an experimental script to gracefully close the board.
 
 ---
 
-### pulser_default_synt(num) { #pulser_default_synt }
+### pulser_default_synt(num) { #pulser_default_synt data-toc-label="pulser_default_synt" }
 
 ```python
-pulser_default_synt(1)   # select synthesizer 1
-pulser_default_synt(2)   # select synthesizer 2
+pulser_default_synt(1)    # select synthesizer 1
+pulser_default_synt(2)    # select synthesizer 2
 ```
 
 This function should be called only with one argument and selects the default sources for microwave pulse generation.
@@ -328,10 +328,10 @@ This function should be called only with one argument and selects the default so
 
 ---
 
-### pulser_phase_reset() { #pulser_phase_reset }
+### pulser_phase_reset() { #pulser_phase_reset data-toc-label="pulser_phase_reset" }
 
 ```python
-pulser_phase_reset()   # reset the phase index to zero
+pulser_phase_reset()    # reset the phase index to zero
 ```
 
 This function resets the phase index to zero in order to start phase cycling once again.
@@ -342,7 +342,7 @@ This function resets the phase index to zero in order to start phase cycling onc
 
 ---
 
-### pulser_instruction_from_file(flag, filename) { #pulser_instruction_from_file }
+### pulser_instruction_from_file(flag, filename) { #pulser_instruction_from_file data-toc-label="pulser_instruction_from_file" }
 
 ```python
 pulser_instruction_from_file(1, filename='instructions.out')
@@ -359,20 +359,20 @@ This special function reads the instructions for pulse programmer from the speci
 
 ---
 
-### pulser_clear() { #pulser_clear }
+### pulser_clear() { #pulser_clear data-toc-label="pulser_clear" }
 
 ```python
-pulser_clear()   # clear the device module's pulse array and status flags
+pulser_clear()    # clear the device module's pulse array and status flags
 ```
 
 This is a special function for clearing pulse array `{self.pulse_array}` and other status flags of the device module. The function is usually used in GUI applications that use the device module.
 
 ---
 
-### pulser_full_stop() { #pulser_full_stop }
+### pulser_full_stop() { #pulser_full_stop data-toc-label="pulser_full_stop" }
 
 ```python
-pulser_full_stop()   # zero out all pulse instructions
+pulser_full_stop()    # zero out all pulse instructions
 ```
 
 This is a special function for a complete stop of the pulse programmer, which means all the pulse instructions will be set to zero.
@@ -382,11 +382,11 @@ This is a special function for a complete stop of the pulse programmer, which me
 
 ---
 
-### pulser_test_flag(flag) { #pulser_test_flag }
+### pulser_test_flag(flag) { #pulser_test_flag data-toc-label="pulser_test_flag" }
 
 ```python
-pulser_test_flag('None')   # normal mode
-pulser_test_flag('test')   # test mode
+pulser_test_flag('None')    # normal mode
+pulser_test_flag('test')    # test mode
 ```
 
 This is a special function for changing test mode. The function is usually used in GUI applications that use the device module.

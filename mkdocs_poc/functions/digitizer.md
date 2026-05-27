@@ -23,7 +23,7 @@ The L card device is available via `ctypes`. The original library can be found [
 
 ## Functions
 
-### digitizer_name() { #digitizer_name }
+### digitizer_name() { #digitizer_name data-toc-label="digitizer_name" }
 
 ```python
 digitizer_name()    # -> str; device name
@@ -33,10 +33,10 @@ This function returns device name.
 
 ---
 
-### digitizer_setup() { #digitizer_setup }
+### digitizer_setup() { #digitizer_setup data-toc-label="digitizer_setup" }
 
 ```python
-digitizer_setup()   # write all settings into the digitizer
+digitizer_setup()    # write all settings into the digitizer
 ```
 
 This function writes all the settings modified by other functions to the digitizer. The function should be called only without arguments. One must initialize the settings before calling [`digitizer_get_curve()`](#digitizer_get_curve).
@@ -49,7 +49,7 @@ The default settings (if no other function was called) are the following: Sample
 
 ---
 
-### digitizer_get_curve() { #digitizer_get_curve }
+### digitizer_get_curve() { #digitizer_get_curve data-toc-label="digitizer_get_curve" }
 
 ```python
 # Two channels enabled -> 3 arrays
@@ -96,10 +96,10 @@ This function starts the data acquisition and [phase cycling](pulse_programmer.m
 
 ---
 
-### digitizer_close() { #digitizer_close }
+### digitizer_close() { #digitizer_close data-toc-label="digitizer_close" }
 
 ```python
-digitizer_close()   # close the digitizer driver
+digitizer_close()    # close the digitizer driver
 ```
 
 This function closes the digitizer driver and should be called only without arguments. The function should always be called at the end of an experimental script.
@@ -110,7 +110,7 @@ This function closes the digitizer driver and should be called only without argu
 
 ---
 
-### digitizer_stop() { #digitizer_stop }
+### digitizer_stop() { #digitizer_stop data-toc-label="digitizer_stop" }
 
 ```python
 digitizer_stop()    # stop the digitizer
@@ -124,11 +124,11 @@ This function stops the digitizer and should be called only without arguments. T
 
 ---
 
-### digitizer_number_of_points(*points) { #digitizer_number_of_points }
+### digitizer_number_of_points(*points) { #digitizer_number_of_points data-toc-label="digitizer_number_of_points" }
 
 ```python
-digitizer_number_of_points()      # -> int (query)
-digitizer_number_of_points(128)   # set value
+digitizer_number_of_points()       # -> int (query)
+digitizer_number_of_points(128)    # set value
 ```
 
 This function queries or sets the number of points in samples in the returned oscillogram. The number of points should be divisible by 16 samples (M4I 4450 X8) or by 32 samples (M4I 2211 X8), the minimum available value is 32 samples (M4I 4450 X8) or 64 samples (M4I 2211 X8). If there is no setting fitting the argument the nearest available value is used and warning is printed. Default value is 128 (M4I 4450 X8) or 256 (M4I 2211 X8). The difference between number of points and [posttrigger points](#digitizer_posttrigger) should be less than 8000. If it is not the case the nearest available number of points is used and warning is printed.
@@ -139,11 +139,11 @@ This function queries or sets the number of points in samples in the returned os
 
 ---
 
-### digitizer_posttrigger(*post_points) { #digitizer_posttrigger }
+### digitizer_posttrigger(*post_points) { #digitizer_posttrigger data-toc-label="digitizer_posttrigger" }
 
 ```python
-digitizer_posttrigger()           # -> int (query)
-digitizer_posttrigger(64)         # default
+digitizer_posttrigger()      # -> int (query)
+digitizer_posttrigger(64)    # default
 ```
 
 This function queries or sets the number of posttriger (horizontal offset) points in samples in the returned oscillogram. The number of posttriger points should be divisible by 16 samples (M4I 4450 X8) or by 32 samples (M4I 2211 X8), the minimum available value is 16 samples (M4I 4450 X8) or 32 samples (M4I 2211 X8). In the [`Average`](#digitizer_card_mode) card mode, the maximum available value is [number of points](#digitizer_number_of_points) in the oscillogram minus 16 samples (M4I 4450 X8) or minus 32 samples (M4I 2211 X8). If there is no setting fitting the argument the nearest available value is used and warning is printed. Default value is 64. The difference between [number of points](#digitizer_number_of_points) and posttrigger points should be less than 8000. If it is not the case the nearest available value of posttrigger points is used and warning is printed.
@@ -153,12 +153,12 @@ This function queries or sets the number of posttriger (horizontal offset) point
 
 ---
 
-### digitizer_channel(*channel) { #digitizer_channel }
+### digitizer_channel(*channel) { #digitizer_channel data-toc-label="digitizer_channel" }
 
 ```python
-digitizer_channel()                 # -> str (query)
-digitizer_channel('CH0', 'CH1')     # default: both
-digitizer_channel('CH0')            # only CH0
+digitizer_channel()                # -> str (query)
+digitizer_channel('CH0', 'CH1')    # default: both
+digitizer_channel('CH0')           # only CH0
 ```
 
 This function enables the specified channel or queries enabled channels. If there is no argument the function will return the currently enabled channels. If there is an argument the output from the specified channel will be enabled. Default option is when both channels are enabled.
@@ -171,11 +171,11 @@ This function enables the specified channel or queries enabled channels. If ther
 
 ---
 
-### digitizer_sample_rate(*s_rate) { #digitizer_sample_rate }
+### digitizer_sample_rate(*s_rate) { #digitizer_sample_rate data-toc-label="digitizer_sample_rate" }
 
 ```python
-digitizer_sample_rate()             # -> float, MHz (query)
-digitizer_sample_rate(500)          # 500 MHz
+digitizer_sample_rate()       # -> float, MHz (query)
+digitizer_sample_rate(500)    # 500 MHz
 ```
 
 This function queries or sets the digitizer sample rate (in MHz). If there is no argument the function will return the current sample rate. If there is an argument the specified sample rate will be set. If there is no setting fitting the argument the nearest available value is used and warning is printed. Default value is 500 MHz (M4I 4450 X8) or 1250 MHz (M4I 2211 X8).
@@ -199,7 +199,7 @@ This function queries or sets the digitizer sample rate (in MHz). If there is no
 
 ---
 
-### digitizer_clock_mode(*mode) { #digitizer_clock_mode }
+### digitizer_clock_mode(*mode) { #digitizer_clock_mode data-toc-label="digitizer_clock_mode" }
 
 ```python
 digitizer_clock_mode()              # -> str (query)
@@ -219,11 +219,11 @@ According to the documentation, the internal sampling clock is generated in defa
 
 ---
 
-### digitizer_reference_clock(*ref_clock) { #digitizer_reference_clock }
+### digitizer_reference_clock(*ref_clock) { #digitizer_reference_clock data-toc-label="digitizer_reference_clock" }
 
 ```python
-digitizer_reference_clock()         # -> int, MHz (query)
-digitizer_reference_clock(100)      # default: 100 MHz
+digitizer_reference_clock()       # -> int, MHz (query)
+digitizer_reference_clock(100)    # default: 100 MHz
 ```
 
 This function queries or sets the digitizer reference clock (in MHz) for `External` mode of the [`digitizer_clock_mode()`](#digitizer_clock_mode) function. If there is no argument the function will return the current reference clock. If there is an argument the specified reference clock will be set. Default value is 100 MHz.
@@ -236,11 +236,11 @@ This function queries or sets the digitizer reference clock (in MHz) for `Extern
 
 ---
 
-### digitizer_card_mode(*mode) { #digitizer_card_mode }
+### digitizer_card_mode(*mode) { #digitizer_card_mode data-toc-label="digitizer_card_mode" }
 
 ```python
-digitizer_card_mode()               # -> str (query)
-digitizer_card_mode('Single')       # default
+digitizer_card_mode()            # -> str (query)
+digitizer_card_mode('Single')    # default
 digitizer_card_mode('Average')
 ```
 
@@ -256,11 +256,11 @@ According to the documentation, in the `Single` mode data acquisition is carried
 
 ---
 
-### digitizer_trigger_channel(*ch) { #digitizer_trigger_channel }
+### digitizer_trigger_channel(*ch) { #digitizer_trigger_channel data-toc-label="digitizer_trigger_channel" }
 
 ```python
-digitizer_trigger_channel()             # -> str (query)
-digitizer_trigger_channel('External')   # default; = Trg0
+digitizer_trigger_channel()              # -> str (query)
+digitizer_trigger_channel('External')    # default; = Trg0
 digitizer_trigger_channel('Software')
 ```
 
@@ -274,11 +274,11 @@ This function queries or sets the digitizer trigger channel. If there is no argu
 
 ---
 
-### digitizer_trigger_mode(*mode) { #digitizer_trigger_mode }
+### digitizer_trigger_mode(*mode) { #digitizer_trigger_mode data-toc-label="digitizer_trigger_mode" }
 
 ```python
-digitizer_trigger_mode()            # -> str (query)
-digitizer_trigger_mode('Positive')  # default
+digitizer_trigger_mode()              # -> str (query)
+digitizer_trigger_mode('Positive')    # default
 ```
 
 This function queries or sets the digitizer trigger mode. If there is no argument the function will return the current trigger mode. If there is an argument the specified trigger mode will be set. Mode `Positive` corresponds to trigger detection for positive edges (crossing level 0 from below to above). `Negative` to trigger detection for negative edges (crossing level 0 from above to below). `High` to trigger detection for HIGH levels (signal above level 0). `Low` to trigger detection for LOW levels (signal below level 0). Default setting is `Positive`.
@@ -291,11 +291,11 @@ This function queries or sets the digitizer trigger mode. If there is no argumen
 
 ---
 
-### digitizer_number_of_averages(*averages) { #digitizer_number_of_averages }
+### digitizer_number_of_averages(*averages) { #digitizer_number_of_averages data-toc-label="digitizer_number_of_averages" }
 
 ```python
-digitizer_number_of_averages()      # -> int (query)
-digitizer_number_of_averages(2)     # default
+digitizer_number_of_averages()     # -> int (query)
+digitizer_number_of_averages(2)    # default
 ```
 
 This function queries or sets the number of averages for [`Average`](#digitizer_card_mode) card mode. If there is no argument the function will return the current number of averages. If there is an argument the specified number of averages will be set. If a very large number of [points](#digitizer_number_of_points) are set, the maximum available number of averages may be limited by the digitizer memory. This limit is 1 Gs. Default value is 2.
@@ -308,7 +308,7 @@ This function queries or sets the number of averages for [`Average`](#digitizer_
 
 ---
 
-### digitizer_trigger_delay(*delay) { #digitizer_trigger_delay }
+### digitizer_trigger_delay(*delay) { #digitizer_trigger_delay data-toc-label="digitizer_trigger_delay" }
 
 ```python
 digitizer_trigger_delay()           # -> str (query)
@@ -322,11 +322,11 @@ This function queries or sets the digitizer trigger delay. If there is no argume
 
 ---
 
-### digitizer_input_mode(*mode) { #digitizer_input_mode }
+### digitizer_input_mode(*mode) { #digitizer_input_mode data-toc-label="digitizer_input_mode" }
 
 ```python
-digitizer_input_mode()              # -> str (query)
-digitizer_input_mode('HF')          # default
+digitizer_input_mode()        # -> str (query)
+digitizer_input_mode('HF')    # default
 digitizer_input_mode('Buffered')
 ```
 
@@ -341,12 +341,12 @@ This function queries or sets the input mode for the channels of the digitizer. 
 
 ---
 
-### digitizer_amplitude(*ampl) { #digitizer_amplitude }
+### digitizer_amplitude(*ampl) { #digitizer_amplitude data-toc-label="digitizer_amplitude" }
 
 ```python
-digitizer_amplitude()       # -> str (query)
-digitizer_amplitude(500)    # default: ±500 mV
-digitizer_amplitude(1000)   # ±1 V
+digitizer_amplitude()        # -> str (query)
+digitizer_amplitude(500)     # default: ±500 mV
+digitizer_amplitude(1000)    # ±1 V
 ```
 
 This function queries or sets the input ranges of the digitizer channels. If there is no argument the function will return the range of the digitizer channels. If there is an argument the specified range (in mV) will be set. The given range will be used for both channels. If there is no range setting fitting the argument the nearest available value is used and warning is printed. Default value is `500 mV`.
@@ -367,12 +367,12 @@ This function queries or sets the input ranges of the digitizer channels. If the
 
 ---
 
-### digitizer_offset(*offset) { #digitizer_offset }
+### digitizer_offset(*offset) { #digitizer_offset data-toc-label="digitizer_offset" }
 
 ```python
-digitizer_offset()                            # -> (str, str)
-digitizer_offset('CH0', '1', 'CH1', '50')     # both channels
-digitizer_offset('CH0', '1')                  # only CH0
+digitizer_offset()                           # -> (str, str)
+digitizer_offset('CH0', '1', 'CH1', '50')    # both channels
+digitizer_offset('CH0', '1')                 # only CH0
 ```
 
 This function queries or sets the vertical offset of the digitizer channels. If there is no argument the function will return the offset of the both digitizer channels. If there is an argument the specified offset (as a percentage of the input range) will be set for the specified channel. For M4I 4450 X8 the value of the offset (range × argument) is ALWAYS substracted from the signal. The step is 1%. According to the M4I 4450 X8 documentation, no offset can be used for 1000 mV and 10000 mV range in the [`Buffered` input mode](#digitizer_input_mode). Default value is `0` for both channels.
@@ -382,11 +382,11 @@ This function queries or sets the vertical offset of the digitizer channels. If 
 
 ---
 
-### digitizer_coupling(*coupling) { #digitizer_coupling }
+### digitizer_coupling(*coupling) { #digitizer_coupling data-toc-label="digitizer_coupling" }
 
 ```python
-digitizer_coupling()                              # -> (str, str)
-digitizer_coupling('CH0', 'DC', 'CH1', 'DC')      # default
+digitizer_coupling()                            # -> (str, str)
+digitizer_coupling('CH0', 'DC', 'CH1', 'DC')    # default
 digitizer_coupling('CH0', 'AC', 'CH1', 'DC')
 ```
 
@@ -400,11 +400,11 @@ This function queries or sets the coupling of the digitizer channels. If there i
 
 ---
 
-### digitizer_impedance(*impedance) { #digitizer_impedance }
+### digitizer_impedance(*impedance) { #digitizer_impedance data-toc-label="digitizer_impedance" }
 
 ```python
-digitizer_impedance()                              # -> (str, str)
-digitizer_impedance('CH0', '50', 'CH1', '50')      # default
+digitizer_impedance()                            # -> (str, str)
+digitizer_impedance('CH0', '50', 'CH1', '50')    # default
 digitizer_impedance('CH0', '50', 'CH1', '1 M')
 ```
 
@@ -419,13 +419,13 @@ This function queries or sets the impedance of the digitizer channels. If there 
 
 ---
 
-### digitizer_decimation(*dec) { #digitizer_decimation }
+### digitizer_decimation(*dec) { #digitizer_decimation data-toc-label="digitizer_decimation" }
 
 ```python
-digitizer_decimation()      # -> int (query)
-digitizer_decimation(1)     # 0.4 ns/point
-digitizer_decimation(2)     # 0.8 ns/point
-digitizer_decimation(4)     # 1.6 ns/point
+digitizer_decimation()     # -> int (query)
+digitizer_decimation(1)    # 0.4 ns/point
+digitizer_decimation(2)    # 0.8 ns/point
+digitizer_decimation(4)    # 1.6 ns/point
 ```
 
 This function queries or sets the decimation coefficient for Insys FM214x3GDA. If there is no argument the function will return the decimation coefficient of the digitizer. If there is an argument the specified decimation will be set. It can be used instead of the function [`digitizer_sample_rate()`](#digitizer_sample_rate). The values 1, 2, 4 correspond to 0.4 ns/point, 0.8 ns/point, and 1.6 ns/point. This function should be called before [`pulser_open()`](pulse_programmer.md#pulser_open).
@@ -435,11 +435,11 @@ This function queries or sets the decimation coefficient for Insys FM214x3GDA. I
 
 ---
 
-### digitizer_flow(*flow) { #digitizer_flow }
+### digitizer_flow(*flow) { #digitizer_flow data-toc-label="digitizer_flow" }
 
 ```python
-digitizer_flow()            # -> str (query)
-digitizer_flow('ADC')       # default
+digitizer_flow()         # -> str (query)
+digitizer_flow('ADC')    # default
 ```
 
 This function sets or queries enabled flows of data. If there is no argument the function will return the enabled flow of data of the digitizer. If there is an argument the specified flow will be set. The default option is `ADC`. This function is available only for L card L-502.
@@ -449,10 +449,10 @@ This function sets or queries enabled flows of data. If there is no argument the
 
 ---
 
-### digitizer_read_settings() { #digitizer_read_settings }
+### digitizer_read_settings() { #digitizer_read_settings data-toc-label="digitizer_read_settings" }
 
 ```python
-digitizer_read_settings()   # read settings from digitizer.param
+digitizer_read_settings()    # read settings from digitizer.param
 ```
 
 This function reads all the settings from a special text file [`digitizer.param`](https://github.com/Anatoly1010/Atomize_ITC/tree/master/atomize/control_center) and writes them to the digitizer using the [`digitizer_setup()`](#digitizer_setup) function.
@@ -462,10 +462,10 @@ This function reads all the settings from a special text file [`digitizer.param`
 
 ---
 
-### digitizer_window() { #digitizer_window }
+### digitizer_window() { #digitizer_window data-toc-label="digitizer_window" }
 
 ```python
-digitizer_window()          # -> float; integration window
+digitizer_window()    # -> float; integration window
 ```
 
 This function returns the integration window of the digitizer. The integration window is used in the [`digitizer_get_curve()`](#digitizer_get_curve-integral) function and is set via a special text file [`digitizer.param`](https://github.com/Anatoly1010/Atomize_ITC/tree/master/atomize/control_center).
@@ -475,10 +475,10 @@ This function returns the integration window of the digitizer. The integration w
 
 ---
 
-### digitizer_window_points() { #digitizer_window_points }
+### digitizer_window_points() { #digitizer_window_points data-toc-label="digitizer_window_points" }
 
 ```python
-digitizer_window_points()   # -> int; points in the window
+digitizer_window_points()    # -> int; points in the window
 ```
 
 This function returns the number of points in the digitizer window. The window is used in the [`digitizer_get_curve()`](#digitizer_get_curve-points) function. The number of points in the window can be set as the length of the [`DETECTION` pulse](pulse_programmer.md#pulser_pulse).
@@ -488,7 +488,7 @@ This function returns the number of points in the digitizer window. The window i
 
 ---
 
-### digitizer_at_exit(integral=False) { #digitizer_at_exit }
+### digitizer_at_exit(integral=False) { #digitizer_at_exit data-toc-label="digitizer_at_exit" }
 
 ```python
 digitizer_at_exit()                 # -> arrays

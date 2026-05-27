@@ -10,7 +10,7 @@
 
 ## Functions
 
-### mw_bridge_name() { #mw_bridge_name }
+### mw_bridge_name() { #mw_bridge_name data-toc-label="mw_bridge_name" }
 
 ```python
 mw_bridge_name()    # -> str; device name
@@ -20,7 +20,7 @@ This function returns device name.
 
 ---
 
-### mw_bridge_open() { #mw_bridge_open }
+### mw_bridge_open() { #mw_bridge_open data-toc-label="mw_bridge_open" }
 
 ```python
 mw_bridge_open()    # -> 'DEVICE OPENED' | 'DEVICE NOT FOUND'
@@ -30,7 +30,7 @@ This function is only available for Micran Q-band MW Bridge. It opens the driver
 
 ---
 
-### mw_bridge_close() { #mw_bridge_close }
+### mw_bridge_close() { #mw_bridge_close data-toc-label="mw_bridge_close" }
 
 ```python
 mw_bridge_close()    # -> 'DEVICE CLOSED'
@@ -40,7 +40,7 @@ This function is only available for Micran Q-band MW Bridge. It closes the drive
 
 ---
 
-### mw_bridge_synthesizer(*freq) { #mw_bridge_synthesizer }
+### mw_bridge_synthesizer(*freq) { #mw_bridge_synthesizer data-toc-label="mw_bridge_synthesizer" }
 
 ```python
 mw_bridge_synthesizer()        # -> 'Frequency: {int} MHz' (query)
@@ -54,7 +54,7 @@ This function queries or sets the frequency of the synthesizer in MHz. If an arg
 
 ---
 
-### mw_bridge_att1_prd(*atten) { #mw_bridge_att1_prd }
+### mw_bridge_att1_prd(*atten) { #mw_bridge_att1_prd data-toc-label="mw_bridge_att1_prd" }
 
 ```python
 mw_bridge_att1_prd()       # -> 'Attenuator PRD1: {float} dB' (query)
@@ -68,7 +68,7 @@ This function queries or sets the attenuation (in dB) of the first attenuator in
 
 ---
 
-### mw_bridge_att2_prd(*atten) { #mw_bridge_att2_prd }
+### mw_bridge_att2_prd(*atten) { #mw_bridge_att2_prd data-toc-label="mw_bridge_att2_prd" }
 
 ```python
 mw_bridge_att2_prd()       # -> 'Attenuator PRD2: {float} dB' (query)
@@ -85,11 +85,11 @@ This function queries or sets the attenuation (in dB) of the second attenuator i
 
 ---
 
-### mw_bridge_fv_ctrl(*phase) { #mw_bridge_fv_ctrl }
+### mw_bridge_fv_ctrl(*phase) { #mw_bridge_fv_ctrl data-toc-label="mw_bridge_fv_ctrl" }
 
 ```python
-mw_bridge_fv_ctrl()         # -> 'Phase CTRL: {float} deg' (query)
-mw_bridge_fv_ctrl(100)      # set CTRL phase to 100 deg
+mw_bridge_fv_ctrl()       # -> 'Phase CTRL: {float} deg' (query)
+mw_bridge_fv_ctrl(100)    # set CTRL phase to 100 deg
 ```
 
 This function queries or sets the phase (in deg) of the phase shifter in the CTRL part of the bridge. If an argument is specified, the function sets a new phase value. If there is no argument, the function returns the current phase. The output is in the form: `'Phase CTRL: 5.625 deg'`. If there is no phase setting fitting the argument the nearest available value is used and warning is printed.
@@ -102,11 +102,11 @@ This function queries or sets the phase (in deg) of the phase shifter in the CTR
 
 ---
 
-### mw_bridge_fv_prm(*phase) { #mw_bridge_fv_prm }
+### mw_bridge_fv_prm(*phase) { #mw_bridge_fv_prm data-toc-label="mw_bridge_fv_prm" }
 
 ```python
-mw_bridge_fv_prm()        # -> 'Phase PRM: {float} deg' (query)
-mw_bridge_fv_prm(50)      # set PRM phase
+mw_bridge_fv_prm()      # -> 'Phase PRM: {float} deg' (query)
+mw_bridge_fv_prm(50)    # set PRM phase
 ```
 
 This function queries or sets the phase (in deg) of the phase shifter in the PRM part of the bridge. If an argument is specified, the function sets a new phase value. If there is no argument the function returns the current phase. The output is in the form: `'Phase PRM: 5.625 deg'`. If there is no phase setting fitting the argument the nearest available value is used and warning is printed.
@@ -119,11 +119,11 @@ This function queries or sets the phase (in deg) of the phase shifter in the PRM
 
 ---
 
-### mw_bridge_att_prm(*atten) { #mw_bridge_att_prm }
+### mw_bridge_att_prm(*atten) { #mw_bridge_att_prm data-toc-label="mw_bridge_att_prm" }
 
 ```python
-mw_bridge_att_prm()       # -> 'Video Attenuation: {int} dB' (query)
-mw_bridge_att_prm(2)      # set PRM video attenuation to 2 dB
+mw_bridge_att_prm()     # -> 'Video Attenuation: {int} dB' (query)
+mw_bridge_att_prm(2)    # set PRM video attenuation to 2 dB
 ```
 
 This function queries or sets the attenuation (in dB) of the attenuator in the PRM part of the bridge. If an argument is specified, the function sets a new attenuation value. If there is no argument the function returns the current attenuation. The output is in the form: `'Video Attenuation: 14 dB'`.
@@ -133,11 +133,11 @@ This function queries or sets the attenuation (in dB) of the attenuator in the P
 
 ---
 
-### mw_bridge_att2_prm(*atten) { #mw_bridge_att2_prm }
+### mw_bridge_att2_prm(*atten) { #mw_bridge_att2_prm data-toc-label="mw_bridge_att2_prm" }
 
 ```python
-mw_bridge_att2_prm()      # -> 'Video Attenuation 2: {int} dB' (query)
-mw_bridge_att2_prm(2)     # set PRM video attenuation 2 to 2 dB
+mw_bridge_att2_prm()     # -> 'Video Attenuation 2: {int} dB' (query)
+mw_bridge_att2_prm(2)    # set PRM video attenuation 2 to 2 dB
 ```
 
 This function queries or sets the attenuation (in dB) of the attenuator 2 in the PRM part of the bridge. If an argument is specified, the function sets a new attenuation value. If there is no argument, the function returns the current attenuation. The output is in the form: `'Video Attenuation 2: 14 dB'`.
@@ -152,11 +152,11 @@ This function queries or sets the attenuation (in dB) of the attenuator 2 in the
 
 ---
 
-### mw_bridge_k_prm(*amplif) { #mw_bridge_k_prm }
+### mw_bridge_k_prm(*amplif) { #mw_bridge_k_prm data-toc-label="mw_bridge_k_prm" }
 
 ```python
-mw_bridge_k_prm()       # -> 'Amplification PRM: {int} dB' (query)
-mw_bridge_k_prm(0)      # set amplification to 0 dB
+mw_bridge_k_prm()     # -> 'Amplification PRM: {int} dB' (query)
+mw_bridge_k_prm(0)    # set amplification to 0 dB
 ```
 
 This function queries or sets the amplification coefficient (in dB) in the PRM part of the bridge. If an argument is specified, the function sets a new amplification value. If there is no argument, the function returns the current amplification. The output is in the form: `'Amplification PRM: 22 dB'`.
@@ -171,11 +171,11 @@ This function queries or sets the amplification coefficient (in dB) in the PRM p
 
 ---
 
-### mw_bridge_att_pin(*atten) { #mw_bridge_att_pin }
+### mw_bridge_att_pin(*atten) { #mw_bridge_att_pin data-toc-label="mw_bridge_att_pin" }
 
 ```python
-mw_bridge_att_pin()       # -> 'PIN Attenuator: {int} dB' (query)
-mw_bridge_att_pin(10)     # set PIN attenuation to 10 dB
+mw_bridge_att_pin()      # -> 'PIN Attenuator: {int} dB' (query)
+mw_bridge_att_pin(10)    # set PIN attenuation to 10 dB
 ```
 
 This function queries or sets the attenuation (in dB) of the pin attenuator of the bridge. If an argument is specified, the function sets a new attenuation. If there is no argument, the function returns the current attenuation. The output is in the form: `'PIN Attenuator: 10 dB'`.
@@ -188,7 +188,7 @@ This function queries or sets the attenuation (in dB) of the pin attenuator of t
 
 ---
 
-### mw_bridge_cut_off(*cutoff) { #mw_bridge_cut_off }
+### mw_bridge_cut_off(*cutoff) { #mw_bridge_cut_off data-toc-label="mw_bridge_cut_off" }
 
 ```python
 mw_bridge_cut_off()       # -> 'Cut-off Frequency: {int} MHz' (query)
@@ -202,10 +202,10 @@ This function queries or sets the cut-off frequency (in MHz) of the bridge. If a
 
 ---
 
-### mw_bridge_rotary_vane(*atten, mode) { #mw_bridge_rotary_vane }
+### mw_bridge_rotary_vane(*atten, mode) { #mw_bridge_rotary_vane data-toc-label="mw_bridge_rotary_vane" }
 
 ```python
-mw_bridge_rotary_vane()                          # -> 'Rotary Vane Attenuation: {int} dB'
+mw_bridge_rotary_vane()    # -> 'Rotary Vane Attenuation: {int} dB'
 mw_bridge_rotary_vane('10 dB', mode='Arbitrary') # set rotary vane to 10 dB
 ```
 
@@ -230,7 +230,7 @@ mw_bridge_rotary_vane(60, mode='Limit')
 
 ---
 
-### mw_bridge_telemetry() { #mw_bridge_telemetry }
+### mw_bridge_telemetry() { #mw_bridge_telemetry data-toc-label="mw_bridge_telemetry" }
 
 ```python
 mw_bridge_telemetry()    # -> str; telemetry
@@ -242,11 +242,11 @@ The format for Micran Q-band MW Bridge is `DATE; ANSWER RECEIVED; PARAMS UPDATED
 
 ---
 
-### mw_bridge_initialize() { #mw_bridge_initialize }
+### mw_bridge_initialize() { #mw_bridge_initialize data-toc-label="mw_bridge_initialize" }
 
 ```python
-mw_bridge_initialize()           # reset bridge to initialization state
-mw_bridge_initialize('On')       # Q-band: turn on init + several options
+mw_bridge_initialize()        # reset bridge to initialization state
+mw_bridge_initialize('On')    # Q-band: turn on init + several options
 ```
 
 This function returns the bridge to initialization state. The initialization state corresponds to `ATT1_PRD = 0 dB`; `ATT2_PRD = 0 dB`; `FV_CTRL = 0°`; `FV_PRM = 0°`; `ATT_PRM = 0 dB`; `K_PRM = 22 dB` for Micran X-band MW Bridge or `ATT2_PRM = 0 dB` for Micran X-band MW Bridge v2; CUT-OFF frequency = 300 MHz; Synthesizer frequency = 1000 MHz; Synthesizer power = OFF.
@@ -258,7 +258,7 @@ For Micran Q-band MW Bridge a modified version is used that accepts a `state` ar
 
 ---
 
-### mw_bridge_reset() { #mw_bridge_reset }
+### mw_bridge_reset() { #mw_bridge_reset data-toc-label="mw_bridge_reset" }
 
 ```python
 mw_bridge_reset()    # reset error flags

@@ -13,7 +13,7 @@ Bruker BH15 module was rewritten from the [FSC2 module](http://users.physik.fu-b
 
 ## Functions
 
-### magnet_name() { #magnet_name }
+### magnet_name() { #magnet_name data-toc-label="magnet_name" }
 
 ```python
 magnet_name()    # -> str; device name
@@ -23,7 +23,7 @@ This function returns device name.
 
 ---
 
-### magnet_setup(start_field, step_field) { #magnet_setup }
+### magnet_setup(start_field, step_field) { #magnet_setup data-toc-label="magnet_setup" }
 
 ```python
 magnet_setup(3500, 10)    # start field 3500 G, step 10 G (for sweeps)
@@ -38,7 +38,7 @@ As it is indicated [here:](http://users.physik.fu-berlin.de/~jtt/fsc2/Magnet-Fun
 
 ---
 
-### magnet_field(*field) { #magnet_field }
+### magnet_field(*field) { #magnet_field data-toc-label="magnet_field" }
 
 ```python
 magnet_field()        # -> float (query)
@@ -53,7 +53,7 @@ Requesting the current value of the field is only possible, if the function [`ma
 
 ---
 
-### magnet_sweep_up() { #magnet_sweep_up }
+### magnet_sweep_up() { #magnet_sweep_up data-toc-label="magnet_sweep_up" }
 
 ```python
 magnet_sweep_up()    # -> float; sweep up by the step from magnet_setup()
@@ -66,7 +66,7 @@ This function does not take an argument and starts sweeping of magentic field up
 
 ---
 
-### magnet_sweep_down() { #magnet_sweep_down }
+### magnet_sweep_down() { #magnet_sweep_down data-toc-label="magnet_sweep_down" }
 
 ```python
 magnet_sweep_down()    # -> float; sweep down by the step from magnet_setup()
@@ -79,7 +79,7 @@ This function does not take an argument and starts sweeping of magentic field do
 
 ---
 
-### magnet_reset_field() { #magnet_reset_field }
+### magnet_reset_field() { #magnet_reset_field data-toc-label="magnet_reset_field" }
 
 ```python
 magnet_reset_field()    # -> float; reset to start field from magnet_setup()
@@ -92,7 +92,7 @@ This function resets the magnetic field to the start field value specified in a 
 
 ---
 
-### magnet_field_step_size(*step) { #magnet_field_step_size }
+### magnet_field_step_size(*step) { #magnet_field_step_size data-toc-label="magnet_field_step_size" }
 
 ```python
 magnet_field_step_size()      # -> float; minimum field step size in G
@@ -106,7 +106,7 @@ This function returns the minimum field step size (in Gauss) if called without a
 
 ---
 
-### magnet_command(command) { #magnet_command }
+### magnet_command(command) { #magnet_command data-toc-label="magnet_command" }
 
 ```python
 magnet_command(command)    # str -> none

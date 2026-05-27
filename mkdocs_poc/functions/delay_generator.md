@@ -8,7 +8,7 @@
 
 ## Functions
 
-### delay_generator_name() { #delay_generator_name }
+### delay_generator_name() { #delay_generator_name data-toc-label="delay_generator_name" }
 
 ```python
 delay_generator_name()    # -> str; device name
@@ -18,7 +18,7 @@ This function returns device name.
 
 ---
 
-### delay_generator_delay(*delay) { #delay_generator_delay }
+### delay_generator_delay(*delay) { #delay_generator_delay data-toc-label="delay_generator_delay" }
 
 ```python
 delay_generator_delay('A')                   # -> str (query)
@@ -35,11 +35,11 @@ This function queries (if called with one argument) or sets (if called with thre
 
 ---
 
-### delay_generator_impedance(*impedance) { #delay_generator_impedance }
+### delay_generator_impedance(*impedance) { #delay_generator_impedance data-toc-label="delay_generator_impedance" }
 
 ```python
-delay_generator_impedance('A')             # -> str (query)
-delay_generator_impedance('A', '1 M')      # set channel A to high impedance
+delay_generator_impedance('A')           # -> str (query)
+delay_generator_impedance('A', '1 M')    # set channel A to high impedance
 ```
 
 This function queries (if called with one argument) or sets (if called with two arguments) the impedance of one of the output channels of the delay generator. If there is a second argument it will be set as a new impedance. If there is no second argument the impedance for the specified channel is returned as a string.
@@ -52,11 +52,11 @@ This function queries (if called with one argument) or sets (if called with two 
 
 ---
 
-### delay_generator_output_mode(*mode) { #delay_generator_output_mode }
+### delay_generator_output_mode(*mode) { #delay_generator_output_mode data-toc-label="delay_generator_output_mode" }
 
 ```python
-delay_generator_output_mode('C')             # -> str (query)
-delay_generator_output_mode('C', 'TTL')      # set channel C mode to TTL
+delay_generator_output_mode('C')           # -> str (query)
+delay_generator_output_mode('C', 'TTL')    # set channel C mode to TTL
 ```
 
 This function queries (if called with one argument) or sets (if called with two arguments) the mode of one of the output channels of the delay generator. If there is a second argument it will be set as a new mode setting. If there is no second argument the mode setting for the specified channel is returned as a string.
@@ -71,7 +71,7 @@ The available modes correspond to: `'TTL'`: 0 to 4 Vdc, `'ECL'`: -1.8 to -0.8 Vd
 
 ---
 
-### delay_generator_amplitude_offset(*amplitude_offset) { #delay_generator_amplitude_offset }
+### delay_generator_amplitude_offset(*amplitude_offset) { #delay_generator_amplitude_offset data-toc-label="delay_generator_amplitude_offset" }
 
 ```python
 delay_generator_amplitude_offset('A')                  # -> str (query)
@@ -93,7 +93,7 @@ Offset and amplitude should between -3 and +4 Vdc with 4 V maximum step size. Th
 
 ---
 
-### delay_generator_output_polarity(*polarity) { #delay_generator_output_polarity }
+### delay_generator_output_polarity(*polarity) { #delay_generator_output_polarity data-toc-label="delay_generator_output_polarity" }
 
 ```python
 delay_generator_output_polarity('C')              # -> str (query)
@@ -112,7 +112,7 @@ Normal polarity means that the output will provide a rising edge at the specifie
 
 ---
 
-### delay_generator_trigger_source(*source) { #delay_generator_trigger_source }
+### delay_generator_trigger_source(*source) { #delay_generator_trigger_source data-toc-label="delay_generator_trigger_source" }
 
 ```python
 delay_generator_trigger_source()              # -> str (query)
@@ -126,11 +126,11 @@ This function queries (if called without arguments) or sets (if called with one 
 
 ---
 
-### delay_generator_trigger_rate(*rate) { #delay_generator_trigger_rate }
+### delay_generator_trigger_rate(*rate) { #delay_generator_trigger_rate data-toc-label="delay_generator_trigger_rate" }
 
 ```python
-delay_generator_trigger_rate()           # -> str (query); internal or burst trigger rate
-delay_generator_trigger_rate('100 Hz')   # set rate
+delay_generator_trigger_rate()            # -> str (query); internal or burst trigger rate
+delay_generator_trigger_rate('100 Hz')    # set rate
 ```
 
 This function queries or sets the trigger rate for `'Internal'` and `'Burst'` trigger [mode](#delay_generator_trigger_source) of the delay generator. If there is no argument the function will return the current trigger rate. If there is an argument the specified rate will be set.
@@ -143,7 +143,7 @@ This function queries or sets the trigger rate for `'Internal'` and `'Burst'` tr
 
 ---
 
-### delay_generator_trigger() { #delay_generator_trigger }
+### delay_generator_trigger() { #delay_generator_trigger data-toc-label="delay_generator_trigger" }
 
 ```python
 delay_generator_trigger()    # send a single software trigger
@@ -153,7 +153,7 @@ This function sends a trigger for `'Single'` trigger [mode](#delay_generator_tri
 
 ---
 
-### delay_generator_trigger_level(*level) { #delay_generator_trigger_level }
+### delay_generator_trigger_level(*level) { #delay_generator_trigger_level data-toc-label="delay_generator_trigger_level" }
 
 ```python
 delay_generator_trigger_level()         # -> str (query)
@@ -167,7 +167,7 @@ This function queries or sets the trigger level for `'External'` trigger [mode](
 
 ---
 
-### delay_generator_trigger_slope(*slope) { #delay_generator_trigger_slope }
+### delay_generator_trigger_slope(*slope) { #delay_generator_trigger_slope data-toc-label="delay_generator_trigger_slope" }
 
 ```python
 delay_generator_trigger_slope()             # -> str (query)
@@ -181,11 +181,11 @@ This function queries or sets the trigger slope of the delay generator. If there
 
 ---
 
-### delay_generator_trigger_impedance(*impedance) { #delay_generator_trigger_impedance }
+### delay_generator_trigger_impedance(*impedance) { #delay_generator_trigger_impedance data-toc-label="delay_generator_trigger_impedance" }
 
 ```python
-delay_generator_trigger_impedance()          # -> str (query)
-delay_generator_trigger_impedance('1 M')     # set trigger input impedance to 1 MΩ
+delay_generator_trigger_impedance()         # -> str (query)
+delay_generator_trigger_impedance('1 M')    # set trigger input impedance to 1 MΩ
 ```
 
 This function queries or sets the trigger input impedance of the delay generator. If there is no argument the function will return the current impedance as a string. If there is an argument it will be set as a new impedance setting.
@@ -195,11 +195,11 @@ This function queries or sets the trigger input impedance of the delay generator
 
 ---
 
-### delay_generator_burst_count(*count) { #delay_generator_burst_count }
+### delay_generator_burst_count(*count) { #delay_generator_burst_count data-toc-label="delay_generator_burst_count" }
 
 ```python
-delay_generator_burst_count()       # -> int (query)
-delay_generator_burst_count(10)     # set 10 pulses per burst
+delay_generator_burst_count()      # -> int (query)
+delay_generator_burst_count(10)    # set 10 pulses per burst
 ```
 
 This function queries or sets the number of pulses, which will be in each burst of pulses when the delay generator is in the `'Burst'` [mode](#delay_generator_trigger_source). If there is no argument the function will return the current number of pulses in burst. If there is an argument it will be set as a new number of pulses.
@@ -209,7 +209,7 @@ This function queries or sets the number of pulses, which will be in each burst 
 
 ---
 
-### delay_generator_burst_period(*period) { #delay_generator_burst_period }
+### delay_generator_burst_period(*period) { #delay_generator_burst_period data-toc-label="delay_generator_burst_period" }
 
 ```python
 delay_generator_burst_count(10)
@@ -223,7 +223,7 @@ This function queries or sets the number of triggers between the start of each b
 
 ---
 
-### delay_generator_command(command) { #delay_generator_command }
+### delay_generator_command(command) { #delay_generator_command data-toc-label="delay_generator_command" }
 
 ```python
 delay_generator_command('DL 1,0,0')    # opens the Delay Menu on the generator screen
@@ -233,7 +233,7 @@ This function sends an arbitrary command from a programming guide to the device 
 
 ---
 
-### delay_generator_query(command) { #delay_generator_query }
+### delay_generator_query(command) { #delay_generator_query data-toc-label="delay_generator_query" }
 
 ```python
 delay_generator_query('TL')    # -> str; current external trigger level in Volts

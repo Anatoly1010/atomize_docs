@@ -10,7 +10,7 @@ Planar instruments only work when running [native sofware](https://planarchel.ru
 
 ## Functions
 
-### vector_analyzer_name() { #vector_analyzer_name }
+### vector_analyzer_name() { #vector_analyzer_name data-toc-label="vector_analyzer_name" }
 
 ```python
 vector_analyzer_name()    # -> str; device name
@@ -20,11 +20,11 @@ This function returns device name.
 
 ---
 
-### vector_analyzer_source_power(*pwr, source = 1) { #vector_analyzer_source_power }
+### vector_analyzer_source_power(*pwr, source = 1) { #vector_analyzer_source_power data-toc-label="vector_analyzer_source_power" }
 
 ```python
-vector_analyzer_source_power(source=1)              # -> float (query)
-vector_analyzer_source_power('0 dBm', source=1)     # set source 1 to 0 dBm
+vector_analyzer_source_power(source=1)             # -> float (query)
+vector_analyzer_source_power('0 dBm', source=1)    # set source 1 to 0 dBm
 ```
 
 This function queries or sets the power of the specified source. If there is no argument, the function returns the current power for the source specified as the keyword "source". The output of the function is a float number in dBm. If there is an argument, the specified power will be set for the indicated source. The available range is specified directly in the device configuration file. The number of available sources is also given in the configuration file.
@@ -37,11 +37,11 @@ This function queries or sets the power of the specified source. If there is no 
 
 ---
 
-### vector_analyzer_center_frequency(*freq, channel = 1) { #vector_analyzer_center_frequency }
+### vector_analyzer_center_frequency(*freq, channel = 1) { #vector_analyzer_center_frequency data-toc-label="vector_analyzer_center_frequency" }
 
 ```python
-vector_analyzer_center_frequency(channel=1)        # -> str (query)
-vector_analyzer_center_frequency('9 GHz')          # set center frequency to 9 GHz
+vector_analyzer_center_frequency(channel=1)    # -> str (query)
+vector_analyzer_center_frequency('9 GHz')      # set center frequency to 9 GHz
 ```
 
 This function queries or sets the center frequency for measurement. If there is no argument, the function returns the current center frequency for the channel specified as the keyword "channel". If there is an argument, the specified center frequency will be set for the indicated channel. The available range is specified directly in the device configuration file. The number of available channels is also given in the configuration file.
@@ -54,11 +54,11 @@ This function queries or sets the center frequency for measurement. If there is 
 
 ---
 
-### vector_analyzer_frequency_range(*freq, channel = 1) { #vector_analyzer_frequency_range }
+### vector_analyzer_frequency_range(*freq, channel = 1) { #vector_analyzer_frequency_range data-toc-label="vector_analyzer_frequency_range" }
 
 ```python
-vector_analyzer_frequency_range(channel=1)         # -> str (query)
-vector_analyzer_frequency_range('10 MHz')          # set frequency range to 10 MHz
+vector_analyzer_frequency_range(channel=1)    # -> str (query)
+vector_analyzer_frequency_range('10 MHz')     # set frequency range to 10 MHz
 ```
 
 This function queries or sets the frequency range for measurement. If there is no argument, the function returns the current frequency range for the channel specified as the keyword "channel". If there is an argument, the specified frequency range will be set for the indicated channel. The number of available channels is given in the configuration file.
@@ -71,11 +71,11 @@ This function queries or sets the frequency range for measurement. If there is n
 
 ---
 
-### vector_analyzer_points(*pnt, channel = 1) { #vector_analyzer_points }
+### vector_analyzer_points(*pnt, channel = 1) { #vector_analyzer_points data-toc-label="vector_analyzer_points" }
 
 ```python
-vector_analyzer_points(channel=1)                  # -> int (query)
-vector_analyzer_points(1000, channel=1)            # set 1000 points for measurement
+vector_analyzer_points(channel=1)          # -> int (query)
+vector_analyzer_points(1000, channel=1)    # set 1000 points for measurement
 ```
 
 This function queries or sets the number of points for measurement. If there is no argument, the function returns the current number of points for the channel specified as the keyword "channel". If there is an argument, the specified number of points will be set for the indicated channel. The available number of points is specified directly in the device configuration file. The number of available channels is also given in the configuration file.
@@ -85,11 +85,11 @@ This function queries or sets the number of points for measurement. If there is 
 
 ---
 
-### vector_analyzer_trigger_source(*src) { #vector_analyzer_trigger_source }
+### vector_analyzer_trigger_source(*src) { #vector_analyzer_trigger_source data-toc-label="vector_analyzer_trigger_source" }
 
 ```python
-vector_analyzer_trigger_source()           # -> str (query)
-vector_analyzer_trigger_source('INT')      # set internal trigger source
+vector_analyzer_trigger_source()         # -> str (query)
+vector_analyzer_trigger_source('INT')    # set internal trigger source
 ```
 
 This function queries or sets the trigger source. If there is no argument, the function returns the current trigger source as a string. If there is an argument, the specified trigger source will be set.
@@ -99,7 +99,7 @@ This function queries or sets the trigger source. If there is no argument, the f
 
 ---
 
-### vector_analyzer_send_trigger() { #vector_analyzer_send_trigger }
+### vector_analyzer_send_trigger() { #vector_analyzer_send_trigger data-toc-label="vector_analyzer_send_trigger" }
 
 ```python
 vector_analyzer_send_trigger()    # send a single software trigger
@@ -109,11 +109,11 @@ This function can only be called without arguments and is used to send a single 
 
 ---
 
-### vector_analyzer_intermediate_freqiency_bandwith(*freq, channel = 1) { #vector_analyzer_intermediate_freqiency_bandwith }
+### vector_analyzer_intermediate_freqiency_bandwith(*freq, channel = 1) { #vector_analyzer_intermediate_freqiency_bandwith data-toc-label="vector_analyzer_intermediate_freqiency_bandwith" }
 
 ```python
-vector_analyzer_intermediate_freqiency_bandwith(channel=1)                # -> str (query)
-vector_analyzer_intermediate_freqiency_bandwith('10 kHz', channel=1)      # set IF BW to 10 kHz
+vector_analyzer_intermediate_freqiency_bandwith(channel=1)              # -> str (query)
+vector_analyzer_intermediate_freqiency_bandwith('10 kHz', channel=1)    # set IF BW to 10 kHz
 ```
 
 This function queries or sets the intermediate frequency bandwidth for measurement. If there is no argument, the function returns the current bandwidth for the channel specified as the keyword "channel". If there is an argument, the specified bandwidth will be set for the indicated channel. If there is no bandwidth setting fitting the argument the nearest available value is used and warning is printed.
@@ -126,11 +126,11 @@ This function queries or sets the intermediate frequency bandwidth for measureme
 
 ---
 
-### vector_analyzer_trigger_mode(*md, channel = 1) { #vector_analyzer_trigger_mode }
+### vector_analyzer_trigger_mode(*md, channel = 1) { #vector_analyzer_trigger_mode  data-toc-label="vector_analyzer_trigger_mode" }
 
 ```python
-vector_analyzer_trigger_mode()                     # -> str (query)
-vector_analyzer_trigger_mode('REP')                # set repetitive trigger initiation mode
+vector_analyzer_trigger_mode()         # -> str (query)
+vector_analyzer_trigger_mode('REP')    # set repetitive trigger initiation mode
 ```
 
 This function queries or sets the trigger initiation mode. If there is no argument, the function returns the current trigger mode as a string. If there is an argument, the specified trigger initiation mode will be set. The `'REP'` argument corresponds to repetitive mode, `'SINGLE'` to single start, and `'OFF'` stops the device.
@@ -140,7 +140,7 @@ This function queries or sets the trigger initiation mode. If there is no argume
 
 ---
 
-### vector_analyzer_get_curve(s = 'S11', type = 'IQ', channel = 1, data_type = 'COR') { #vector_analyzer_get_curve }
+### vector_analyzer_get_curve(s = 'S11', type = 'IQ', channel = 1, data_type = 'COR') { #vector_analyzer_get_curve data-toc-label="vector_analyzer_get_curve" }
 
 ```python
 # Perform the measurement and return two 'S11' curves
@@ -163,7 +163,7 @@ The acquired curves can be returned in two different formats. The `'IQ'` format 
 
 ---
 
-### vector_analyzer_get_frequency_points(channel = 1) { #vector_analyzer_get_frequency_points }
+### vector_analyzer_get_frequency_points(channel = 1) { #vector_analyzer_get_frequency_points data-toc-label="vector_analyzer_get_frequency_points" }
 
 ```python
 vector_analyzer_get_frequency_points()    # -> np.array; measured frequency points
@@ -173,7 +173,7 @@ This function returns an array of measurement point frequencies for the channel 
 
 ---
 
-### vector_analyzer_measurement_time(channel = 1) { #vector_analyzer_measurement_time }
+### vector_analyzer_measurement_time(channel = 1) { #vector_analyzer_measurement_time data-toc-label="vector_analyzer_measurement_time" }
 
 ```python
 vector_analyzer_measurement_time()    # -> float; measurement time in seconds
@@ -183,7 +183,7 @@ This function returns the measurement time for the channel specified as the keyw
 
 ---
 
-### vector_analyzer_command(command) { #vector_analyzer_command }
+### vector_analyzer_command(command) { #vector_analyzer_command data-toc-label="vector_analyzer_command" }
 
 ```python
 vector_analyzer_command('DISP:WIND:TRAC:Y:AUTO')    # perform automatic graph scaling
@@ -193,7 +193,7 @@ This function sends an arbitrary command from a programming guide to the device 
 
 ---
 
-### vector_analyzer_query(command) { #vector_analyzer_query }
+### vector_analyzer_query(command) { #vector_analyzer_query data-toc-label="vector_analyzer_query" }
 
 ```python
 vector_analyzer_query('SERV:CHAN:ACT?')    # -> str; number of the active channel

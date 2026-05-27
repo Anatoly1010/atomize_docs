@@ -8,7 +8,7 @@
 
 ## Functions
 
-### laser_power_meter_name() { #laser_power_meter_name }
+### laser_power_meter_name() { #laser_power_meter_name data-toc-label="laser_power_meter_name" }
 
 ```python
 laser_power_meter_name()    # -> str; device name
@@ -18,7 +18,7 @@ The function returns device name.
 
 ---
 
-### laser_power_meter_head_name() { #laser_power_meter_head_name }
+### laser_power_meter_head_name() { #laser_power_meter_head_name data-toc-label="laser_power_meter_head_name" }
 
 ```python
 laser_power_meter_head_name()    # -> str; model name of the current head
@@ -28,7 +28,7 @@ The function returns the model name of the current head.
 
 ---
 
-### laser_power_meter_get_data() { #laser_power_meter_get_data }
+### laser_power_meter_get_data() { #laser_power_meter_get_data data-toc-label="laser_power_meter_get_data" }
 
 ```python
 laser_power_meter_get_data()    # -> float; current measured value
@@ -38,7 +38,7 @@ This function returns the measured value as soon as a new value appears on the d
 
 ---
 
-### laser_power_meter_wavelength(*wavelength) { #laser_power_meter_wavelength }
+### laser_power_meter_wavelength(*wavelength) { #laser_power_meter_wavelength data-toc-label="laser_power_meter_wavelength" }
 
 ```python
 laser_power_meter_wavelength()       # -> str (query)
@@ -52,11 +52,11 @@ This function queries or sets the wavelength being used on the detector. If ther
 
 ---
 
-### laser_power_meter_zero_offset(*zero_mode) { #laser_power_meter_zero_offset }
+### laser_power_meter_zero_offset(*zero_mode) { #laser_power_meter_zero_offset data-toc-label="laser_power_meter_zero_offset" }
 
 ```python
-laser_power_meter_zero_offset()         # -> str (query)
-laser_power_meter_zero_offset('On')     # reset current measured value to zero
+laser_power_meter_zero_offset()        # -> str (query)
+laser_power_meter_zero_offset('On')    # reset current measured value to zero
 ```
 
 This function queries or sets the zero mode being used on the detector. If there is no argument the function will return the current zero mode as a string: `"Zero offset mode: ['On', 'Off']"`. The argument `'On'` resets the current measured value to zero. The argument `'Off'` disables the previousy performed reset.
@@ -66,7 +66,7 @@ This function queries or sets the zero mode being used on the detector. If there
 
 ---
 
-### laser_power_meter_analog_output(*analog_output) { #laser_power_meter_analog_output }
+### laser_power_meter_analog_output(*analog_output) { #laser_power_meter_analog_output data-toc-label="laser_power_meter_analog_output" }
 
 ```python
 laser_power_meter_analog_output()        # -> str (query)
@@ -80,7 +80,7 @@ This function queries or sets the status of the analog output. If there is no ar
 
 ---
 
-### laser_power_meter_energy_mode(*energy_mode) { #laser_power_meter_energy_mode }
+### laser_power_meter_energy_mode(*energy_mode) { #laser_power_meter_energy_mode data-toc-label="laser_power_meter_energy_mode" }
 
 ```python
 laser_power_meter_energy_mode()         # -> str (query)
@@ -94,7 +94,7 @@ This function queries or sets the current state of the energy mode. If there is 
 
 ---
 
-### laser_power_meter_scale(scale) { #laser_power_meter_scale }
+### laser_power_meter_scale(scale) { #laser_power_meter_scale data-toc-label="laser_power_meter_scale" }
 
 ```python
 laser_power_meter_scale('10 mW')    # set display range to 10 mW
@@ -110,7 +110,7 @@ An argument equals to 0 has a special meaning and corresponds to automatic scali
 
 ---
 
-### laser_power_meter_command(command) { #laser_power_meter_command }
+### laser_power_meter_command(command) { #laser_power_meter_command data-toc-label="laser_power_meter_command" }
 
 ```python
 laser_power_meter_command(command)    # str -> none
@@ -120,7 +120,7 @@ The function for sending an arbitrary command from a programming guide to the de
 
 ---
 
-### laser_power_meter_query(command) { #laser_power_meter_query }
+### laser_power_meter_query(command) { #laser_power_meter_query data-toc-label="laser_power_meter_query" }
 
 ```python
 laser_power_meter_query('*SHL')    # adds significant digits to the on-screen reading

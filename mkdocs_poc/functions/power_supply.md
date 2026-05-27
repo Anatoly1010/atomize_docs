@@ -17,7 +17,7 @@ rs232 = yes
 
 ## Functions
 
-### power_supply_name() { #power_supply_name }
+### power_supply_name() { #power_supply_name data-toc-label="power_supply_name" }
 
 ```python
 power_supply_name()    # -> str; device name
@@ -27,11 +27,11 @@ This function returns device name.
 
 ---
 
-### power_supply_voltage(*voltage) { #power_supply_voltage }
+### power_supply_voltage(*voltage) { #power_supply_voltage data-toc-label="power_supply_voltage" }
 
 ```python
-power_supply_voltage('CH1')           # -> str (query)
-power_supply_voltage('CH1', '10 V')   # set channel 1 voltage to 10 V
+power_supply_voltage('CH1')            # -> str (query)
+power_supply_voltage('CH1', '10 V')    # set channel 1 voltage to 10 V
 ```
 
 This function queries (if called with one argument) or sets (if called with two arguments) the voltage of one of the channels of the power supply. If there is a second argument it will be set as a new voltage. If there is no second argument the current voltage for specified the channel is returned.
@@ -52,7 +52,7 @@ Stanford Research PC300 high voltage supply series has only one channel, however
 
 ---
 
-### power_supply_current(*current) { #power_supply_current }
+### power_supply_current(*current) { #power_supply_current data-toc-label="power_supply_current" }
 
 ```python
 power_supply_current('CH2')              # -> str (query)
@@ -72,11 +72,11 @@ This function queries (if called with one argument) or sets (if called with two 
 
 ---
 
-### power_supply_overvoltage(*voltage) { #power_supply_overvoltage }
+### power_supply_overvoltage(*voltage) { #power_supply_overvoltage data-toc-label="power_supply_overvoltage" }
 
 ```python
-power_supply_overvoltage('CH1')             # -> str (query)
-power_supply_overvoltage('CH1', '30 V')     # set channel 1 OVP to 30 V
+power_supply_overvoltage('CH1')            # -> str (query)
+power_supply_overvoltage('CH1', '30 V')    # set channel 1 OVP to 30 V
 ```
 
 This function queries (if called with one argument) or sets (if called with two arguments) the overvoltage protection of one of the channels of the power supply. If there is a second argument it will be set as a new overvoltage protection setting. If there is no second argument the current overvoltage protection setting for specified the channel is returned.
@@ -94,11 +94,11 @@ Stanford Research PC300 high voltage supply series has only one channel, however
 
 ---
 
-### power_supply_overcurrent(*current) { #power_supply_overcurrent }
+### power_supply_overcurrent(*current) { #power_supply_overcurrent data-toc-label="power_supply_overcurrent" }
 
 ```python
-power_supply_overcurrent('CH1')            # -> str (query)
-power_supply_overcurrent('CH1', '3 A')     # set channel 1 OCP to 3 A
+power_supply_overcurrent('CH1')           # -> str (query)
+power_supply_overcurrent('CH1', '3 A')    # set channel 1 OCP to 3 A
 ```
 
 This function queries (if called with one argument) or sets (if called with two arguments) the overcurrent protection of one of the channels of the power supply. If there is a second argument it will be set as a new overcurrent protection setting. If there is no second argument the current overcurrent protection setting for specified the channel is returned.
@@ -116,11 +116,11 @@ Stanford Research PC300 high voltage supply series has only one channel, however
 
 ---
 
-### power_supply_channel_state(*state) { #power_supply_channel_state }
+### power_supply_channel_state(*state) { #power_supply_channel_state data-toc-label="power_supply_channel_state" }
 
 ```python
-power_supply_channel_state('CH1')           # -> str (query)
-power_supply_channel_state('CH1', 'On')     # enable output of channel 1
+power_supply_channel_state('CH1')          # -> str (query)
+power_supply_channel_state('CH1', 'On')    # enable output of channel 1
 ```
 
 This function queries (if called with one argument) or sets (if called with two arguments) the state of the output of one of the channels of the power supply. If there is a second argument it will be set as a new state setting. If there is no second argument the current state setting for the specified channel is returned. The state argument means that the output is enabled (`'On'`) or disabled (`'Off'`).
@@ -137,7 +137,7 @@ Stanford Research PC300 high voltage supply series has only one channel, however
 
 ---
 
-### power_supply_measure(channel) { #power_supply_measure }
+### power_supply_measure(channel) { #power_supply_measure data-toc-label="power_supply_measure" }
 
 ```python
 # Query voltage, current, and power (optional) measured on the
@@ -157,7 +157,7 @@ Stanford Research PC300 high voltage supply series has only one channel, however
 
 ---
 
-### power_supply_preset(preset) { #power_supply_preset }
+### power_supply_preset(preset) { #power_supply_preset data-toc-label="power_supply_preset" }
 
 ```python
 power_supply_preset('User1')    # recall preset 'User1'
@@ -173,7 +173,7 @@ This function can be called only with one argument and allows restoring the inst
 
 ---
 
-### power_supply_range(*range) { #power_supply_range }
+### power_supply_range(*range) { #power_supply_range data-toc-label="power_supply_range" }
 
 ```python
 power_supply_range()          # -> str (query)
@@ -187,7 +187,7 @@ This function is only supported by Stanford Research DC205 and allows to set or 
 
 ---
 
-### power_supply_interlock() { #power_supply_interlock }
+### power_supply_interlock() { #power_supply_interlock data-toc-label="power_supply_interlock" }
 
 ```python
 power_supply_interlock()    # -> 'On' | 'Off'
@@ -197,7 +197,7 @@ This function is only supported by Stanford Research DC205 and allows to query t
 
 ---
 
-### power_supply_rear_mode(*mode) { #power_supply_rear_mode }
+### power_supply_rear_mode(*mode) { #power_supply_rear_mode data-toc-label="power_supply_rear_mode" }
 
 ```python
 power_supply_rear_mode()           # -> str (query)
@@ -213,7 +213,7 @@ The argument `'Front'` means that the voltage value is controlled by the front-p
 
 ---
 
-### power_supply_command(command) { #power_supply_command }
+### power_supply_command(command) { #power_supply_command data-toc-label="power_supply_command" }
 
 ```python
 # Sets the voltage and current of CH1 to 5 V and 1 A, respectively.
@@ -224,7 +224,7 @@ This function sends an arbitrary command from a programming guide to the device 
 
 ---
 
-### power_supply_query(command) { #power_supply_query }
+### power_supply_query(command) { #power_supply_query data-toc-label="power_supply_query" }
 
 ```python
 # Queries the voltage and current setting values of CH1

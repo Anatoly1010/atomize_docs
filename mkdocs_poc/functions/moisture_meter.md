@@ -8,7 +8,7 @@
 
 ## Functions
 
-### moisture_meter_name() { #moisture_meter_name }
+### moisture_meter_name() { #moisture_meter_name data-toc-label="moisture_meter_name" }
 
 ```python
 moisture_meter_name()    # -> str; device name
@@ -18,7 +18,7 @@ The function returns device name.
 
 ---
 
-### moisture_meter_meter() { #moisture_meter_meter }
+### moisture_meter_meter() { #moisture_meter_meter data-toc-label="moisture_meter_meter" }
 
 ```python
 moisture_meter_meter()    # -> list(4); measured data

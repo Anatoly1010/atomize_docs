@@ -12,7 +12,7 @@
 
 ## Functions
 
-### tc_name() { #tc_name }
+### tc_name() { #tc_name data-toc-label="tc_name" }
 
 ```python
 tc_name()    # -> str; device name
@@ -22,7 +22,7 @@ This function returns device name.
 
 ---
 
-### tc_temperature(channel) { #tc_temperature }
+### tc_temperature(channel) { #tc_temperature data-toc-label="tc_temperature" }
 
 ```python
 tc_temperature('A')    # -> float; temperature of channel A in Kelvin
@@ -51,7 +51,7 @@ For Scientific Instruments SCM10 the only available argument is `'1'`.
 
 ---
 
-### tc_setpoint(*temp) { #tc_setpoint }
+### tc_setpoint(*temp) { #tc_setpoint data-toc-label="tc_setpoint" }
 
 ```python
 tc_setpoint()       # -> float (query)
@@ -84,11 +84,11 @@ For Stanford Research PTC10 a channel argument should have the name of the outpu
 
 ---
 
-### tc_heater_range(*heater) { #tc_heater_range }
+### tc_heater_range(*heater) { #tc_heater_range data-toc-label="tc_heater_range" }
 
 ```python
-tc_heater_range()           # -> str (query)
-tc_heater_range('50 W')     # set heater range to 50 W (High)
+tc_heater_range()          # -> str (query)
+tc_heater_range('50 W')    # set heater range to 50 W (High)
 ```
 
 This function queries or sets the heater range. If an argument is specified the function sets a new heater range. If there is no argument the function returns the current heater range. For Oxford Instrument ITC 503 [`tc_heater_power_limit()`](#tc_heater_power_limit) fucntion should be used instead.
@@ -111,7 +111,7 @@ For Lakeshore 336 a loop 1 or 2 can be used with the larger set; loops 3 and 4 c
 
 ---
 
-### tc_heater_power() { #tc_heater_power }
+### tc_heater_power() { #tc_heater_power data-toc-label="tc_heater_power" }
 
 ```python
 tc_heater_power()    # -> [str, float]; heater range and percent
@@ -150,7 +150,7 @@ The argument is the percentage of the heater power limit that can be set via [`t
 
 ---
 
-### tc_heater_power_limit(power) { #tc_heater_power_limit }
+### tc_heater_power_limit(power) { #tc_heater_power_limit data-toc-label="tc_heater_power_limit" }
 
 ```python
 tc_heater_power_limit(10)    # set heater power limit to 10 V
@@ -162,7 +162,7 @@ It is not possible to query the heater power limit by calling this function with
 
 ---
 
-### tc_state(*mode) { #tc_state }
+### tc_state(*mode) { #tc_state data-toc-label="tc_state" }
 
 ```python
 tc_state()                   # -> str (query)
@@ -176,11 +176,11 @@ This function can be used to change the state of the device and is available onl
 
 ---
 
-### tc_sensor(*sensor) { #tc_sensor }
+### tc_sensor(*sensor) { #tc_sensor data-toc-label="tc_sensor" }
 
 ```python
-tc_sensor()        # -> int (query)
-tc_sensor(1)       # use sensor 1 (or 'A')
+tc_sensor()     # -> int (query)
+tc_sensor(1)    # use sensor 1 (or 'A')
 ```
 
 This function sets or queries the sensor that is used for active control of the temperature when comparing to the setpoint (target temperature). It may differ from the sensor used when calling [`tc_temperature()`](#tc_temperature). If an argument is specified the function sets a new sensor setting. If there is no argument the function returns the current sensor setting.
@@ -202,8 +202,8 @@ For Termodat-11M6, 13KX3 this function sets or queries the state of specified se
 ### tc_sensor(channel, *state) { #tc_sensor-channel }
 
 ```python
-tc_sensor('1')           # -> str (query)
-tc_sensor('1', 'On')     # enable channel 1 for active temperature control
+tc_sensor('1')          # -> str (query)
+tc_sensor('1', 'On')    # enable channel 1 for active temperature control
 ```
 
 If there is no state argument the function returns the current state for specified channel.
@@ -213,11 +213,11 @@ If there is no state argument the function returns the current state for specifi
 
 ---
 
-### tc_gas_flow(*flow) { #tc_gas_flow }
+### tc_gas_flow(*flow) { #tc_gas_flow data-toc-label="tc_gas_flow" }
 
 ```python
-tc_gas_flow()         # -> float (query)
-tc_gas_flow(10.1)     # set gas flow to 10.1 arb. u.
+tc_gas_flow()        # -> float (query)
+tc_gas_flow(10.1)    # set gas flow to 10.1 arb. u.
 ```
 
 This function is available only for Oxford Instruments ITC 503. It sets or queries the gas flow. If an argument is specified the function sets a new gas flow, that is the percentage of the maximum gas flow. If the device is not in manual or heater power control mode a warning will be shown and the heater power remains unchanged. If there is no argument the function returns the current gas flow.
@@ -227,11 +227,11 @@ This function is available only for Oxford Instruments ITC 503. It sets or queri
 
 ---
 
-### tc_lock_keyboard(*lock) { #tc_lock_keyboard }
+### tc_lock_keyboard(*lock) { #tc_lock_keyboard data-toc-label="tc_lock_keyboard" }
 
 ```python
-tc_lock_keyboard()                       # -> str (query)
-tc_lock_keyboard('Remote-Unlocked')      # remote control, unlocked front panel
+tc_lock_keyboard()                     # -> str (query)
+tc_lock_keyboard('Remote-Unlocked')    # remote control, unlocked front panel
 ```
 
 This function can be used to change the state of the device keyboard. If an argument is specified the function sets a new keyboard state setting. If there is no argument the function returns the current keyboard state setting. The first part corresponds to the device state, the second to the keyboard state. The default option is `'Remote-Unlocked'`.
@@ -247,11 +247,11 @@ Lakeshore temperature controllers use a 3-digit keypad lock code for locking and
 
 ---
 
-### tc_proportional(*prop) { #tc_proportional }
+### tc_proportional(*prop) { #tc_proportional data-toc-label="tc_proportional" }
 
 ```python
-tc_proportional('1')          # -> float (query)
-tc_proportional('1', 71)      # set proportional PID for channel 1 to 71
+tc_proportional('1')        # -> float (query)
+tc_proportional('1', 71)    # set proportional PID for channel 1 to 71
 ```
 
 This function is only available for Termodat-11M6, 13KX3 and can be used to set or query the proportional parameter of the PID. The function can be used with one or two arguments. The first argument specifies the channel. If there is a second argument, it will be used as a new proportional parameter. If there is no second argument, the function returns the current proportional parameter for the specified channel. The accuracy is 0.1.
@@ -267,11 +267,11 @@ This function is only available for Termodat-11M6, 13KX3 and can be used to set 
 
 ---
 
-### tc_derivative(*der) { #tc_derivative }
+### tc_derivative(*der) { #tc_derivative data-toc-label="tc_derivative" }
 
 ```python
-tc_derivative('2')           # -> float (query)
-tc_derivative('2', 100)      # set derivative PID for channel 2 to 100
+tc_derivative('2')         # -> float (query)
+tc_derivative('2', 100)    # set derivative PID for channel 2 to 100
 ```
 
 This function is only available for Termodat-11M6, 13KX3 and can be used to set or query the derivative parameter of the PID. The function can be used with one or two arguments. The first argument specifies the channel. If there is a second argument, it will be used as a new derivative parameter. If there is no second argument, the function returns the current derivative parameter for the specified channel. The accuracy is 0.1. A zero value means that no derivative control is used.
@@ -287,11 +287,11 @@ This function is only available for Termodat-11M6, 13KX3 and can be used to set 
 
 ---
 
-### tc_integral(*integ) { #tc_integral }
+### tc_integral(*integ) { #tc_integral data-toc-label="tc_integral" }
 
 ```python
-tc_integral('1')           # -> int (query)
-tc_integral('1', 600)      # set integral PID for channel 1 to 600
+tc_integral('1')         # -> int (query)
+tc_integral('1', 600)    # set integral PID for channel 1 to 600
 ```
 
 This function is only available for Termodat-11M6, 13KX3 and can be used to set or query the integral parameter of the PID. The function can be used with one or two arguments. The first argument specifies the channel. If there is a second argument, it will be used as a new integral parameter. If there is no second argument, the function returns the current integral parameter for the specified channel. The accuracy is 1. A zero value means that no integral control is used.
@@ -307,7 +307,7 @@ This function is only available for Termodat-11M6, 13KX3 and can be used to set 
 
 ---
 
-### tc_command(command) { #tc_command }
+### tc_command(command) { #tc_command data-toc-label="tc_command" }
 
 ```python
 # Note that for some controller models the loop should not be specified.
@@ -322,7 +322,7 @@ This function sends an arbitrary command from a programming guide to the device 
 
 ---
 
-### tc_query(command) { #tc_query }
+### tc_query(command) { #tc_query data-toc-label="tc_query" }
 
 ```python
 # Note that for some controller models the loop should not be specified.

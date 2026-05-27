@@ -11,7 +11,7 @@
 
 ## Functions
 
-### freq_counter_name() { #freq_counter_name }
+### freq_counter_name() { #freq_counter_name data-toc-label="freq_counter_name" }
 
 ```python
 freq_counter_name()    # -> str; device name
@@ -21,7 +21,7 @@ This function returns device name.
 
 ---
 
-### freq_counter_frequency(channel) { #freq_counter_frequency }
+### freq_counter_frequency(channel) { #freq_counter_frequency data-toc-label="freq_counter_frequency" }
 
 ```python
 freq_counter_frequency('CH1')    # -> str; measured frequency from channel 1
@@ -37,7 +37,7 @@ This function returns a value with the measured frequency from the specified cha
 
 ---
 
-### freq_counter_impedance(*impedance) { #freq_counter_impedance }
+### freq_counter_impedance(*impedance) { #freq_counter_impedance data-toc-label="freq_counter_impedance" }
 
 ```python
 freq_counter_impedance('CH1', '1 M')    # set channel 1 impedance to 1 MOhm
@@ -59,7 +59,7 @@ For Agilent 53181a impedance can be changed only for the first channel; for Agie
 
 ---
 
-### freq_counter_coupling(*coupling) { #freq_counter_coupling }
+### freq_counter_coupling(*coupling) { #freq_counter_coupling data-toc-label="freq_counter_coupling" }
 
 ```python
 freq_counter_coupling('CH1', 'AC')    # set channel 1 coupling to AC
@@ -81,7 +81,7 @@ For Agilent 53181a coupling can be changed only for the first channel; for Agiel
 
 ---
 
-### freq_counter_stop_mode(*mode) { #freq_counter_stop_mode }
+### freq_counter_stop_mode(*mode) { #freq_counter_stop_mode data-toc-label="freq_counter_stop_mode" }
 
 ```python
 freq_counter_stop_mode()           # -> str (query)
@@ -103,7 +103,7 @@ In automatic (`'Immediate'`) mode the device does the fastest possible acquisist
 
 ---
 
-### freq_counter_start_mode(*mode) { #freq_counter_start_mode }
+### freq_counter_start_mode(*mode) { #freq_counter_start_mode data-toc-label="freq_counter_start_mode" }
 
 ```python
 freq_counter_start_mode()               # -> str (query)
@@ -120,7 +120,7 @@ This function queries or sets the start arm for frequency, frequency ratio, and 
 
 ---
 
-### freq_counter_gate_mode(*mode) { #freq_counter_gate_mode }
+### freq_counter_gate_mode(*mode) { #freq_counter_gate_mode data-toc-label="freq_counter_gate_mode" }
 
 ```python
 freq_counter_gate_mode()           # -> str (query)
@@ -137,7 +137,7 @@ This function queries or sets the gate source for frequency, frequency ratio mea
 
 ---
 
-### freq_counter_digits(*digits) { #freq_counter_digits }
+### freq_counter_digits(*digits) { #freq_counter_digits data-toc-label="freq_counter_digits" }
 
 ```python
 freq_counter_digits()     # -> int (query)
@@ -157,7 +157,7 @@ This function queries or sets the resolution in terms of digits used in arming f
 
 ---
 
-### freq_counter_gate_time(*time) { #freq_counter_gate_time }
+### freq_counter_gate_time(*time) { #freq_counter_gate_time data-toc-label="freq_counter_gate_time" }
 
 ```python
 freq_counter_gate_time()            # -> float (query)
@@ -180,7 +180,7 @@ This function queries or sets the gate time used in arming frequency, period, an
 
 ---
 
-### freq_counter_expected_freq(*frequency) { #freq_counter_expected_freq }
+### freq_counter_expected_freq(*frequency) { #freq_counter_expected_freq data-toc-label="freq_counter_expected_freq" }
 
 ```python
 freq_counter_expected_freq('CH3', '10 GHz')    # set approximate signal frequency to 10 GHz
@@ -202,7 +202,7 @@ If there is a second argument it will be set as a new approximate frequency of a
 
 ---
 
-### freq_counter_period(channel) { #freq_counter_period }
+### freq_counter_period(channel) { #freq_counter_period data-toc-label="freq_counter_period" }
 
 ```python
 freq_counter_period('CH2')    # -> str; measured period from channel 2
@@ -221,7 +221,7 @@ This function returns a floating point value with the measured period from the s
 
 ---
 
-### freq_counter_command(command) { #freq_counter_command }
+### freq_counter_command(command) { #freq_counter_command data-toc-label="freq_counter_command" }
 
 ```python
 # Set which edge of the input signal will be considered an event for frequency,
@@ -233,7 +233,7 @@ This function sends an arbitrary command from a programming guide to the device 
 
 ---
 
-### freq_counter_query(command) { #freq_counter_query }
+### freq_counter_query(command) { #freq_counter_query data-toc-label="freq_counter_query" }
 
 ```python
 # Query a measurement of the phase between channel 1 and 2.

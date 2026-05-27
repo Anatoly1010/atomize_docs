@@ -9,7 +9,7 @@
 
 ## Functions
 
-### gaussmeter_name() { #gaussmeter_name }
+### gaussmeter_name() { #gaussmeter_name data-toc-label="gaussmeter_name" }
 
 ```python
 gaussmeter_name()    # -> str; device name
@@ -19,7 +19,7 @@ This function returns device name.
 
 ---
 
-### gaussmeter_field() { #gaussmeter_field }
+### gaussmeter_field() { #gaussmeter_field data-toc-label="gaussmeter_field" }
 
 ```python
 gaussmeter_field()    # Lakeshore: -> float; field reading in Gauss
@@ -32,7 +32,7 @@ In the case of Sibir 1 Gaussmeter, this function returns (i) numpy.array of the 
 
 ---
 
-### gaussmeter_units(*units) { #gaussmeter_units }
+### gaussmeter_units(*units) { #gaussmeter_units data-toc-label="gaussmeter_units" }
 
 ```python
 gaussmeter_units()           # -> str (query)
@@ -49,7 +49,7 @@ This function queries or changes the unit in which [`gaussmeter_field()`](#gauss
 
 ---
 
-### gaussmeter_points(*points) { #gaussmeter_points }
+### gaussmeter_points(*points) { #gaussmeter_points data-toc-label="gaussmeter_points" }
 
 ```python
 gaussmeter_points()        # -> int (query)
@@ -66,7 +66,7 @@ This function queries or sets the number of FID points that will be measured aft
 
 ---
 
-### gaussmeter_number_of_averages(*number) { #gaussmeter_number_of_averages }
+### gaussmeter_number_of_averages(*number) { #gaussmeter_number_of_averages data-toc-label="gaussmeter_number_of_averages" }
 
 ```python
 gaussmeter_number_of_averages()      # -> int (query)
@@ -83,7 +83,7 @@ This function queries or sets the number of averages for FID of NMR signal from 
 
 ---
 
-### gaussmeter_search(start, end, step) { #gaussmeter_search }
+### gaussmeter_search(start, end, step) { #gaussmeter_search data-toc-label="gaussmeter_search" }
 
 ```python
 gaussmeter_search(1000, 1500, 10)    # -> float; search the field with best SNR
@@ -96,7 +96,7 @@ This function performs repeated measurements of the FID decay from the probe wit
 
 ---
 
-### gaussmeter_set_field(*B) { #gaussmeter_set_field }
+### gaussmeter_set_field(*B) { #gaussmeter_set_field data-toc-label="gaussmeter_set_field" }
 
 ```python
 gaussmeter_set_field()        # -> float (query)
@@ -110,7 +110,7 @@ This function queries or sets the synthetizer frequency. Instead of the frequenc
 
 ---
 
-### gaussmeter_gain(*gain) { #gaussmeter_gain }
+### gaussmeter_gain(*gain) { #gaussmeter_gain data-toc-label="gaussmeter_gain" }
 
 ```python
 gaussmeter_gain()      # -> int (query)
@@ -127,7 +127,7 @@ This function queries or sets the preamplifier gain for the detection of NMR sig
 
 ---
 
-### gaussmeter_pulse_length(*length) { #gaussmeter_pulse_length }
+### gaussmeter_pulse_length(*length) { #gaussmeter_pulse_length data-toc-label="gaussmeter_pulse_length" }
 
 ```python
 gaussmeter_pulse_length()      # -> int (query)
@@ -144,7 +144,7 @@ This function queries or sets the pi/2 pulse length in us. If called with no arg
 
 ---
 
-### gaussmeter_sensor_number(*number) { #gaussmeter_sensor_number }
+### gaussmeter_sensor_number(*number) { #gaussmeter_sensor_number data-toc-label="gaussmeter_sensor_number" }
 
 ```python
 gaussmeter_sensor_number()     # -> int (query)
@@ -161,7 +161,7 @@ This function queries or sets the number of sensor that will be used for magneti
 
 ---
 
-### gaussmeter_command(command) { #gaussmeter_command }
+### gaussmeter_command(command) { #gaussmeter_command data-toc-label="gaussmeter_command" }
 
 ```python
 # Configure Lakeshore 455 for DC field measurement, DC resolution of 5 digits,
@@ -177,7 +177,7 @@ This function sends an arbitrary command from a programming guide to the device 
 
 ---
 
-### gaussmeter_query(command) { #gaussmeter_query }
+### gaussmeter_query(command) { #gaussmeter_query data-toc-label="gaussmeter_query" }
 
 ```python
 gaussmeter_query('TYPE? ')    # -> str; returns probe type

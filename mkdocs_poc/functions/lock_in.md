@@ -13,7 +13,7 @@
 
 ## Functions
 
-### lock_in_name() { #lock_in_name }
+### lock_in_name() { #lock_in_name data-toc-label="lock_in_name" }
 
 ```python
 lock_in_name()    # -> str; device name
@@ -23,7 +23,7 @@ This function returns device name.
 
 ---
 
-### lock_in_ref_frequency(*frequency) { #lock_in_ref_frequency }
+### lock_in_ref_frequency(*frequency) { #lock_in_ref_frequency data-toc-label="lock_in_ref_frequency" }
 
 ```python
 lock_in_ref_frequency()             # -> str (query)
@@ -54,11 +54,11 @@ For SR-860, 865a the query command, [`lock_in_ref_frequency()`](#lock_in_ref_fre
 
 ---
 
-### lock_in_phase(*degree) { #lock_in_phase }
+### lock_in_phase(*degree) { #lock_in_phase data-toc-label="lock_in_phase" }
 
 ```python
-lock_in_phase()        # -> str (query)
-lock_in_phase(100)     # set phase to 100 degrees
+lock_in_phase()       # -> str (query)
+lock_in_phase(100)    # set phase to 100 degrees
 ```
 
 This function sets or queries the phase of the lock-in in degrees. If there is no argument the function will return the current phase. If called with an argument the specified phase will be set. The phase will be wrapped around at ±180°.
@@ -77,7 +77,7 @@ This function sets or queries the phase of the lock-in in degrees. If there is n
 
 ---
 
-### lock_in_auto_phase() { #lock_in_auto_phase }
+### lock_in_auto_phase() { #lock_in_auto_phase data-toc-label="lock_in_auto_phase" }
 
 ```python
 lock_in_auto_phase()    # auto-phase the reference
@@ -90,7 +90,7 @@ This function adjusts the reference phase so that the current measurement has a 
 
 ---
 
-### lock_in_time_constant(*timeconstant) { #lock_in_time_constant }
+### lock_in_time_constant(*timeconstant) { #lock_in_time_constant data-toc-label="lock_in_time_constant" }
 
 ```python
 lock_in_time_constant()            # -> str (query)
@@ -110,7 +110,7 @@ This function sets or queries the time constant of the lock-in. If there is no a
 
 ---
 
-### lock_in_ref_amplitude(*amplitude) { #lock_in_ref_amplitude }
+### lock_in_ref_amplitude(*amplitude) { #lock_in_ref_amplitude data-toc-label="lock_in_ref_amplitude" }
 
 ```python
 lock_in_ref_amplitude()         # -> str (query)
@@ -133,7 +133,7 @@ This function queries or sets the level of the modulation frequency. If there is
 
 ---
 
-### lock_in_get_data(*channel) { #lock_in_get_data }
+### lock_in_get_data(*channel) { #lock_in_get_data data-toc-label="lock_in_get_data" }
 
 ```python
 lock_in_get_data()           # -> float; X signal in V
@@ -149,7 +149,7 @@ Channel meaning for SR-810, 830, 850, 860, 865a: `1` — X signal in Volts; `2` 
 
 ---
 
-### lock_in_sensitivity(*sensitivity) { #lock_in_sensitivity }
+### lock_in_sensitivity(*sensitivity) { #lock_in_sensitivity data-toc-label="lock_in_sensitivity" }
 
 ```python
 lock_in_sensitivity()           # -> str (query)
@@ -169,7 +169,7 @@ This function queries or sets the sensitivity of the lock-in. If there is no arg
 
 ---
 
-### lock_in_auto_sensitivity() { #lock_in_auto_sensitivity }
+### lock_in_auto_sensitivity() { #lock_in_auto_sensitivity data-toc-label="lock_in_auto_sensitivity" }
 
 ```python
 lock_in_auto_sensitivity()    # automatically set sensitivity
@@ -182,7 +182,7 @@ This function automatically sets the sensitivity of the instrument. The measured
 
 ---
 
-### lock_in_ref_mode(*mode) { #lock_in_ref_mode }
+### lock_in_ref_mode(*mode) { #lock_in_ref_mode data-toc-label="lock_in_ref_mode" }
 
 ```python
 lock_in_ref_mode()              # -> str (query)
@@ -199,7 +199,7 @@ This function queries or sets the modulation mode, i.e. if the internal modulati
 
 ---
 
-### lock_in_ref_slope(*mode) { #lock_in_ref_slope }
+### lock_in_ref_slope(*mode) { #lock_in_ref_slope data-toc-label="lock_in_ref_slope" }
 
 ```python
 lock_in_ref_slope()            # -> str (query)
@@ -216,7 +216,7 @@ This function queries or sets the reference trigger when using the external refe
 
 ---
 
-### lock_in_sync_filter(*mode) { #lock_in_sync_filter }
+### lock_in_sync_filter(*mode) { #lock_in_sync_filter data-toc-label="lock_in_sync_filter" }
 
 ```python
 lock_in_sync_filter()        # -> str (query)
@@ -233,11 +233,11 @@ This function queries or sets the synchronous filter status. If there is no argu
 
 ---
 
-### lock_in_lp_filter(*mode) { #lock_in_lp_filter }
+### lock_in_lp_filter(*mode) { #lock_in_lp_filter data-toc-label="lock_in_lp_filter" }
 
 ```python
-lock_in_lp_filter()            # -> str (query)
-lock_in_lp_filter('12 dB')     # set low pass filter slope to 12 dB/oct
+lock_in_lp_filter()           # -> str (query)
+lock_in_lp_filter('12 dB')    # set low pass filter slope to 12 dB/oct
 ```
 
 This function queries or sets the low pass filter slope. If there is no argument the function will return the current slope. If there is an argument the specified slope will be set. The values correspond to 6 dB/oct, 12 dB/oct, 18 dB/oct, 24 dB/oct, respectively.
@@ -250,11 +250,11 @@ This function queries or sets the low pass filter slope. If there is no argument
 
 ---
 
-### lock_in_harmonic(*harmonic) { #lock_in_harmonic }
+### lock_in_harmonic(*harmonic) { #lock_in_harmonic data-toc-label="lock_in_harmonic" }
 
 ```python
-lock_in_harmonic()      # -> int (query)
-lock_in_harmonic(2)     # detect at the second harmonic
+lock_in_harmonic()     # -> int (query)
+lock_in_harmonic(2)    # detect at the second harmonic
 ```
 
 This function queries or sets the detection harmonic. The function will set the lock-in to detect at the specified harmonic of the reference frequency. The value of the detected frequency is limited by 102 kHz. If the argument used requires a detection frequency greater than 102 kHz, then the harmonic number will be set to the largest value available for which the frequency is less than 102 kHz.
@@ -275,7 +275,7 @@ For SR-844 the frequency range for the second harmonics detection is limited to 
 
 ---
 
-### lock_in_command(command) { #lock_in_command }
+### lock_in_command(command) { #lock_in_command data-toc-label="lock_in_command" }
 
 ```python
 # Sets the low pass filter slope; parameter 0 selects 6 dB/oct.
@@ -286,7 +286,7 @@ This function sends an arbitrary command from a programming guide to the device 
 
 ---
 
-### lock_in_query(command) { #lock_in_query }
+### lock_in_query(command) { #lock_in_query data-toc-label="lock_in_query" }
 
 ```python
 lock_in_query('OFSL?')    # query the low pass filter slope
