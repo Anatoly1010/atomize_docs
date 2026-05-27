@@ -49,7 +49,22 @@ The keyword arguments:
 | `length_increment` | `'0 ns'`      | pulse length increment (`ns`, `us`, `ms`, `s`)                |
 | `phase_list`       | `[]`          | phase cycling sequence (`+x`, `-x`, `+y`, `-y`)               |
 
-This function sets a pulse with specified parameters. The default argument is `name = 'P0'`, `channel = 'DETECTION'`, `start = '0 ns'`, `length = '100 ns'`, `delta_start = '0 ns'`, `length_increment = '0 ns'`, `phase_list = []`. A channel should be one of the following `DETECTION`, `AMP_ON`, `LNA_PROTECT`, `MW`, `-X`, `+Y`, `TRIGGER_AWG`, `AWG`, `LASER`, `SYNT2`, `CH10`, ... , `CH20`. The scaling factor for `start`, `length`, `delta_start`, and `length_increment` key arguments should be one of the following `ns`, `us`, `ms`, `s`. The minimum available length of the pulse is 10 ns for Pulse Blaster ESR 500 Pro and 3.2 ns for Insys FM214x3GDA. The maximum available length of the pulse is 1900 ns. The maximum available length of the pulse sequence is approximately 10 s. The pulse sequence will be checked for overlap. In the auto defence mode (default option; can be changed in the config file) channels `AMP_ON` and `LNA_PROTECT` will be added automatically according to the delays indicated in the config file. In this mode `AMP_ON` and `LNA_PROTECT` pulses will be joined in one pulse if the distance between them is less than 12 ns (can be changed in the config file).
+This function sets a pulse with specified parameters. The default argument is `name = 'P0'`, `channel = 'DETECTION'`, `start = '0 ns'`, `length = '100 ns'`, `delta_start = '0 ns'`, `length_increment = '0 ns'`, `phase_list = []`. The pulse sequence will be checked for overlap. In the auto defence mode (default option; can be changed in the config file) channels `AMP_ON` and `LNA_PROTECT` will be added automatically according to the delays indicated in the config file. In this mode `AMP_ON` and `LNA_PROTECT` pulses will be joined in one pulse if the distance between them is less than 12 ns (can be changed in the config file).
+
+**Allowed channels:** `'DETECTION'`, `'AMP_ON'`, `'LNA_PROTECT'`, `'MW'`, `'-X'`, `'+Y'`, `'TRIGGER_AWG'`, `'AWG'`, `'LASER'`, `'SYNT2'`, `'CH10'`, …, `'CH20'`
+{: .enum }
+
+**Allowed phase_list values:** `'+x'`, `'-x'`, `'+y'`, `'-y'`
+{: .enum }
+
+**Output format (time args):** `'number'` + `'ns'` | `'us'` | `'ms'` | `'s'`
+{: .enum }
+
+**Range (Pulse Blaster ESR 500 Pro):** pulse length `10 ns` – `1900 ns`; sequence ≈ `10 s` max
+{: .enum }
+
+**Range (Insys FM214x3GDA):** pulse length `3.2 ns` – `1900 ns`; sequence ≈ `10 s` max
+{: .enum }
 
 In the case of Insys FM214x3GDA `start`, `length`, `delta_start`, and `length_increment` will be rounded to a multiple of 3.2.
 
@@ -92,7 +107,10 @@ This function can be used to shorten the syntax for acquisition in the case of p
 answer = np.zeros( data1.shape ) + 1j*np.zeros( data2.shape )
 ```
 
-The available mathematical operations are `+x`, `-x`, `+y`, `-y`. The symbol at the index `J` of the `acq_cycle` array means that the corresponding values from the data arrays will be added with the following factor to the resulting array:
+The symbol at the index `J` of the `acq_cycle` array means that the corresponding values from the data arrays will be added with the following factor to the resulting array:
+
+**Allowed operations:** `'+x'`, `'-x'`, `'+y'`, `'-y'`
+{: .enum }
 
 | Symbol | Factor | Operation                                       |
 | ------ | ------ | ----------------------------------------------- |
@@ -114,7 +132,10 @@ pulser_repetition_rate()         # -> str (query)
 pulser_repetition_rate('2 Hz')   # set to 2 Hz
 ```
 
-This function queries (if called without argument) or sets (if called with one argument) the repetition rate of the pulse sequence. If there is an argument it will be set as a repetition rate. If there is no argument the current repetition rate is returned as a string. The maximum available repetition rate depends on the total length of the pulse sequence and cannot exceed 5 MHz.
+This function queries (if called without argument) or sets (if called with one argument) the repetition rate of the pulse sequence. If there is an argument it will be set as a repetition rate. If there is no argument the current repetition rate is returned as a string. The maximum available repetition rate depends on the total length of the pulse sequence.
+
+**Max:** `5 MHz`
+{: .enum }
 
 ---
 
@@ -196,7 +217,10 @@ pulser_reset(internal_cycle=True)       # for use with pulser_instruction_from_f
 
 The function switches the pulse programmer back to the initial state (including phase) in which it was in at the start of the experiment. This function can be called only without arguments. It includes the complete functionality of [`pulser_pulse_reset()`](#pulser_pulse_reset), but also immediately updates the pulse programmer as it is done by calling [`pulser_update()`](#pulser_update).
 
-The additional keyword `internal_cycle` can be used in combination with the [`pulser_instruction_from_file()`](#pulser_instruction_from_file) function to achieve correct update of the pulse programmer. The available options are `True`, `False`. The default option is `False`.
+The additional keyword `internal_cycle` can be used in combination with the [`pulser_instruction_from_file()`](#pulser_instruction_from_file) function to achieve correct update of the pulse programmer. The default option is `False`.
+
+**Allowed internal_cycle:** `True`, `False`
+{: .enum }
 
 !!! note
     This function is not available for Insys FM214x3GDA. The function
@@ -213,7 +237,10 @@ pulser_pulse_reset('P1')          # reset only the named pulses
 
 This function switches the pulse programmer back to the initial state in which it was in at the start of the experiment. This function can be called with either no argument or with a list of comma separated pulse names. If no argument is given all pulses are reset to their initial states (including phases). The function does not update the pulser, if you want to reset all pulses and also update the pulser use the function [`pulser_reset()`](#pulser_reset) instead.
 
-The additional keyword `internal_cycle` can be used in combination with the [`pulser_instruction_from_file()`](#pulser_instruction_from_file) function to achieve correct update of the pulse programmer. The available options are `True`, `False`. The default option is `False`.
+The additional keyword `internal_cycle` can be used in combination with the [`pulser_instruction_from_file()`](#pulser_instruction_from_file) function to achieve correct update of the pulse programmer. The default option is `False`.
+
+**Allowed internal_cycle:** `True`, `False`
+{: .enum }
 
 ---
 
@@ -293,7 +320,8 @@ pulser_default_synt(2)   # select synthesizer 2
 
 This function should be called only with one argument and selects the default sources for microwave pulse generation.
 
-The available options are `1`, `2`.
+**Allowed:** `1`, `2`
+{: .enum }
 
 !!! note
     This function is only available for Insys FM214x3GDA.
@@ -320,7 +348,10 @@ This function resets the phase index to zero in order to start phase cycling onc
 pulser_instruction_from_file(1, filename='instructions.out')
 ```
 
-This special function reads the instructions for pulse programmer from the specified file. The keyword argument `filename` corresponds to the file to read. The available options for `flag` are `0`, `1`, where `1` means that the instructions will be read from the file.
+This special function reads the instructions for pulse programmer from the specified file. The keyword argument `filename` corresponds to the file to read. `1` means that the instructions will be read from the file.
+
+**Allowed flag:** `0`, `1`
+{: .enum }
 
 !!! note
     This function is only available for Pulse Blaster ESR 500 Pro and
@@ -358,4 +389,7 @@ pulser_test_flag('None')   # normal mode
 pulser_test_flag('test')   # test mode
 ```
 
-This is a special function for changing test mode. The available options are `None`, `test`. The function is usually used in GUI applications that use the device module.
+This is a special function for changing test mode. The function is usually used in GUI applications that use the device module.
+
+**Allowed:** `'None'`, `'test'`
+{: .enum }

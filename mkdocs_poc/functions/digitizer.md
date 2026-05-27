@@ -161,9 +161,10 @@ digitizer_channel('CH0', 'CH1')     # default: both
 digitizer_channel('CH0')            # only CH0
 ```
 
-This function enables the specified channel or queries enabled channels. If there is no argument the function will return the currently enabled channels. If there is an argument the output from the specified channel will be enabled.
+This function enables the specified channel or queries enabled channels. If there is no argument the function will return the currently enabled channels. If there is an argument the output from the specified channel will be enabled. Default option is when both channels are enabled.
 
-The channel should be one of the following: `CH0`, `CH1`. Default option is when both channels are enabled.
+**Allowed:** `'CH0'`, `'CH1'`
+{: .enum }
 
 !!! note
     This function is not available for Insys FM214x3GDA, L card L-502.
@@ -177,9 +178,19 @@ digitizer_sample_rate()             # -> float, MHz (query)
 digitizer_sample_rate(500)          # 500 MHz
 ```
 
-This function queries or sets the digitizer sample rate (in MHz). If there is no argument the function will return the current sample rate. If there is an argument the specified sample rate will be set. The minimum available sample rate is 1.907 kHz (M4I 4450 X8) or 9.536 kHz (M4I 2211 X8). The maximum available sample rate is 500 MHz (M4I 4450 X8) or 1250 MHz (M4I 2211 X8).
+This function queries or sets the digitizer sample rate (in MHz). If there is no argument the function will return the current sample rate. If there is an argument the specified sample rate will be set. If there is no setting fitting the argument the nearest available value is used and warning is printed. Default value is 500 MHz (M4I 4450 X8) or 1250 MHz (M4I 2211 X8).
 
-The available sample rate should be from the following array: `[500, 250, 125, ..., 0.001907]` for M4I 4450 X8 or `[1250, 625, 312.5, ..., 0.009536]` for M4I 2211 X8. If there is no setting fitting the argument the nearest available value is used and warning is printed. Default value is 500 MHz (M4I 4450 X8) or 1250 MHz (M4I 2211 X8).
+**Allowed (M4I 4450 X8):** `[500, 250, 125, ..., 0.001907]` MHz
+{: .enum }
+
+**Allowed (M4I 2211 X8):** `[1250, 625, 312.5, ..., 0.009536]` MHz
+{: .enum }
+
+**Range (M4I 4450 X8):** `1.907 kHz` – `500 MHz`
+{: .enum }
+
+**Range (M4I 2211 X8):** `9.536 kHz` – `1250 MHz`
+{: .enum }
 
 !!! note
     This function only returns the current sample rate for Insys FM214x3GDA.
@@ -198,9 +209,10 @@ digitizer_clock_mode('External')
 
 This function queries or sets the digitizer clock mode. If there is no argument the function will return the current clock mode setting. If there is an argument the specified clock mode will be set.
 
-The clock mode should be one of the following: `Internal`, `External`.
-
 According to the documentation, the internal sampling clock is generated in default mode by a programmable high precision quartz. The external clock input of the M3i/M4i series is fed through a PLL to the clock system. Therefore the input will act as a reference clock input thus allowing to either use a copy of the external clock or to generate any sampling clock within the allowed range from the reference clock. Due to the fact that the driver needs to know the external fed in frequency for an exact calculation of the sampling rate the reference clock should be set by the [`digitizer_reference_clock()`](#digitizer_reference_clock) function. Default setting is `Internal`.
+
+**Allowed:** `'Internal'`, `'External'`
+{: .enum }
 
 !!! note
     This function is not available for Insys FM214x3GDA.
@@ -214,9 +226,10 @@ digitizer_reference_clock()         # -> int, MHz (query)
 digitizer_reference_clock(100)      # default: 100 MHz
 ```
 
-This function queries or sets the digitizer reference clock (in MHz) for `External` mode of the [`digitizer_clock_mode()`](#digitizer_clock_mode) function. If there is no argument the function will return the current reference clock. If there is an argument the specified reference clock will be set.
+This function queries or sets the digitizer reference clock (in MHz) for `External` mode of the [`digitizer_clock_mode()`](#digitizer_clock_mode) function. If there is no argument the function will return the current reference clock. If there is an argument the specified reference clock will be set. Default value is 100 MHz.
 
-The minimum available reference clock is 10 MHz. The maximum available reference clock is 100 MHz. Default value is 100 MHz.
+**Range:** `10 MHz` – `100 MHz`
+{: .enum }
 
 !!! note
     This function is not available for Insys FM214x3GDA.
@@ -233,9 +246,10 @@ digitizer_card_mode('Average')
 
 This function queries or sets the digitizer mode. If there is no argument the function will return the current digitizer mode. If there is an argument the specified mode will be set.
 
-The mode should be one of the following: `Single`, `Average`.
-
 According to the documentation, in the `Single` mode data acquisition is carried out to on-board memory for one single trigger event. In `Average` (Multi) mode the memory is segmented and with each trigger condition one segment is acquired. After that the data is transfer to the PC memory and [averaged](#digitizer_get_curve) or [averaged and integrated](#digitizer_get_curve-integral). The number of segments to acquire can be set by the [`digitizer_number_of_averages()`](#digitizer_number_of_averages) function. Default setting is `Single`.
+
+**Allowed:** `'Single'`, `'Average'`
+{: .enum }
 
 !!! note
     This function is not available for Insys FM214x3GDA, L card L-502.
@@ -250,9 +264,10 @@ digitizer_trigger_channel('External')   # default; = Trg0
 digitizer_trigger_channel('Software')
 ```
 
-This function queries or sets the digitizer trigger channel. If there is no argument the function will return the current trigger channel. If there is an argument the specified channel will be used as trigger.
+This function queries or sets the digitizer trigger channel. If there is no argument the function will return the current trigger channel. If there is an argument the specified channel will be used as trigger. Trigger channel `External` corresponds to `Trg0` channel of the digitizer. Default setting is `External`.
 
-The channel should be one of the following: `Software`, `External`. Trigger channel `External` corresponds to `Trg0` channel of the digitizer. Default setting is `External`.
+**Allowed:** `'Software'`, `'External'`
+{: .enum }
 
 !!! note
     This function is not available for Insys FM214x3GDA, L card L-502.
@@ -266,9 +281,10 @@ digitizer_trigger_mode()            # -> str (query)
 digitizer_trigger_mode('Positive')  # default
 ```
 
-This function queries or sets the digitizer trigger mode. If there is no argument the function will return the current trigger mode. If there is an argument the specified trigger mode will be set.
+This function queries or sets the digitizer trigger mode. If there is no argument the function will return the current trigger mode. If there is an argument the specified trigger mode will be set. Mode `Positive` corresponds to trigger detection for positive edges (crossing level 0 from below to above). `Negative` to trigger detection for negative edges (crossing level 0 from above to below). `High` to trigger detection for HIGH levels (signal above level 0). `Low` to trigger detection for LOW levels (signal below level 0). Default setting is `Positive`.
 
-The trigger mode should be one of the following: `Positive`, `Negative`, `High`, `Low`. Mode `Positive` corresponds to trigger detection for positive edges (crossing level 0 from below to above). `Negative` to trigger detection for negative edges (crossing level 0 from above to below). `High` to trigger detection for HIGH levels (signal above level 0). `Low` to trigger detection for LOW levels (signal below level 0). Default setting is `Positive`.
+**Allowed:** `'Positive'`, `'Negative'`, `'High'`, `'Low'`
+{: .enum }
 
 !!! note
     This function is not available for Insys FM214x3GDA, L card L-502.
@@ -282,9 +298,10 @@ digitizer_number_of_averages()      # -> int (query)
 digitizer_number_of_averages(2)     # default
 ```
 
-This function queries or sets the number of averages for [`Average`](#digitizer_card_mode) card mode. If there is no argument the function will return the current number of averages. If there is an argument the specified number of averages will be set.
+This function queries or sets the number of averages for [`Average`](#digitizer_card_mode) card mode. If there is no argument the function will return the current number of averages. If there is an argument the specified number of averages will be set. If a very large number of [points](#digitizer_number_of_points) are set, the maximum available number of averages may be limited by the digitizer memory. This limit is 1 Gs. Default value is 2.
 
-The maximum available number of averages is 10000. If a very large number of [points](#digitizer_number_of_points) are set, the maximum available number of averages may be limited by the digitizer memory. This limit is 1 Gs. Default value is 2.
+**Max:** `10000`
+{: .enum }
 
 !!! note
     This function is not available for L card L-502.
@@ -313,9 +330,10 @@ digitizer_input_mode('HF')          # default
 digitizer_input_mode('Buffered')
 ```
 
-This function queries or sets the input mode for the channels of the digitizer. If there is no argument the function will return the current input mode. If there is an argument the specified input mode will be set.
+This function queries or sets the input mode for the channels of the digitizer. If there is no argument the function will return the current input mode. If there is an argument the specified input mode will be set. The input mode will be used for both channels. According to the documentation, HF mode allows using a high frequency 50 Ohm path to have full bandwidth and best dynamic performance. Buffered mode allows using a buffered path with all features but limited bandwidth and dynamic performance. Default value is `HF`.
 
-The input mode should be one of the following: `HF`, `Buffered`. The input mode will be used for both channels. According to the documentation, HF mode allows using a high frequency 50 Ohm path to have full bandwidth and best dynamic performance. Buffered mode allows using a buffered path with all features but limited bandwidth and dynamic performance. Default value is `HF`.
+**Allowed:** `'HF'`, `'Buffered'`
+{: .enum }
 
 !!! note
     This function is not available for M4I 2211 X8, Insys FM214x3GDA, and
@@ -331,11 +349,16 @@ digitizer_amplitude(500)    # default: ±500 mV
 digitizer_amplitude(1000)   # ±1 V
 ```
 
-This function queries or sets the input ranges of the digitizer channels. If there is no argument the function will return the range of the digitizer channels. If there is an argument the specified range (in mV) will be set. The given range will be used for both channels.
+This function queries or sets the input ranges of the digitizer channels. If there is no argument the function will return the range of the digitizer channels. If there is an argument the specified range (in mV) will be set. The given range will be used for both channels. If there is no range setting fitting the argument the nearest available value is used and warning is printed. Default value is `500 mV`.
 
-In the [`Buffered` input mode](#digitizer_input_mode) the range for M4I 4450 X8 should be one of the following: `[200, 500, 1000, 2000, 5000, 10000]`. In the [`HF` input mode](#digitizer_input_mode) the range should be one of the following: `[500, 1000, 2500, 5000]`.
+**Allowed (M4I 4450 X8, `Buffered`):** `200`, `500`, `1000`, `2000`, `5000`, `10000` mV
+{: .enum }
 
-For M4I 2211 X8 the range should be one of the following: `[200, 500, 1000, 2500]`. If there is no range setting fitting the argument the nearest available value is used and warning is printed. Default value is `500 mV`.
+**Allowed (M4I 4450 X8, `HF`):** `500`, `1000`, `2500`, `5000` mV
+{: .enum }
+
+**Allowed (M4I 2211 X8):** `200`, `500`, `1000`, `2500` mV
+{: .enum }
 
 !!! note
     This function is not available for Insys FM214x3GDA, the maximum
@@ -367,9 +390,10 @@ digitizer_coupling('CH0', 'DC', 'CH1', 'DC')      # default
 digitizer_coupling('CH0', 'AC', 'CH1', 'DC')
 ```
 
-This function queries or sets the coupling of the digitizer channels. If there is no argument the function will return the coupling of the both digitizer channels. If there is an argument the specified coupling will be set for the specified channel.
+This function queries or sets the coupling of the digitizer channels. If there is no argument the function will return the coupling of the both digitizer channels. If there is an argument the specified coupling will be set for the specified channel. Default value is `DC` for both channels.
 
-The offset should be one of the following: `AC`, `DC`. Default value is `DC` for both channels.
+**Allowed:** `'AC'`, `'DC'`
+{: .enum }
 
 !!! note
     This function is not available for Insys FM214x3GDA, L card L-502.
@@ -384,9 +408,10 @@ digitizer_impedance('CH0', '50', 'CH1', '50')      # default
 digitizer_impedance('CH0', '50', 'CH1', '1 M')
 ```
 
-This function queries or sets the impedance of the digitizer channels. If there is no argument the function will return the impedance of the both digitizer channels. If there is an argument the specified impedance will be set for the specified channel.
+This function queries or sets the impedance of the digitizer channels. If there is no argument the function will return the impedance of the both digitizer channels. If there is an argument the specified impedance will be set for the specified channel. Please note that in the [HF input mode](#digitizer_input_mode) impedance is fixed at 50 Ohm. Default value is `50` for both channels.
 
-The impedance should be one of the following: `1 M`, `50`. Please note that in the [HF input mode](#digitizer_input_mode) impedance is fixed at 50 Ohm. Default value is `50` for both channels.
+**Allowed:** `'1 M'`, `'50'`
+{: .enum }
 
 !!! note
     This function is not available for M4I 2211 X8, Insys FM214x3GDA, and
@@ -403,9 +428,10 @@ digitizer_decimation(2)     # 0.8 ns/point
 digitizer_decimation(4)     # 1.6 ns/point
 ```
 
-This function queries or sets the decimation coefficient for Insys FM214x3GDA. If there is no argument the function will return the decimation coefficient of the digitizer. If there is an argument the specified decimation will be set. It can be used instead of the function [`digitizer_sample_rate()`](#digitizer_sample_rate).
+This function queries or sets the decimation coefficient for Insys FM214x3GDA. If there is no argument the function will return the decimation coefficient of the digitizer. If there is an argument the specified decimation will be set. It can be used instead of the function [`digitizer_sample_rate()`](#digitizer_sample_rate). The values 1, 2, 4 correspond to 0.4 ns/point, 0.8 ns/point, and 1.6 ns/point. This function should be called before [`pulser_open()`](pulse_programmer.md#pulser_open).
 
-The available coefficients are 1, 2, 4, which corresponds to 0.4 ns/point, 0.8 ns/point, and 1.6 ns/point. This function should be called before [`pulser_open()`](pulse_programmer.md#pulser_open).
+**Allowed:** `1`, `2`, `4`
+{: .enum }
 
 ---
 
@@ -416,7 +442,10 @@ digitizer_flow()            # -> str (query)
 digitizer_flow('ADC')       # default
 ```
 
-This function sets or queries enabled flows of data. If there is no argument the function will return the enabled flow of data of the digitizer. If there is an argument the specified flow will be set. The available options are `ADC`, `DIN`, `DAC1`, `DAC2`, `DOUT`, `AIN`, `AOUT`. The default option is `ADC`. This function is available only for L card L-502.
+This function sets or queries enabled flows of data. If there is no argument the function will return the enabled flow of data of the digitizer. If there is an argument the specified flow will be set. The default option is `ADC`. This function is available only for L card L-502.
+
+**Allowed:** `'ADC'`, `'DIN'`, `'DAC1'`, `'DAC2'`, `'DOUT'`, `'AIN'`, `'AOUT'`
+{: .enum }
 
 ---
 

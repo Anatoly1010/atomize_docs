@@ -29,6 +29,22 @@
   white-space: nowrap;
 }
 
+/* ---------- Enum value highlight ---------- */
+
+/* Paragraphs tagged `{: .enum }` get a tinted left-border callout — used for
+   short "Allowed values: `'A'`, `'B'`" lines where a full table would be
+   overkill but plain prose buries the values. */
+.md-typeset p.enum {
+  background: var(--md-code-bg-color);
+  border-left: 3px solid var(--md-accent-fg-color);
+  padding: 0.4em 0.8em;
+  margin: 0.8em 0;
+  border-radius: 0.1rem;
+}
+.md-typeset p.enum code {
+  background: var(--md-default-bg-color);
+}
+
 /* ---------- Code blocks ---------- */
 
 /* Suppress the unnecessary vertical scrollbar gutter that some browsers

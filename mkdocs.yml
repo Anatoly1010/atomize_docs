@@ -67,6 +67,19 @@ nav:
   - Documentation:
       - Digitizers: functions/digitizer.md
       - Pulse Programmers: functions/pulse_programmer.md
+      - Delay Generators: functions/delay_generator.md
+      - Frequency Counters: functions/freq_counter.md
+      - Gaussmeters: functions/gaussmeter.md
+      - Laser Power Meters: functions/laser_power_meter.md
+      - Lock-In Amplifiers: functions/lock_in.md
+      - Magnetic Field Controllers: functions/magnet.md
+      - Magnet Power Supplies: functions/magnet_power_supply.md
+      - Microwave Bridges: functions/microwave_bridge.md
+      - Moisture Meters: functions/moisture_meter.md
+      - Power Supplies: functions/power_supply.md
+      - Synthetizers: functions/synthetizer.md
+      - Temperature Controllers: functions/temp_controller.md
+      - Vector Network Analyzers: functions/vector_network_analyzer.md
   - Projects:
       - X-band pulsed EPR: projects/xband.md
       - Q-band pulsed EPR: projects/qband.md
