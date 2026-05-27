@@ -9,7 +9,9 @@ The [Liveplot](https://github.com/PhilReinhold/liveplot) provides several possib
 | Function | Description |
 | -------- | ----------- |
 | [`plot_1d(*args, **kargs)`](usage.md#1d-plotting)             | 1D plot |
+| [`plot_1d_test(*args, **kargs)`](usage.md#1d-plotting-in-the-test-run)             | 1D plot in the test run |
 | [`plot_2d(*args, **kargs)`](usage.md#2d-plotting)             | 2D plot |
+| [`plot_2d_test(*args, **kargs)`](usage.md#2d-plotting-in-the-test-run)             | 2D plot in the test run |
 | [`text_label('label', DynamicValue)`](usage.md#dynamic-labeling) | Dynamic plot label |
 | [`plot_remove('name_of_plot')`](usage.md#clearing)            | Clear a plot |
 

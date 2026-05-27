@@ -50,6 +50,21 @@ A tuple `(data_1, data_2)` can be used as `Ydata`. In this case two curves will 
 
 ---
 
+## 1D plotting in the test run { #1d-plotting-in-the-test-run }
+
+```python
+plot_1d_test('name', Xdata, Ydata, label='label', xname='NameXaxis',
+        xscale='XaxisDimension', yname='NameYaxis', yscale='YaxisDimension',
+        scatter='False', timeaxis='False', vline='False',
+        pr='None', text='')
+```
+
+Same arguments and parallel-drawing semantics as [`plot_1d()`](#1d-plotting), but the curve is drawn **only when the script is launched in test mode** (i.e. when the GUI's *Test Scripts* checkbox is on, or the script is invoked as `python script.py test`). In a normal experimental run `plot_1d_test()` is a no-op and returns `None`.
+
+Use it to inspect intermediate data — generated waveforms, computed pulse shapes, derived sequences — during the pre-flight check without cluttering plots during real acquisition. It mirrors the [`message_test()`](../general_functions/general_functions.md#print-a-string-in-the-main-window-in-the-test-run) idiom.
+
+---
+
 ## 2D plotting { #2d-plotting }
 
 ```python
@@ -82,6 +97,20 @@ for i in range(10):
         xname='Time', xscale='ns', yname='Delay', yscale='ns',
         zname='Intensity', zscale='V', pr=process, text=str(i))
 ```
+
+---
+
+## 2D plotting in the test run { #2d-plotting-in-the-test-run }
+
+```python
+plot_2d_test('name', data, start_step=((Xstart, Xstep), (Ystart, Ystep)),
+        xname='NameXaxis', xscale='XaxisDimension',
+        yname='NameYaxis Field', yscale='YaxisDimension',
+        zname='NameZaxis', zscale='ZaxisDimension',
+        pr='None', text='')
+```
+
+Same arguments and parallel-drawing semantics as [`plot_2d()`](#2d-plotting), but the surface is drawn **only when the script is launched in test mode**. In a normal experimental run `plot_2d_test()` is a no-op and returns `None`. Use it for diagnostic 2D inspection during the pre-flight check without polluting plots during real acquisition.
 
 ---
 
