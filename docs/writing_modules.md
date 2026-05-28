@@ -165,8 +165,8 @@ channels = 3      ; this power supply has 3 channels
 Currently Atomize does not use the dimensions of physical units (current, frequency etc.), instead, special dictionaries are used:
 
 ```python
-self.timebase_dict = {'s': 1, 'ms': 1000, 'us': 1_000_000, 'ns': 1_000_000_000}   # time
-self.scale_dict    = {'V': 1, 'mV': 1000}                                          # voltage
+self.timebase_dict = {'s': 1, 'ms': 1000, 'us': 1_000_000, 'ns': 1_000_000_000}
+self.scale_dict    = {'V': 1, 'mV': 1000}
 ```
 
 In order to take into account different scaling factors usually the value and scaling factor are treated independently:
