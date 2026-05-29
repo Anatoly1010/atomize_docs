@@ -125,6 +125,8 @@ The subclass provides:
 !!! note
     Subclassing `BaseDevice` is the recommended approach for new SCPI-style modules. Most existing modules still use the hand-written `__init__` shown above, which remains fully supported.
 
+    Modbus (RS-485) instruments use a sibling base, `ModbusDevice`, instead: it provides the same config/test-mode plumbing over `minimalmodbus`'s register interface — `device_read_unsigned()` / `device_write_unsigned()` and their signed variants — with a `write_function_code` class attribute for the register-write function code (`6` or `16`).
+
 ## Limits, Ranges, and Dictionaries
 
 Specify ranges and limits for the device inside an `__init__()` function of the device class and use (if possible) dictionaries for matching device specific syntax and general high-level Atomize function arguments:
