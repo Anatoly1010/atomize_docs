@@ -72,6 +72,59 @@ def __init__(self):
             self.device.timeout = self.config['timeout']
 ```
 
+## BaseDevice
+
+Most SCPI-style modules share the same `__init__` boilerplate: load the configuration file, read `test_flag`, open the GPIB / RS-232 / Ethernet transport, run a connection self-test, and define `device_write()` / `device_query()` / `close_connection()`. The `BaseDevice` class in `atomize/device_modules/base_device.py` provides all of this, so a new module can subclass it and supply only the device-specific parts:
+
+```python
+# Lakeshore 335 temperature controller
+import atomize.device_modules.base_device as base
+import atomize.device_modules.config.config_utils as cutil
+import atomize.general_modules.general_functions as general
+
+class Lakeshore_335(base.BaseDevice):
+    config_file = 'Lakeshore_335_config.ini'   # name of the *_config.ini file
+
+    def __init__(self):
+        # auxiliary dictionaries and limits
+        self.heater_dict = {'50 W': 3, '5 W': 2, '0.5 W': 1, 'Off': 0}
+        self.loop_list = [1, 2]
+        self.temperature_max = 320
+        self.temperature_min = 0.3
+
+        # config loading, test_flag, and the connection are handled by BaseDevice
+        super().__init__()
+
+        self.loop_config = int(self.specific_parameters['loop'])
+
+    def _init_test_values(self):
+        # values returned by the module during a test run
+        self.test_temperature = 200.
+        self.test_set_point = 298.
+
+    def tc_temperature(self, channel):
+        if self.test_flag != 'test':
+            return float(self.device_query('KRDG? ' + channel))
+        elif self.test_flag == 'test':
+            return self.test_temperature
+```
+
+The subclass provides:
+
+- `config_file` — the name of the configuration file (required);
+- `_init_test_values()` — the canned values returned during a [test run](#test-run);
+- the device-specific functions (`tc_temperature()`, …) that call `self.device_write()` / `self.device_query()`.
+
+`BaseDevice` provides:
+
+- config loading (`self.config`, `self.specific_parameters`) and the `self.test_flag` dispatch;
+- `_connect()` — opens the transport for `gpib` / `rs232` / `ethernet` and runs `_self_test()` (a no-op by default, since not every device supports a self-test; override it to add one, e.g. a SCPI `*CLS` + `*TST?` check as `Lakeshore_335` does);
+- `device_write()`, `device_query()`, and `close_connection()`;
+- `gpib_query_wait` — the GPIB write→read settle delay (default `'50 ms'`, override per device).
+
+!!! note
+    Subclassing `BaseDevice` is the recommended approach for new SCPI-style modules. Most existing modules still use the hand-written `__init__` shown above, which remains fully supported.
+
 ## Limits, Ranges, and Dictionaries
 
 Specify ranges and limits for the device inside an `__init__()` function of the device class and use (if possible) dictionaries for matching device specific syntax and general high-level Atomize function arguments:
