@@ -125,7 +125,50 @@ The subclass provides:
 !!! note
     Subclassing `BaseDevice` is the recommended approach for new SCPI-style modules. Most existing modules still use the hand-written `__init__` shown above, which remains fully supported.
 
-    Modbus (RS-485) instruments use a sibling base, `ModbusDevice`, instead: it provides the same config/test-mode plumbing over `minimalmodbus`'s register interface — `device_read_unsigned()` / `device_write_unsigned()` and their signed variants — with a `write_function_code` class attribute for the register-write function code (`6` or `16`).
+## ModbusDevice
+
+Modbus (RS-485) instruments don't use the SCPI `device_write()` / `device_query()` string interface — they read and write numbered registers through `minimalmodbus`. They use a sibling base, `ModbusDevice` (`atomize/device_modules/modbus_device.py`), which provides the same config and test-mode plumbing over that register interface:
+
+```python
+# Owen MK110 discrete I/O module (Modbus / RS-485)
+import atomize.device_modules.modbus_device as base
+import atomize.device_modules.config.config_utils as cutil
+
+class Owen_MK110_220_4DN_4R(base.ModbusDevice):
+    config_file = 'Owen_MK110_220_4DN_4R_config.ini'
+    write_function_code = 16   # 16 = write multiple registers (use 6 for a single register)
+
+    def __init__(self):
+        self.channel_dict = {'1': 1, '2': 2, '3': 3, '4': 4}
+        super().__init__()
+
+    def _init_test_values(self):
+        self.test_counter = 1
+
+    def discrete_io_input_counter(self, channel):
+        if self.test_flag != 'test':
+            ch = self.channel_dict[channel]
+            return int(self.device_read_unsigned(63 + ch, 0))
+        elif self.test_flag == 'test':
+            return self.test_counter
+```
+
+The subclass provides:
+
+- `config_file` — the name of the configuration file (required);
+- `write_function_code` — the Modbus function code for register writes (`6` = single register, `16` = multiple; default `16`);
+- `_init_test_values()` — the canned values returned during a [test run](#test-run);
+- the device-specific functions, built on the register read/write helpers.
+
+`ModbusDevice` provides:
+
+- config loading (`self.config`, `self.modbus_parameters`, `self.specific_parameters`) and the `self.test_flag` dispatch;
+- `_connect()` — opens the `minimalmodbus.Instrument` for the `rs485` interface (mode, baud rate, byte size, parity, stop bits, timeout);
+- `device_read_unsigned()` / `device_read_signed()` and `device_write_unsigned()` / `device_write_signed()` for register access;
+- `close_connection()`.
+
+!!! note
+    A device that needs a settle delay after a signed read (e.g. `Termodat_11M6`) overrides `device_read_signed()` to add it; everything else is inherited.
 
 ## Limits, Ranges, and Dictionaries
 
