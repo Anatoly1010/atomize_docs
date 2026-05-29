@@ -345,6 +345,52 @@ def __init__(self):
     self.test_flag = sys.argv[1] if len(sys.argv) > 1 else 'None'
 ```
 
+## Unit Testing
+
+The [Test Run](#test-run) above is an *in-app* smoke check: it runs inside Atomize and only verifies that a script's logic and arguments stay within the device limits. For finer-grained, offline checks of a module — its exact command strings and response parsing, with no GUI and no hardware — a module can also be tested with `pytest`.
+
+Every device communicates with the instrument only through `self.device`, so a test can replace it with a fake transport that records the commands sent and returns scripted responses:
+
+```python
+class FakeVisa:
+    def __init__(self, responses=()):
+        self.written = []
+        self._responses = list(responses)
+
+    def write(self, command):
+        self.written.append(command)
+
+    def read(self):
+        return self._responses.pop(0)
+
+    def query(self, command):
+        self.written.append(command)
+        return self._responses.pop(0)
+```
+
+A test then builds the module without opening a real connection (bypassing `__init__`), injects the fake, and asserts on both the parsed return value and the exact command string:
+
+```python
+import atomize.device_modules.Lakeshore_335 as ls
+
+def test_temperature():
+    dev = ls.Lakeshore_335.__new__(ls.Lakeshore_335)   # skip __init__/connection
+    dev.config = {'interface': 'rs232'}
+    dev.status_flag = 1
+    dev.test_flag = 'None'                              # exercise the real path
+    dev.device = FakeVisa(['298.5'])
+
+    assert dev.tc_temperature('A') == 298.5            # response parsing
+    assert dev.device.written == ['KRDG? A']           # command string
+```
+
+Unlike the in-app Test Run, this exercises the **real** (`test_flag != 'test'`) path — the command building and response parsing that the test mode never reaches. Install the test dependency and run the suite from the Atomize repository root:
+
+```bash
+pip install -e .[test]
+pytest
+```
+
 ## Error Messages
 
 It is recommended to write detailed assertion error messages, which can include argument types and argument limits. Below are several examples from various device modules:

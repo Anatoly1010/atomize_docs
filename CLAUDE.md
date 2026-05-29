@@ -6,42 +6,46 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Documentation site for [Atomize](https://github.com/Anatoly1010/Atomize), a modular Python software for controlling scientific/industrial instruments (primarily EPR spectrometers). This repo is **only the docs** — it does not contain Atomize itself. Published to GitHub Pages at https://anatoly1010.github.io/atomize_docs/.
 
-Built with Jekyll + the [Just the Docs] theme (pinned to `just-the-docs 0.10.1`, Jekyll `~> 4.4.1`, Ruby 3.3).
+Built with **MkDocs + the [Material for MkDocs] theme** (`mkdocs-material==9.7.6`, see `requirements.txt`; CI uses Python 3.12).
+
+> **Legacy Jekyll tree:** an older site (Just-the-Docs theme) still lives in this repo under `pages/`, `_config.yml`, `_layouts/`, `_includes/`, `_sass/`. It is **not deployed** — the live site is built from `docs/` by MkDocs. Don't edit the Jekyll files expecting changes on the published site; they are kept only for reference and can be removed.
 
 ## Common commands
 
 ```bash
-bundle install                  # install gems (first time / after Gemfile change)
-bundle exec jekyll serve        # preview locally at http://localhost:4000
-bundle exec jekyll build        # build into ./_site (same command CI runs)
+pip install -r requirements.txt   # install MkDocs + the Material theme
+mkdocs serve                      # preview locally at http://localhost:8000
+mkdocs build                      # build into ./site
+mkdocs build --strict             # build, failing on warnings (what CI runs)
 ```
 
-CI (`.github/workflows/ci.yml`) runs `bundle exec jekyll build` on every push/PR; `pages.yml` builds and deploys to GitHub Pages on push to `main`. There are no tests or linters.
+CI (`.github/workflows/ci.yml`) runs `mkdocs build --strict` on every push to `main` and on PRs; `pages.yml` ("Deploy MkDocs site to Pages") builds with MkDocs and deploys `./site` to GitHub Pages on push to `main`. There are no tests or linters beyond the strict build.
 
 ## Site structure
 
-- `index.md` — home page (top-level intro to Atomize)
-- `pages/` — all documentation content, organized via Just-the-Docs `nav_order` + `parent`/`has_children` front matter (not via folder layout). Subdirectories:
-  - `pages/functions/` — one Markdown file per instrument category (AWG, digitizer, lock-in, magnet, oscilloscope, etc.), plus `general_functions/` (concurrency, data management) and `plotting_functions/` (liveplot usage)
-  - `pages/projects/` — per-spectrometer pages (xband, qband, endstation)
-  - `pages/script_examples/` — example experiment scripts (e.g. cw_epr)
-- `_config.yml` — site config; theme is `just-the-docs`, color scheme `skhep` (custom, defined in `_sass/color_schemes/skhep.scss`; dark variant `darkskhep.scss` also present)
-- `_layouts/page.html`, `_includes/` (`head.html`, `head_custom.html`, `toc.html`, `package_table.html`) — local overrides of theme defaults
-- `_sass/custom.scss` — site-specific style overrides
-- `assets/`, `images/` — figures referenced from pages (paths are absolute, prefixed with `/atomize_docs/`)
-- `_site/`, `.jekyll-cache/`, `vendor/` — build output / caches; do not edit
+- `mkdocs.yml` — site config, theme, markdown extensions, and the explicit `nav:` tree. **Navigation is defined here**, not via per-page front matter.
+- `docs/` — all documentation content (`docs_dir: docs`):
+  - `docs/index.md` — home page
+  - `docs/functions/` — one Markdown file per **instrument category** (`awg`, `digitizer`, `lock_in`, `magnet`, `oscilloscope`, `temp_controller`, …), plus `general_functions/` (concurrency, data management) and `plotting_functions/` (liveplot usage)
+  - `docs/projects/` — per-spectrometer pages (xband, qband, endstation)
+  - `docs/script_examples/` — example experiment scripts (e.g. cw_epr)
+  - `docs/images/` — figures; `docs/stylesheets/extra.css` — extra styles (referenced from `mkdocs.yml`)
+- `site/` — build output; do not edit or commit.
 
 ## Authoring conventions
 
-- Every page needs Jekyll front matter. Existing pages use: `title`, `layout: page`, and either `nav_order` (top-level) or `parent:` + `nav_order` (child). Parent sections use `has_children: true`.
-- Internal links use absolute paths prefixed with the site baseurl, e.g. `/atomize_docs/pages/instruments` and `/atomize_docs/images/figure_1.png`. Match this style when adding cross-references so links work both on GitHub Pages and in local preview.
-- Custom callouts are defined in `_config.yml`: `{: .warning }`, `{: .note }`, `{: .important }`, `{: .highlight }`.
-- When adding a new instrument page under `pages/functions/`, mirror the front matter of a sibling (e.g. `digitizer.md`) and add the entry to `pages/instruments.md`'s table-of-contents list.
+- Pages are plain Markdown — **no front matter required**; the title comes from the first `# H1` (and the `nav:` label in `mkdocs.yml`).
+- To add a page: create the `.md` under `docs/`, add it to the `nav:` tree in `mkdocs.yml`, and — for a new instrument category — add it to the table in `docs/instruments.md`. Mirror the structure of a sibling page (e.g. `docs/functions/digitizer.md`).
+- Internal links are **relative to the `docs/` tree**, e.g. `protocol_settings.md`, `functions/general_functions/general_functions.md`, `images/figure_2.png`. Do **not** use the old Jekyll absolute `/atomize_docs/...` paths.
+- Callouts use MkDocs admonitions: `!!! note`, `!!! warning`, `!!! important` (`admonition` + `pymdownx.details`), **not** Jekyll's `{: .note }`.
+- Custom heading anchors / TOC labels use `attr_list`, e.g. `### tc_name() { #tc_name data-toc-label="tc_name" }`.
+- Enabled extensions (see `mkdocs.yml`): `admonition`, `footnotes`, `attr_list`, `md_in_html`, `pymdownx.details/superfences/highlight/inlinehilite/snippets/tabbed`, and `toc` (permalinks).
 
 ## Notes for editing
 
-- SASS deprecation warnings are silenced in `_config.yml` (`sass.silence_deprecations: ["import"]`) — leave that alone unless upgrading the theme.
-- `_config.yml` changes are **not** picked up by `jekyll serve` automatically; restart the server.
-- The Gemfile pins `just-the-docs 0.10.1`; bumping it can shift layout/CSS and may require updating the local overrides in `_layouts/` and `_includes/`.
+- `mkdocs serve` live-reloads on content changes, but **restart it after editing `mkdocs.yml`**.
+- Keep the build warning-free — CI runs `--strict`, so a broken link or a page missing from `nav:` fails the build.
+- The theme is pinned (`mkdocs-material==9.7.6`); bumping it can shift layout/CSS.
+- Some migrated `docs/` pages still carry leftover Jekyll/Kramdown attributes such as `{: .enum }` (e.g. in `functions/temp_controller.md`); these do **not** render under MkDocs — replace them with `attr_list`/admonition equivalents when you touch those pages.
 
-[Just the Docs]: https://just-the-docs.github.io/just-the-docs/
+[Material for MkDocs]: https://squidfunk.github.io/mkdocs-material/
