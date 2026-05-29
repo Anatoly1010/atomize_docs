@@ -446,6 +446,8 @@ pip install -e .[test]
 pytest
 ```
 
+Alongside the per-module characterization tests above, the suite includes two broader safety nets: a smoke test that compile-checks every device module and constructs each one in test mode (so a syntax error or a broken test-run branch is caught across the whole `device_modules/` directory at once, while modules whose vendor driver isn't installed are skipped), and unit tests for the pure helpers in `general_functions` (time-string parsing, rounding, SI helpers). A new module is picked up by the smoke test automatically; you only need to add characterization tests for its own command building and response parsing.
+
 ## Error Messages
 
 It is recommended to write detailed assertion error messages, which can include argument types and argument limits. Below are several examples from various device modules:
