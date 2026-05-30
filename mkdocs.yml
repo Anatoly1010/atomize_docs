@@ -51,11 +51,17 @@ markdown_extensions:
   - pymdownx.snippets
   - pymdownx.tabbed:
       alternate_style: true
+  - pymdownx.arithmatex:
+      generic: true
   - toc:
       permalink: true
 
 extra_css:
   - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
 
 nav:
   - Home: index.md
@@ -94,6 +100,10 @@ nav:
           - Overview: functions/plotting_functions/index.md
           - Usage: functions/plotting_functions/usage.md
           - Examples: functions/plotting_functions/examples.md
+      - Math Modules:
+          - Overview: functions/math_modules/index.md
+          - Least-squares Fitting: functions/math_modules/fitting.md
+          - Signal Processing: functions/math_modules/signal_processing.md
   - Projects:
       - X-band pulsed EPR: projects/xband.md
       - Q-band pulsed EPR: projects/qband.md
