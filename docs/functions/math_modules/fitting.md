@@ -36,6 +36,8 @@ Creates the fitter object. All functions below are methods on it.
 constant baseline term (`b` or `c`) that can be fixed at zero with the
 `no_offset` argument of [`fit()`](#fit).
 
+**Basic models**
+
 | Model key | Parameters | Function |
 | --------- | ---------- | -------- |
 | `Linear` | `a, b` | $a x + b$ |
@@ -45,10 +47,9 @@ constant baseline term (`b` or `c`) that can be fixed at zero with the
 | `Gaussian` | `a, x0, sigma, b` | $a\,e^{-(x-x_0)^2/2\sigma^2} + b$ |
 | `Lorentzian` | `a, x0, gamma, b` | $a/(1+((x-x_0)/\gamma)^2) + b$ |
 | `Damped sine` | `a, k, f, phi, b` | $a\,e^{-x/k}\sin(2\pi f x + \varphi) + b$ |
-| `Tm + ESEEM (stretched, 1 freq)` | `a, Tm, beta, c, m, f, phi, tau_m` | stretched envelope × 1 modulation |
-| `Tm + ESEEM (stretched, 2 freq)` | `a, Tm, beta, c, m1, f1, phi1, tau_m1, m2, f2, phi2, tau_m2` | stretched envelope × 2 modulations |
-| `Tm + ESEEM (mono-exp, 1 freq)` | `a, Tm, c, m, f, phi, tau_m` | mono-exp envelope × 1 modulation |
-| `Tm + ESEEM (mono-exp, 2 freq)` | `a, Tm, c, m1, f1, phi1, tau_m1, m2, f2, phi2, tau_m2` | mono-exp envelope × 2 modulations |
+
+The four `Tm + ESEEM …` models have longer parameter lists and are described in
+the [next section](#eseem).
 
 ### ESEEM echo-decay models { #eseem data-toc-label="ESEEM models" }
 
@@ -60,10 +61,21 @@ $$
 V(t) = A\,e^{-(t/T_m)^{\beta}}\Big[1 + \sum_k m_k \cos(2\pi f_k t + \varphi_k)\,e^{-t/\tau_{m,k}}\Big] + c
 $$
 
-(the mono-exponential variants drop $\beta$). The modulation frequencies $f_k$
-are seeded automatically from the FFT peaks of the detrended data, which is what
-lets the 8–12 parameter fits converge. Frequency units follow the x-axis: with
-`x` in ns, `f` comes out in 1/ns (GHz); with `x` in µs, in 1/µs (MHz).
+The mono-exponential variants drop $\beta$, and the 1-frequency variants keep
+only the $k=1$ modulation term. The four model keys and their parameters:
+
+- **`Tm + ESEEM (stretched, 1 freq)`**<br/>`a, Tm, beta, c, m, f, phi, tau_m`
+- **`Tm + ESEEM (stretched, 2 freq)`**<br/>`a, Tm, beta, c, m1, f1, phi1, tau_m1, m2, f2, phi2, tau_m2`
+- **`Tm + ESEEM (mono-exp, 1 freq)`**<br/>`a, Tm, c, m, f, phi, tau_m`
+- **`Tm + ESEEM (mono-exp, 2 freq)`**<br/>`a, Tm, c, m1, f1, phi1, tau_m1, m2, f2, phi2, tau_m2`
+
+Here `a` scales the envelope, `Tm` is the decay time, `beta` the stretch
+exponent, `c` the offset, and each modulation contributes a depth `m`,
+frequency `f`, phase `phi`, and damping time `tau_m`. The modulation
+frequencies are seeded automatically from the FFT peaks of the detrended data,
+which is what lets the 8–12 parameter fits converge. Frequency units follow the
+x-axis: with `x` in ns, `f` comes out in 1/ns (GHz); with `x` in µs, in 1/µs
+(MHz).
 
 ---
 
