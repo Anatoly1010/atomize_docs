@@ -104,6 +104,7 @@ nav:
           - Overview: functions/math_modules/index.md
           - Least-squares Fitting: functions/math_modules/fitting.md
           - Signal Processing: functions/math_modules/signal_processing.md
+          - DEER / PDS Analysis: functions/math_modules/deer.md
   - Projects:
       - X-band pulsed EPR: projects/xband.md
       - Q-band pulsed EPR: projects/qband.md
