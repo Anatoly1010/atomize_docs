@@ -25,7 +25,7 @@ Description of available general functions in Atomize, including a module for sa
 | [`create_file_parameters(add_name, directory='')`](data_managment.md#create_file_parameters) | Create data + parameters file pair |
 | [`save_header(filename, header='', mode='w')`](data_managment.md#save_header) | Save a header to a file |
 | [`save_data(filename, data, header='', mode='w')`](data_managment.md#save_data) | Save a numpy array to a file |
-| [`Bruker_Opener().open(path)`](data_managment.md#bruker_open) | Read Bruker native files (BES3T / ESP/WinEPR), 1D/2D, real or I/Q |
+| [`Bruker_Opener().open(path)`](bruker_opener.md#bruker_open) | Read Bruker native files (BES3T / ESP/WinEPR), 1D/2D, real or I/Q |
 
 ## Related
 

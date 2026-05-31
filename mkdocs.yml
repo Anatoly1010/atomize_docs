@@ -95,6 +95,7 @@ nav:
           - Overview: functions/general_functions/index.md
           - Functions: functions/general_functions/general_functions.md
           - Data management: functions/general_functions/data_managment.md
+          - Bruker native formats: functions/general_functions/bruker_opener.md
           - Concurrency: functions/general_functions/concurrency.md
           - Examples: functions/general_functions/examples.md
       - Plotting:
