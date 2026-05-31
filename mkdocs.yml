@@ -67,48 +67,50 @@ nav:
   - Home: index.md
   - Requirements: requirements.md
   - Usage: usage.md
-  - Instruments: instruments.md
   - Protocol settings: protocol_settings.md
   - Writing modules: writing_modules.md
-  - Documentation:
-      - Arbitrary Waveform Generators: functions/awg.md
-      - Delay Generators: functions/delay_generator.md
+  - Instrument modules:
+      - Overview: instruments.md
+      - Arbitrary waveform generators: functions/awg.md
+      - Delay generators: functions/delay_generator.md
       - Digitizers: functions/digitizer.md
-      - Frequency Counters: functions/freq_counter.md
+      - Frequency counters: functions/freq_counter.md
       - Gaussmeters: functions/gaussmeter.md
-      - Laser Power Meters: functions/laser_power_meter.md
-      - Lock-In Amplifiers: functions/lock_in.md
-      - Magnetic Field Controllers: functions/magnet.md
-      - Magnet Power Supplies: functions/magnet_power_supply.md
-      - Microwave Bridges: functions/microwave_bridge.md
-      - Moisture Meters: functions/moisture_meter.md
+      - Laser power meters: functions/laser_power_meter.md
+      - Lock-in amplifiers: functions/lock_in.md
+      - Magnetic field controllers: functions/magnet.md
+      - Magnet power supplies: functions/magnet_power_supply.md
+      - Microwave bridges: functions/microwave_bridge.md
+      - Moisture meters: functions/moisture_meter.md
       - Oscilloscopes: functions/oscilloscope.md
-      - Other Devices: functions/other_device.md
-      - Power Supplies: functions/power_supply.md
-      - Pulse Programmers: functions/pulse_programmer.md
+      - Other devices: functions/other_device.md
+      - Power supplies: functions/power_supply.md
+      - Pulse programmers: functions/pulse_programmer.md
       - Synthetizers: functions/synthetizer.md
-      - Temperature Controllers: functions/temp_controller.md
-      - Vector Network Analyzers: functions/vector_network_analyzer.md
-      - Waveform Generators: functions/wave_generator.md
-      - General Functions:
+      - Temperature controllers: functions/temp_controller.md
+      - Vector network analyzers: functions/vector_network_analyzer.md
+      - Waveform generators: functions/wave_generator.md
+  - General functions:
+      - General:
           - Overview: functions/general_functions/index.md
           - Functions: functions/general_functions/general_functions.md
-          - Data Management: functions/general_functions/data_managment.md
+          - Data management: functions/general_functions/data_managment.md
           - Concurrency: functions/general_functions/concurrency.md
           - Examples: functions/general_functions/examples.md
-      - Plotting Functions:
+      - Plotting:
           - Overview: functions/plotting_functions/index.md
           - Usage: functions/plotting_functions/usage.md
           - Examples: functions/plotting_functions/examples.md
-      - Math Modules:
-          - Overview: functions/math_modules/index.md
-          - Least-squares Fitting: functions/math_modules/fitting.md
-          - Signal Processing: functions/math_modules/signal_processing.md
-          - DEER / PDS Analysis: functions/math_modules/deer.md
+  - Math modules:
+      - Overview: functions/math_modules/index.md
+      - Least-squares fitting: functions/math_modules/fitting.md
+      - Signal processing: functions/math_modules/signal_processing.md
+      - DEER / PDS analysis: functions/math_modules/deer.md
   - Projects:
-      - X-band pulsed EPR: projects/xband.md
-      - Q-band pulsed EPR: projects/qband.md
-      - EPR endstation: projects/endstation.md
-  - Examples:
-      - CW EPR: script_examples/cw_epr.md
+      - Spectrometers:
+          - X-band pulsed EPR: projects/xband.md
+          - Q-band pulsed EPR: projects/qband.md
+          - EPR endstation: projects/endstation.md
+      - Examples:
+          - CW EPR: script_examples/cw_epr.md
   - Contributors: contributors.md

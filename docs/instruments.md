@@ -1,13 +1,13 @@
-# Instruments
+# Instrument modules
 
-## [Arbitrary Waveform Generators](functions/awg.md)
+## [Arbitrary waveform generators](functions/awg.md)
 
 | Device                                                                                   | Tested  | Notes                                                                                                                                            |
 | ---------------------------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Spectrum M4I 6631 X8                                                                     | 07/2021 | [Library](https://spectrum-instrumentation.com/en/m4i6631-x8) by Spectrum                                                                        |
 | [Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda) (as DAC)                   | 03/2025 | Available via `ctypes`; library in [Atomize_ITC](https://github.com/Anatoly1010/Atomize_ITC/tree/master/libs)                                    |
 
-## [Delay Generators](functions/delay_generator.md)
+## [Delay generators](functions/delay_generator.md)
 
 | Device                       | Connection | Tested   |
 | ---------------------------- | ---------- | -------- |
@@ -22,7 +22,7 @@
 | [Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda) (as ADC)            | 03/2025 | Available via `ctypes`; library in [Atomize_ITC](https://github.com/Anatoly1010/Atomize_ITC/tree/master/libs)                                    |
 | L card L-502 (as ADC)                                                             | 03/2022 | Available via `ctypes`; [library](https://www.lcard.ru/products/boards/l-502?qt-ltab=6#qt-ltab)                                                  |
 
-## [Frequency Counters](functions/freq_counter.md)
+## [Frequency counters](functions/freq_counter.md)
 
 | Device                                       | Connection                | Tested   |
 | -------------------------------------------- | ------------------------- | -------- |
@@ -37,13 +37,13 @@
 | Lakeshore 455 DSP            | RS-232          | 01/2021 |
 | NMR Gaussmeter Sibir 1       | UDP/IP Socket   | 04/2024 |
 
-## [Laser Power Meters](functions/laser_power_meter.md)
+## [Laser power meters](functions/laser_power_meter.md)
 
 | Device                | Connection | Tested  |
 | --------------------- | ---------- | ------- |
 | Gentec-EO Solo2       | RS-232     | 12/2025 |
 
-## [Lock-in Amplifiers](functions/lock_in.md)
+## [Lock-in amplifiers](functions/lock_in.md)
 
 | Device                                                       | Connection             | Tested   |
 | ------------------------------------------------------------ | ---------------------- | -------- |
@@ -51,7 +51,7 @@
 | Stanford Research SR-844 Lock-In Amplifier                   | GPIB, RS-232           | Untested |
 | Stanford Research SR-860, SR-865a Lock-In Amplifier          | GPIB, RS-232, Ethernet | 01/2021  |
 
-## [Magnetic Field Controllers](functions/magnet.md)
+## [Magnetic field controllers](functions/magnet.md)
 
 | Device                                                                                    | Connection                          | Tested  | Notes                       |
 | ----------------------------------------------------------------------------------------- | ----------------------------------- | ------- | --------------------------- |
@@ -60,13 +60,13 @@
 | Bruker ER031M                                                                             | RS-232 (arduino emulated keyboard)  | 01/2021 |                             |
 | [Homemade magnetic field controller](https://patents.google.com/patent/RU2799103C1/en?oq=RU2799103C1) | RS-232                          | 04/2023 |                             |
 
-## [Magnet Power Supplies](functions/magnet_power_supply.md)
+## [Magnet power supplies](functions/magnet_power_supply.md)
 
 | Device              | Connection | Tested  |
 | ------------------- | ---------- | ------- |
 | Cryomagnetics 4G    | Ethernet   | 11/2023 |
 
-## [Microwave Bridge Controllers](functions/microwave_bridge.md)
+## [Microwave bridges](functions/microwave_bridge.md)
 
 | Device                          | Connection      | Tested  |
 | ------------------------------- | --------------- | ------- |
@@ -74,7 +74,7 @@
 | Micran X-band MW Bridge v2      | TCP/IP Socket   | 12/2022 |
 | Micran Q-band MW Bridge         | TCP/IP Socket   | 12/2023 |
 
-## [Moisture Meters](functions/moisture_meter.md)
+## [Moisture meters](functions/moisture_meter.md)
 
 | Device   | Connection | Tested  |
 | -------- | ---------- | ------- |
@@ -92,7 +92,7 @@
 | Tektronix 5 Series MSO                | Ethernet   | 12/2023  |
 | Rigol MSO8000 Series                  | Ethernet   | 01/2026  |
 
-## [Power Supplies](functions/power_supply.md)
+## [Power supplies](functions/power_supply.md)
 
 | Device                                                | Connection      | Tested   |
 | ----------------------------------------------------- | --------------- | -------- |
@@ -100,7 +100,7 @@
 | Stanford Research DC205                               | RS-232          | Untested |
 | Stanford Research PS300 High Voltage Series           | RS-232, GPIB    | Untested |
 
-## [Pulse Programmers](functions/pulse_programmer.md)
+## [Pulse programmers](functions/pulse_programmer.md)
 
 | Device                                                                                                                                  | Tested  | Notes                                                                                                                                                |
 | --------------------------------------------------------------------------------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -114,7 +114,7 @@
 | --------- | ---------- | ------- |
 | ECC 15K   | RS-232     | 01/2023 |
 
-## [Temperature Controllers](functions/temp_controller.md)
+## [Temperature controllers](functions/temp_controller.md)
 
 | Device                                            | Connection              | Tested  |
 | ------------------------------------------------- | ----------------------- | ------- |
@@ -124,13 +124,13 @@
 | Stanford Research PTC10                           | TCP/IP Socket           | 07/2021 |
 | Scientific Instruments SCM10                      | TCP/IP Socket, RS-232   | 07/2022 |
 
-## [Vector Network Analyzers](functions/vector_network_analyzer.md)
+## [Vector network analyzers](functions/vector_network_analyzer.md)
 
 | Device                  | Connection | Tested  |
 | ----------------------- | ---------- | ------- |
 | Planar C2220, S50024    | Socket     | 09/2025 |
 
-## [Waveform Generators](functions/wave_generator.md)
+## [Waveform generators](functions/wave_generator.md)
 
 | Device                                                          | Connection | Tested   | Notes                                            |
 | --------------------------------------------------------------- | ---------- | -------- | ------------------------------------------------ |
@@ -140,7 +140,7 @@
 | Waveform Generator of Rigol MSO8000 Series                      | Ethernet   | —        | Available via corresponding oscilloscope module  |
 | Stanford Research DS345                                         | RS-232     | Untested |                                                  |
 
-## [Other](functions/other_device.md)
+## [Other devices](functions/other_device.md)
 
 | Device                                            | Connection      | Tested  |
 | ------------------------------------------------- | --------------- | ------- |
