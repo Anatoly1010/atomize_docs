@@ -69,6 +69,7 @@ nav:
   - Usage: usage.md
   - Protocol settings: protocol_settings.md
   - Writing modules: writing_modules.md
+  - UI styling: ui_style.md
   - Instrument modules:
       - Overview: instruments.md
       - Arbitrary waveform generators: functions/awg.md
