@@ -53,17 +53,19 @@ with [`plot_1d()`](../plotting_functions/usage.md) or saved with
 
 Distance-distribution analysis for pulsed-dipolar spectroscopy (DEER/PELDOR,
 RIDME, DQC, SIFTER): background correction + Tikhonov/NNLS inversion of the
-orientation-averaged dipolar kernel, with L-curve regularization. Times in µs,
+orientation-averaged dipolar kernel, with GCV (or L-curve) regularization and a
+choice of sequential or joint (DeerLab-style) background fitting. Times in µs,
 distances in nm.
 
 | Function | Description |
 | -------- | ----------- |
-| [`deer_invert(t, V, …)`](deer.md#deer_invert) | One-call pipeline: background-correct → kernel → P(r) |
+| [`deer_invert(t, V, …)`](deer.md#deer_invert) | One-call pipeline: background-correct → kernel → P(r) (`engine`/`method`) |
+| [`deer_invert_joint(t, V, …)`](deer.md#deer_invert_joint) | Joint (separable-NLLS) fit of background + λ together with P(r) |
 | [`dipolar_kernel(t, r, …)`](deer.md#dipolar_kernel) | Orientation-averaged kernel K(t, r) (Fresnel closed form) |
 | [`dipolar_frequency(r, …)`](deer.md#dipolar_frequency) | Perpendicular dipolar frequency ν⊥(r) = ν_dd/r³ |
 | [`background_fit(t, V, bg_start, bg_end=None, …)`](deer.md#background_fit) | Fit intermolecular background on a tail window |
 | [`tikhonov_nnls(K, F, alpha, L=None)`](deer.md#tikhonov_nnls) | Non-negative Tikhonov solve K P = F |
 | [`regularization_matrix(n, order=2)`](deer.md#regularization_matrix) | Derivative operator L for smoothing |
-| [`l_curve(K, F, alphas, L=None)`](deer.md#l_curve) | L-curve scan; corner via Menger curvature |
+| [`l_curve(K, F, alphas, L=None, method='gcv')`](deer.md#l_curve) | Regularization scan; α by GCV (default) or Menger L-corner |
 | [`default_r_axis(rmin=1.5, rmax=8.0, n=200)`](deer.md#default_r_axis) | Default distance grid (nm) |
 | [`simulate(t, r, P, …)`](deer.md#simulate) | Forward-simulate a DEER trace from P(r) |

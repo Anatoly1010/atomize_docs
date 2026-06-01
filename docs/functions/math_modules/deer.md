@@ -17,8 +17,18 @@ per-orientation loop.
 
 Recovering $P(r)$ from $F(t)$ is a Fredholm equation of the first kind
 (ill-posed); this module solves it with **Tikhonov regularization +
-non-negativity** (NNLS), the regularization weight $\alpha$ chosen at the
-**L-curve** corner.
+non-negativity** (NNLS). The regularization weight $\alpha$ is chosen
+automatically — by default via **generalized cross-validation (GCV)**, with the
+classic **L-curve** corner also available. The background can be removed
+**sequentially** (fit the tail, divide it out, invert) or fit **jointly** with
+$P(r)$ in a single separable-NLLS pass (DeerLab-style).
+
+!!! tip "Why GCV is the default"
+    A DEER L-curve is nearly *vertical* — the residual stays at the noise floor
+    across decades of $\alpha$ — so the Menger-curvature "corner" is ill-defined
+    and tends to latch onto a tiny $\alpha$, producing a spiky comb-like $P(r)$.
+    GCV has a genuine minimum and picks a stable $\alpha$, so it is used by
+    default. Switch to the L-corner with `method='curvature'` if you want it.
 
 !!! note "scipy is required"
     DEER analysis needs `scipy` (the `math` extra: `pip install -e .[math]`).
@@ -42,7 +52,8 @@ import atomize.math_modules.deer as deer
 ```python
 res = deer.deer_invert(t, V, r=None, bg_start=None, bg_end=None,
                        dim=3.0, fit_dim=False, alpha=None, alphas=None,
-                       reg_order=2, nu_dd=deer.NU_DD, scan_lcurve=True)
+                       reg_order=2, nu_dd=deer.NU_DD, scan_lcurve=True,
+                       method='gcv', engine='sequential')
 ```
 
 The full one-call pipeline: background-correct $V(t)$, build the kernel, and
@@ -53,14 +64,23 @@ invert to $P(r)$ by Tikhonov + NNLS. This is what most users want.
   (1.5–8 nm, 200 points).
 - **`bg_start`, `bg_end`** — background-fit window (µs). `bg_start=None` defaults
   to the midpoint of the trace; `bg_end=None` fits to the end. See
-  [`background_fit()`](#background_fit).
+  [`background_fit()`](#background_fit). (With `engine='joint'` these only seed
+  the initial background guess — the joint fit uses the whole trace.)
 - **`dim`, `fit_dim`** — fractal background dimension (3 = homogeneous 3D); set
   `fit_dim=True` to float it.
-- **`alpha`** — regularization weight. `None` selects it at the L-curve corner.
-- **`alphas`** — the L-curve scan grid (default `np.logspace(-4, 1, 25)`).
+- **`alpha`** — regularization weight. `None` selects it automatically by `method`.
+- **`alphas`** — the regularization scan grid (default `np.logspace(-4, 3, 36)`).
 - **`reg_order`** — derivative order of the smoothing operator $L$ (default 2).
-- **`scan_lcurve`** — when `True` (default) the L-curve is always computed for
-  display, even if an explicit `alpha` is given.
+- **`scan_lcurve`** — when `True` (default) the regularization scan is always
+  computed for display, even if an explicit `alpha` is given.
+- **`method`** — automatic-$\alpha$ criterion: `'gcv'` (default — generalized
+  cross-validation, robust) or `'curvature'` (classic maximum-Menger-curvature
+  L-corner). See [`l_curve()`](#l_curve).
+- **`engine`** — how the background is handled: `'sequential'` (default; fit the
+  tail, divide it out, then invert) or `'joint'` (fit background + modulation
+  depth together with $P(r)$ in one pass — see
+  [`deer_invert_joint()`](#deer_invert_joint)). The joint engine is more robust
+  when the background window is short or hard to place.
 
 Returns a dict:
 
@@ -78,6 +98,7 @@ Returns a dict:
 | `l_curve` | The [`l_curve()`](#l_curve) result dict (or `None`) |
 | `background` | The [`background_fit()`](#background_fit) result dict |
 | `lambda`, `k`, `dim` | Modulation depth, background decay rate, dimension |
+| `engine` | `'sequential'` or `'joint'` (the background engine used) |
 
 ```python
 import numpy as np
@@ -93,6 +114,51 @@ res = deer.deer_invert(t, V, r=r, bg_start=1.0)
 peak = res['r'][res['P_density'].argmax()]
 print(f"lambda = {res['lambda']:.3f}, alpha = {res['alpha']:.3g}, peak r = {peak:.2f} nm")
 ```
+
+---
+
+## deer_invert_joint() { #deer_invert_joint data-toc-label="deer_invert_joint" }
+
+```python
+res = deer.deer_invert_joint(t, V, r=None, bg_start=None, bg_end=None,
+                             dim=3.0, fit_dim=False, alpha=None, alphas=None,
+                             reg_order=2, nu_dd=deer.NU_DD, method='gcv',
+                             scan_lcurve=True)
+```
+
+DEER inversion with a **joint** (separable-NLLS / variable-projection) fit of the
+background and modulation depth *together* with the regularized non-negative
+$P(r)$ — the strategy DeerLab uses. More robust than the sequential
+[`deer_invert()`](#deer_invert) pipeline on real traces with short or shallow
+backgrounds, where the tail fit and the inversion are coupled. Also reachable as
+`deer.deer_invert(..., engine='joint')`.
+
+Starting from the full model
+
+$$
+V(t) = B(t)\,\big[(1-\lambda) + \lambda\,(K P)(t)\big],\qquad
+B(t) = e^{-(k|t|)^{d/3}},
+$$
+
+the substitution $\tilde P = \lambda P$ and $K'(t,r) = K(t,r) - 1$ (note
+$K(0,r)=1$) makes the linear part free of $\lambda$:
+
+$$
+V/B - 1 = K'\,\tilde P,\qquad \lambda = \textstyle\sum \tilde P,\quad
+P = \tilde P/\lambda .
+$$
+
+So only the background ($k$, and $d$ when `fit_dim=True`) is nonlinear. For each
+trial background the optimal $\tilde P \ge 0$ is the regularized NNLS solution of
+the V-space-weighted system $\operatorname{diag}(B)\,K'\,\tilde P = V - B$ (which
+down-weights the noisy long-$t$ tail), and the V-space residual is minimized over
+$(k[, d])$ with `scipy.optimize.least_squares`. Because $K'$ is constant, $\alpha$
+(GCV by default) is stable across the search and is re-selected once at the
+converged background.
+
+`bg_start`/`bg_end` only **seed** the initial background guess here; the joint
+fit uses the whole trace. Returns the same dict as
+[`deer_invert()`](#deer_invert), with `engine='joint'`.
 
 ---
 
@@ -176,13 +242,24 @@ Discrete derivative operator $L$ for Tikhonov smoothing. `order=0` → identity,
 ## l_curve() { #l_curve data-toc-label="l_curve" }
 
 ```python
-lc = deer.l_curve(K, F, alphas, L=None)
+lc = deer.l_curve(K, F, alphas, L=None, method='gcv')
 ```
 
-L-curve scan: solution norm vs residual norm over `alphas`, with the corner
-picked by maximum Menger curvature in log–log space. Returns a dict with
-`alphas`, `rho` (residual norms), `eta` (solution norms), `curvature`,
-`alpha_opt`, `index`, and `P` (the solution at the corner).
+Regularization scan over `alphas`: for each one solves the NNLS-Tikhonov problem
+and records the residual norm `rho`, the roughness norm `eta`, the Menger L-curve
+`curvature`, and the `gcv` score. The optimum is chosen by `method`:
+
+- **`'gcv'`** (default) — minimum of the generalized cross-validation score.
+  Robust for DEER, whose L-curve is nearly *vertical* (the residual stays at the
+  noise floor across decades of $\alpha$), so the classic corner is ill-defined
+  and tends to pick a tiny $\alpha$ ⇒ spiky $P(r)$. GCV uses the (unconstrained)
+  Tikhonov influence-matrix trace as the effective degrees of freedom paired with
+  the NNLS residual.
+- **`'curvature'`** — classic maximum-Menger-curvature L-corner.
+
+Returns a dict with `alphas`, `rho` (residual norms), `eta` (solution norms),
+`curvature`, `gcv`, `alpha_opt`, `index`, `method`, and `P` (the solution at the
+chosen $\alpha$).
 
 ---
 
