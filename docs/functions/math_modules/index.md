@@ -2,7 +2,8 @@
 
 Helper modules for offline data analysis: least-squares curve fitting, 1D
 signal processing (apodization, zero filling, smoothing, baseline subtraction,
-echo-centre detection), and DEER/PDS distance-distribution analysis. They take
+echo-centre detection), FFT and phase correction, and DEER/PDS
+distance-distribution analysis. They take
 and return plain NumPy arrays, so a result can be pushed straight to LivePlot
 with [`plot_1d()`](../plotting_functions/usage.md) or saved with
 [`save_data()`](../general_functions/data_managment.md#save_data).
@@ -46,6 +47,17 @@ with [`plot_1d()`](../plotting_functions/usage.md) or saved with
 | [`moving_average(y, window=5)`](signal_processing.md#moving_average) | Centred moving-average smoothing |
 | [`baseline_poly(x, y, order=1, region='all', npts=0)`](signal_processing.md#baseline_poly) | Subtract a polynomial baseline |
 | [`normalize(y, mode='minmax')`](signal_processing.md#normalize) | Normalize a curve |
+
+## [FFT / phase correction](fft.md)
+
+`import atomize.math_modules.fft as fft_module`
+
+| Function | Description |
+| -------- | ----------- |
+| [`Fast_Fourier()`](fft.md#class) | Create the FFT / phase-correction helper |
+| [`auto_phase_zero(spectrum, threshold=0.1)`](fft.md#auto_phase_zero) | Zero-order auto-phase (degrees) maximising the magnitude-weighted real part |
+| [`ph_correction(freq, data_i, data_q, cor1, cor2, cor3)`](fft.md#ph_correction) | Apply a zero/first/second-order phase polynomial to I+iQ |
+| [`fft(x_axis, data_i, data_q, sample_spacing, re='False')`](fft.md#fft) | FFT of I+iQ; magnitude or real/imag parts (ns → MHz) |
 
 ## [DEER / PDS analysis](deer.md)
 

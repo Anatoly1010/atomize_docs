@@ -107,6 +107,7 @@ nav:
       - Overview: functions/math_modules/index.md
       - Least-squares fitting: functions/math_modules/fitting.md
       - Signal processing: functions/math_modules/signal_processing.md
+      - FFT / phase correction: functions/math_modules/fft.md
       - DEER / PDS analysis: functions/math_modules/deer.md
   - Projects:
       - Spectrometers:
