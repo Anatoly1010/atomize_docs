@@ -79,7 +79,14 @@ remains — then the centre is the envelope peak, refined by a local
 centre-of-mass and rounded to the nearest sample.
 
 `window` is the half-width (in points) of the centre-of-mass window around the
-peak; `<= 0` selects ≈5 % of the length (minimum 3).
+peak. With `window <= 0` (default) it is sized automatically from the **crest
+width**: walk out from the peak until the envelope drops below 70 % of the peak
+height, then take the narrower of the two sides. Measuring from the crest
+(rather than a baseline-relative half-maximum) keeps the result on the peak even
+when the pre-echo baseline is elevated — there a half-maximum can sit at the
+baseline level, the window blows up, and a slow FID decay drags the
+centre-of-mass far past the true peak. A positive `window` forces that exact
+half-width.
 
 This is used to start an FFT "from the centre of the echo": find `k`, drop the
 first `k` points, and the dead-time first-order phase ramp disappears.

@@ -74,12 +74,19 @@ deviations. As a rule of thumb:
 | ---------------------------------------------------------- | ------------------------------------------------- |
 | Buttons: `border-radius`, pressed-state colour swap        | Spin boxes: `color` + `selection-*` (= palette)   |
 | Line edits with gold text (differs from palette `Text`)    | `QMainWindow { background-color: ... }`           |
-| Combo **popup** highlight that inverts the global highlight | A bare `color:` that just restates palette `Text` |
+| Combo **popup** view — full `background` + text + selection (a sheet on a `QComboBox` drops the palette for its popup) | A bare `color:` that just restates palette `Text` |
 | Tabs, scroll bars, check-box indicators, progress bars     |                                                   |
 | `QLabel { font-weight: bold }`                             |                                                   |
 
 Redundant sheets are harmless — leave existing ones in place — but new windows
 should only style the deviations and let the palette do the rest.
+
+!!! warning "The combo popup is an exception"
+    Once a `QComboBox` carries *any* stylesheet, Qt stops applying the palette to
+    its popup view, so the dropdown items fall back to a default light
+    background. `COMBO_STYLE` therefore styles `QComboBox QAbstractItemView`
+    explicitly (background, text and selection) — not just the highlight — so the
+    open list keeps the dark theme.
 
 ## Reusing the shared sheets
 
