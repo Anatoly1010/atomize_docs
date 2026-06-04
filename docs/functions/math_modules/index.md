@@ -73,6 +73,7 @@ distances in nm.
 | -------- | ----------- |
 | [`deer_invert(t, V, …)`](deer.md#deer_invert) | One-call pipeline: background-correct → kernel → P(r) (`engine`/`method`) |
 | [`deer_invert_joint(t, V, …)`](deer.md#deer_invert_joint) | Joint (separable-NLLS) fit of background + λ together with P(r) |
+| [`deer_validate(t, V, …)`](deer.md#deer_validate) | Ensemble validation: background-sweep → median P(r) + uncertainty band |
 | [`dipolar_kernel(t, r, …)`](deer.md#dipolar_kernel) | Orientation-averaged kernel K(t, r) (Fresnel closed form) |
 | [`dipolar_frequency(r, …)`](deer.md#dipolar_frequency) | Perpendicular dipolar frequency ν⊥(r) = ν_dd/r³ |
 | [`background_fit(t, V, bg_start, bg_end=None, …)`](deer.md#background_fit) | Fit intermolecular background on a tail window |

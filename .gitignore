@@ -3,3 +3,8 @@
 
 # MkDocs build output
 site/
+
+# Legacy Jekyll build artifacts and local Bundler install (not deployed)
+_site/
+vendor/
+.bundle/
