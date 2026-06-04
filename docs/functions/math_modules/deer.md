@@ -29,6 +29,9 @@ $P(r)$ in a single separable-NLLS pass (DeerLab-style).
     and tends to latch onto a tiny $\alpha$, producing a spiky comb-like $P(r)$.
     GCV has a genuine minimum and picks a stable $\alpha$, so it is used by
     default. Switch to the L-corner with `method='curvature'` if you want it.
+    GCV still tends to *under*-regularize on real noisy traces; nudge it heavier
+    with `alpha_factor=2..4`, or use [`deer_validate()`](#deer_validate) to average
+    over background choices for a smooth consensus $P(r)$ with an uncertainty band.
 
 !!! note "scipy is required"
     DEER analysis needs `scipy` (the `math` extra: `pip install -e .[math]`).
@@ -53,7 +56,7 @@ import atomize.math_modules.deer as deer
 res = deer.deer_invert(t, V, r=None, bg_start=None, bg_end=None,
                        dim=3.0, fit_dim=False, alpha=None, alphas=None,
                        reg_order=2, nu_dd=deer.NU_DD, scan_lcurve=True,
-                       method='gcv', engine='sequential')
+                       method='gcv', engine='sequential', alpha_factor=1.0)
 ```
 
 The full one-call pipeline: background-correct $V(t)$, build the kernel, and
@@ -69,6 +72,12 @@ invert to $P(r)$ by Tikhonov + NNLS. This is what most users want.
 - **`dim`, `fit_dim`** — fractal background dimension (3 = homogeneous 3D); set
   `fit_dim=True` to float it.
 - **`alpha`** — regularization weight. `None` selects it automatically by `method`.
+- **`alpha_factor`** — multiplier applied to the *auto-selected* $\alpha$ (ignored
+  when an explicit `alpha` is given). GCV (and AIC) tend to under-regularize the
+  near-vertical DEER L-curve, leaving noise spikes in $P(r)$; a factor of 2–4
+  reproduces the heavier hand-picked L-corner regularization used to obtain smooth
+  distributions in inter-laboratory ring tests
+  ([Schiemann et al., *JACS* **2021**, 143, 17875](https://doi.org/10.1021/jacs.1c07371)).
 - **`alphas`** — the regularization scan grid (default `np.logspace(-4, 3, 36)`).
 - **`reg_order`** — derivative order of the smoothing operator $L$ (default 2).
 - **`scan_lcurve`** — when `True` (default) the regularization scan is always
@@ -123,7 +132,7 @@ print(f"lambda = {res['lambda']:.3f}, alpha = {res['alpha']:.3g}, peak r = {peak
 res = deer.deer_invert_joint(t, V, r=None, bg_start=None, bg_end=None,
                              dim=3.0, fit_dim=False, alpha=None, alphas=None,
                              reg_order=2, nu_dd=deer.NU_DD, method='gcv',
-                             scan_lcurve=True)
+                             scan_lcurve=True, alpha_factor=1.0)
 ```
 
 DEER inversion with a **joint** (separable-NLLS / variable-projection) fit of the
@@ -159,6 +168,71 @@ converged background.
 `bg_start`/`bg_end` only **seed** the initial background guess here; the joint
 fit uses the whole trace. Returns the same dict as
 [`deer_invert()`](#deer_invert), with `engine='joint'`.
+
+---
+
+## deer_validate() { #deer_validate data-toc-label="deer_validate" }
+
+```python
+val = deer.deer_validate(t, V, r=None, bg_start=None, bg_starts=None,
+                         bg_end=None, dim=3.0, fit_dim=False, alpha=None,
+                         alpha_factor=1.0, reg_order=2, nu_dd=deer.NU_DD,
+                         method='gcv', engine='sequential',
+                         noise=0.0, n_noise=0, seed=0, percentiles=(5, 95))
+```
+
+**Validation by ensemble averaging**, in the style of the DeerAnalysis validation
+tool. The regularization weight is selected **once** on the central trace (honouring
+`alpha` / `alpha_factor`) and then held **fixed**, while the inversion is re-run
+over a sweep of background-start times (and, optionally, added-noise
+realizations). The ensemble of $P(r)$ is collapsed to a **median consensus curve**
+plus a percentile **uncertainty band**.
+
+A single GCV inversion of a noisy DEER trace leaves a spiky comb-like $P(r)$;
+averaging across background choices suppresses those noise-driven spikes and yields
+the smooth, banded distribution familiar from inter-laboratory ring tests
+([Schiemann et al., *JACS* **2021**, 143, 17875](https://doi.org/10.1021/jacs.1c07371),
+Fig. 4). Holding $\alpha$ fixed is both physically correct — validation probes
+*background/noise sensitivity*, not the regularization choice — and what keeps it
+fast (no per-trial L-curve scan).
+
+- **`bg_start`** — centre of the default background-start sweep (µs). `None` uses
+  the trace midpoint.
+- **`bg_starts`** — explicit sweep of background-start times. `None` builds a
+  9-point grid spanning $\pm 7.5\%$ of the trace length around `bg_start`.
+- **`alpha`, `alpha_factor`** — passed to [`deer_invert()`](#deer_invert) for the
+  one-off $\alpha$ selection on the central trace; the result is then fixed.
+- **`noise`, `n_noise`** — when both are positive, each background-start trial is
+  repeated with `n_noise` Gaussian-noise realizations of standard deviation `noise`
+  added to $V$ (estimate `noise` from the trace residual).
+- **`engine`** — `'sequential'` or `'joint'`, as in [`deer_invert()`](#deer_invert).
+- **`percentiles`** — the lower/upper percentiles of the band (default 5–95%).
+
+Returns a dict:
+
+| Key | Description |
+| --- | ----------- |
+| `r` | The distance axis |
+| `P_density` | **Median** $P(r)$ density across the ensemble (the consensus curve — plot this) |
+| `P_mean` | Ensemble-mean density (for reference) |
+| `P_lower`, `P_upper` | The `percentiles` band (shade between these) |
+| `ensemble` | All `n_trials` × `len(r)` trial densities |
+| `n_trials` | Number of successful trials |
+| `bg_starts` | The background-start grid that was swept |
+| `alpha` | The fixed regularization weight |
+| `peak`, `r_mean` | Peak position and first moment of the consensus curve |
+| `base` | The single central inversion (its `form_factor` / `F_fit` / `background` / `l_curve`, for display) |
+
+```python
+val = deer.deer_validate(t, V, r=r, bg_start=1.0, alpha_factor=2.0)
+print(f"peak r = {val['peak']:.2f} nm  over {val['n_trials']} trials")
+# plot the band:  fill_between(val['r'], val['P_lower'], val['P_upper'])
+#         median:  plot(val['r'], val['P_density'])
+```
+
+In the Data Treatment GUI this is the **"Validate (background sweep → P(r) band)"**
+checkbox on the DEER / PDS tab; the distance view then shows the median curve over
+its shaded band.
 
 ---
 
