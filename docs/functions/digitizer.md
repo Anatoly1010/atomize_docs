@@ -89,10 +89,13 @@ data_i, data_q = digitizer_get_curve(100, 2)
 
 # With explicit keyword arguments
 data_i, data_q = digitizer_get_curve(
-    100, 2, integral=False, current_scan=1, total_scan=1)
+    100, 2, live_mode=0, integral=False,
+    current_scan=1, total_scan=1, skip_redundant=False)
 ```
 
 This function starts the data acquisition and [phase cycling](pulse_programmer.md#pulser_acquisition_cycle) the data. The argument `points` indicates the total number of points in the pulse experiment and the argument `phases` corresponds to the total number of phases in the pulse experiment. The data will be phase cycled according to the phase list given in the [`DETECTION` pulse](pulse_programmer.md#pulser_pulse). The details of phase cycling are given in the function [`pulser_acquisition_cycle()`](pulse_programmer.md#pulser_acquisition_cycle). A keyword `integral` allows integrating the data over a given [window](#digitizer_read_settings). The keywords `current_scan` and `total_scan` indicate the current and total number of repetitive scans in the experiment to maximize the efficiency of the Insys FM214x3GDA. The value of the keyword `current_scan` should increase during the experiment.
+
+The keyword `live_mode` controls the accumulation behaviour. In the default mode (`live_mode=0`) every transferred buffer is summed into the running on-board average, so the returned arrays correspond to all the data accumulated so far. In `live_mode=1` the running accumulators are reset on entry and the function returns a snapshot of only the buffers that arrived since the previous call; this is intended for live plotting. The keyword `skip_redundant` affects how repeated packets of the same point are treated: with the default `False` every parsed packet contributes to the running average (correct on-board-averaging semantics), while `True` makes only the first packet of each consecutive run of the same point contribute. If no new buffer has been transferred from the card at the time of execution the function returns `np.nan` (see also [`digitizer_at_exit()`](#digitizer_at_exit)).
 
 ---
 
@@ -428,7 +431,7 @@ digitizer_decimation(2)    # 0.8 ns/point
 digitizer_decimation(4)    # 1.6 ns/point
 ```
 
-This function queries or sets the decimation coefficient for Insys FM214x3GDA. If there is no argument the function will return the decimation coefficient of the digitizer. If there is an argument the specified decimation will be set. It can be used instead of the function [`digitizer_sample_rate()`](#digitizer_sample_rate). The values 1, 2, 4 correspond to 0.4 ns/point, 0.8 ns/point, and 1.6 ns/point. This function should be called before [`pulser_open()`](pulse_programmer.md#pulser_open).
+This function queries or sets the decimation coefficient for Insys FM214x3GDA. If there is no argument the function will return the decimation coefficient of the digitizer. If there is an argument the specified decimation will be set. It can be used instead of the function [`digitizer_sample_rate()`](#digitizer_sample_rate). The values 1, 2, 4 correspond to 0.4 ns/point, 0.8 ns/point, and 1.6 ns/point. The decimation coefficient is also used by the [`digitizer_iq()`](#digitizer_iq) function to build the time axis. This function should be called before [`pulser_open()`](pulse_programmer.md#pulser_open).
 
 **Allowed:** `1`, `2`, `4`
 {: .enum }
@@ -496,3 +499,48 @@ digitizer_at_exit(integral=True)    # -> integrated arrays
 ```
 
 This function is available only for Insys FM214x3GDA and is similar to the [`digitizer_get_curve()`](#digitizer_get_curve-integral) function. The main difference is that this function always return the current accumulated arrays, while [`digitizer_get_curve()`](#digitizer_get_curve-integral) may return `np.nan` if no new buffer has been transferred from the card to the computer at the time of execution.
+
+---
+
+### digitizer_iq(arr_i, arr_q, freq, ph, ph1, ph2, integral=False) { #digitizer_iq data-toc-label="digitizer_iq" }
+
+```python
+# Software down-conversion of the quadrature data
+data_i, data_q = digitizer_iq(data_i, data_q, freq, ph, ph1, ph2)
+
+# With integration over the window
+res_i, res_q = digitizer_iq(
+    data_i, data_q, freq, ph, ph1, ph2, integral=True)
+```
+
+This function performs a software digital down-conversion (IQ demodulation) with phase correction of the quadrature data returned by the [`digitizer_get_curve()`](#digitizer_get_curve-points) function. The arguments `arr_i` and `arr_q` are the in-phase and quadrature arrays (both 1D and 2D arrays are accepted). The complex signal `arr_i + 1j*arr_q` is multiplied by `exp(-1j*(2*pi*freq*t + ph + ph1*t + ph2*t**2))`, where `t` is the time axis built from the current sample rate (`2.5 GHz` divided by the [decimation](#digitizer_decimation) coefficient). The argument `freq` (in MHz) is the down-conversion frequency offset, `ph` is the zero-order (constant) phase correction in radians, while `ph1` and `ph2` are the first- and second-order phase-correction coefficients. The first- and second-order terms are applied only if at least one of them is nonzero.
+
+If the keyword `integral` is `True` and the input arrays are 2D, the corrected data is integrated over the [window](#digitizer_window) and two 1D arrays (`res_i`, `res_q`) are returned; otherwise the corrected in-phase and quadrature arrays are returned. If the input arrays contain `np.nan` (no new data) they are returned unchanged.
+
+!!! note
+    This function is available only for Insys FM214x3GDA.
+
+---
+
+### digitizer_expand_phase_cycling(p_input, *pulse_args) { #digitizer_expand_phase_cycling data-toc-label="digitizer_expand_phase_cycling" }
+
+```python
+# One pulse cycled +x, -x; receiver derived from the detection spec
+result = digitizer_expand_phase_cycling('[x]', '(x)')
+# -> {'pulses': [['+x', '-x']], 'receiver': ['+x', '+y']}
+
+# CYCLOPS-style receiver from coefficients and two cycled pulses
+result = digitizer_expand_phase_cycling([-1, 2], '[x]', '(x)')
+# -> {'pulses': [['+x', '+y', '-x', '-y', '+x', '+y', '-x', '-y'],
+#                ['+x', '+x', '+x', '+x', '-x', '-x', '-x', '-x']],
+#     'receiver': ['+x', '-y', '-x', '+y', '+x', '-y', '-x', '+y']}
+```
+
+This function expands a compact phase-cycling notation into explicit per-pulse phase lists together with the matching receiver (detection) phase cycle. The argument `p_input` specifies the receiver: it is either a phase string/list (used directly as the receiver phase list) or a list/string of coefficients, in which case the receiver phase of each step is computed as the weighted sum of the pulse phase indices (CYCLOPS-style). Each of the `*pulse_args` arguments describes one pulse.
+
+The phase symbols are `'+x'`, `'+y'`, `'-x'`, `'-y'` (the shorthands `+`, `-`, `i`, `-i` are also accepted). A nested `[...]` group expands the enclosed phase into a four-step (quadrature) cycle, a nested `(...)` group into a two-step cycle, and a comma-separated string (e.g. `'+x,-x'`) is treated as an explicit list. The lengths of the individual cycles are combined so that all pulses share a common cycle length.
+
+The function returns a dictionary with two keys: `'pulses'` (a list of phase lists, one per pulse, to be passed to the [`phase_list`](pulse_programmer.md#pulser_pulse) of the corresponding pulse) and `'receiver'` (the phase list of the [`DETECTION` pulse](pulse_programmer.md#pulser_pulse) used to [phase cycle](#digitizer_get_curve-points) the data).
+
+!!! note
+    This function is available only for Insys FM214x3GDA.

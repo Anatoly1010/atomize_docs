@@ -262,6 +262,17 @@ This function should be called with two keyword arguments, namely `name` and `ph
 
 ---
 
+### awg_redefine_amplitude(*, name, amplitude) { #awg_redefine_amplitude data-toc-label="awg_redefine_amplitude" }
+
+```python
+# change amplitude setting of the 'P0' pulse to 50%
+awg_redefine_amplitude(name='P0', amplitude=50)
+```
+
+This function should be called with two keyword arguments, namely `name` and `amplitude`. The first argument specifies the name of the pulse as a string. The second argument defines a new value of the `amplitude` keyword argument of the [`awg_pulse()`](#awg_pulse) as a percentage of the maximum available level. The amplitude should be in the range of 0–100%. Arguments can be either single strings or lists, for example: `name = ['P0', 'P1']`, `amplitude = [50, 100]`. Please note, that the function does not update the AWG card. The [`awg_update()`](#awg_update) function should be called to apply changes. The function has no meaning for the `'Sequence'` card mode. One should redefine all the sequence instead.
+
+---
+
 ### awg_redefine_frequency(*, name, freq) { #awg_redefine_frequency data-toc-label="awg_redefine_frequency" }
 
 ```python
