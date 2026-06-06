@@ -95,7 +95,23 @@ data_i, data_q = digitizer_get_curve(
 
 This function starts the data acquisition and [phase cycling](pulse_programmer.md#pulser_acquisition_cycle) the data. The argument `points` indicates the total number of points in the pulse experiment and the argument `phases` corresponds to the total number of phases in the pulse experiment. The data will be phase cycled according to the phase list given in the [`DETECTION` pulse](pulse_programmer.md#pulser_pulse). The details of phase cycling are given in the function [`pulser_acquisition_cycle()`](pulse_programmer.md#pulser_acquisition_cycle). A keyword `integral` allows integrating the data over a given [window](#digitizer_read_settings). The keywords `current_scan` and `total_scan` indicate the current and total number of repetitive scans in the experiment to maximize the efficiency of the Insys FM214x3GDA. The value of the keyword `current_scan` should increase during the experiment.
 
-The keyword `live_mode` controls the accumulation behaviour. In the default mode (`live_mode=0`) every transferred buffer is summed into the running on-board average, so the returned arrays correspond to all the data accumulated so far. In `live_mode=1` the running accumulators are reset on entry and the function returns a snapshot of only the buffers that arrived since the previous call; this is intended for live plotting. The keyword `skip_redundant` affects how repeated packets of the same point are treated: with the default `False` every parsed packet contributes to the running average (correct on-board-averaging semantics), while `True` makes only the first packet of each consecutive run of the same point contribute. If no new buffer has been transferred from the card at the time of execution the function returns `np.nan` (see also [`digitizer_at_exit()`](#digitizer_at_exit)).
+The keyword `live_mode` controls the accumulation behaviour. In the default mode (`live_mode=0`) every transferred buffer is summed into the running on-board average, so the returned arrays correspond to all the data accumulated so far. In `live_mode=1` the running accumulators are reset on entry and the function returns a snapshot of only the buffers that arrived since the previous call; this is intended for live plotting. The keyword `skip_redundant` affects how repeated packets of the same point are treated: with the default `False` every parsed packet contributes to the running average (correct on-board-averaging semantics), while `True` makes only the first packet of each consecutive run of the same point contribute. If no new buffer has been transferred from the card at the time of execution the function returns `None, None` (see also [`digitizer_at_exit()`](#digitizer_at_exit)).
+
+!!! note "Performance tip"
+    Since the function returns `None, None` when no new buffer has been transferred,
+    guard the returned data with an `is not None` check and only run the
+    (relatively expensive) plotting/processing when fresh data is available:
+
+    ```python
+    a, b = digitizer_get_curve(POINTS, PHASES, current_scan = k, total_scan = SCANS)
+
+    if a is not None:
+        data[0], data[1] = a, b
+        process = general.plot_2d(EXP_NAME, data, ..., pr = process)
+    ```
+
+    Skipping the plot call on empty acquisitions avoids redundant work and keeps
+    the acquisition loop fast.
 
 ---
 
