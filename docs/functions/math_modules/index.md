@@ -82,3 +82,19 @@ distances in nm.
 | [`l_curve(K, F, alphas, L=None, method='gcv')`](deer.md#l_curve) | Regularization scan; α by GCV (default) or Menger L-corner |
 | [`default_r_axis(rmin=1.5, rmax=8.0, n=200)`](deer.md#default_r_axis) | Default distance grid (nm) |
 | [`simulate(t, r, P, …)`](deer.md#simulate) | Forward-simulate a DEER trace from P(r) |
+
+## [Coherence pathways & phase cycling](coherence_pathways.md)
+
+`import atomize.math_modules.coherence_pathways as coh`
+
+Pure-Python (no scipy) bookkeeping for pulse-EPR phase cycles: expand short
+phase-cycle notation, then enumerate every coherence transfer pathway and see
+which the cycle **keeps** vs **phases out**, where each surviving echo lands, and
+which FIDs survive. Selection rule, not amplitudes (Stoll 2008; Prisner 2016).
+
+| Function | Description |
+| -------- | ----------- |
+| [`expand_phase_cycling(recv, *pulse_phases)`](coherence_pathways.md#expand_phase_cycling) | Expand short notation `(x)`/`[x]`/lists/coeffs into per-step pulse + receiver phases |
+| [`analyze_pathways(recv, pulse_phases, positions, det_pos)`](coherence_pathways.md#analyze_pathways) | Enumerate pathways; classify kept/suppressed, echo positions, FIDs |
+| [`pathway_report(recv, pulse_phases, positions, det_pos)`](coherence_pathways.md#pathway_report) | Ready-to-print summary table of the above |
+| [`positions_from_taus(taus, base=0.0, grid=None)`](coherence_pathways.md#positions_from_taus) | Cumulative pulse positions from inter-pulse delays (optional grid snap) |
