@@ -98,3 +98,21 @@ which FIDs survive. Selection rule, not amplitudes (Stoll 2008; Prisner 2016).
 | [`analyze_pathways(recv, pulse_phases, positions, det_pos)`](coherence_pathways.md#analyze_pathways) | Enumerate pathways; classify kept/suppressed, echo positions, FIDs |
 | [`pathway_report(recv, pulse_phases, positions, det_pos)`](coherence_pathways.md#pathway_report) | Ready-to-print summary table of the above |
 | [`positions_from_taus(taus, base=0.0, grid=None)`](coherence_pathways.md#positions_from_taus) | Cumulative pulse positions from inter-pulse delays (optional grid snap) |
+
+## [Pulse excitation profiles](pulse_excitation.md)
+
+`import atomize.math_modules.pulse_excitation as pe`
+
+Excitation/inversion profiles of shaped pulses (rectangular, gaussian, sinc,
+sine, WURST, sech/tanh) across resonance offset, by full Bloch/propagator spin
+dynamics of a single S=1/2 — the EasySpin `exciteprofile` approach, correct for
+adiabatic pulses, not just the FFT approximation. Pure NumPy (no scipy).
+Frequencies/offsets in GHz, times in ns; shape params in MHz.
+
+| Function | Description |
+| -------- | ----------- |
+| [`excitation_profile(shape, tp, nu1, offsets, params, …)`](pulse_excitation.md#excitation_profile) | Single-pulse Mx/My/Mz vs offset from an initial state |
+| [`waveform(shape, t, tp, params)`](pulse_excitation.md#waveform) | Amplitude envelope + instantaneous frequency of a shape |
+| [`flip_angle(shape, tp, nu1, params, dt=0.5)`](pulse_excitation.md#flip_angle) | On-resonance flip angle (pulse area) |
+| [`propagate_pulse(M, shape, tp, nu1, offsets, params, …)`](pulse_excitation.md#propagate_pulse) | Apply one pulse to a Bloch-vector array (chain for sequences) |
+| [`free_evolution(M, offsets, tau)`](pulse_excitation.md#free_evolution) | Free precession for `tau` ns (z-rotation by offset) |
