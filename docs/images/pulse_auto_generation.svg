@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   viewBox="0 0 820 430"
+   width="820"
+   height="430"
+   font-family="Segoe UI, Helvetica, Arial, sans-serif"
+   version="1.1"
+   id="svg72"
+   sodipodi:docname="pulse_auto_generation.svg"
+   inkscape:version="0.92.1 r15371">
+  <metadata
+     id="metadata76">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="2560"
+     inkscape:window-height="1377"
+     id="namedview74"
+     showgrid="false"
+     inkscape:zoom="1.979899"
+     inkscape:cx="497.29928"
+     inkscape:cy="165.69114"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg72" />
+  <defs
+     id="defs8">
+    <marker
+       id="arrEnd"
+       markerWidth="9"
+       markerHeight="9"
+       refX="7"
+       refY="4"
+       orient="auto">
+      <path
+         d="M0,0 L8,4 L0,8 Z"
+         fill="#555"
+         id="path2" />
+    </marker>
+    <marker
+       id="arrStart"
+       markerWidth="9"
+       markerHeight="9"
+       refX="1"
+       refY="4"
+       orient="auto">
+      <path
+         d="M8,0 L0,4 L8,8 Z"
+         fill="#555"
+         id="path5" />
+    </marker>
+  </defs>
+  <line
+     x1="350"
+     y1="304"
+     x2="350"
+     y2="360"
+     id="line48"
+     style="stroke:#c9ccd9;stroke-width:1;stroke-dasharray:3, 3" />
+  <line
+     x1="210"
+     y1="138.03572"
+     x2="210"
+     y2="280"
+     id="line46"
+     style="stroke:#c9ccd9;stroke-width:1.00699091;stroke-dasharray:3.02097261, 3.02097261" />
+  <!-- title -->
+  <text
+     x="410"
+     y="22"
+     text-anchor="middle"
+     font-size="16"
+     font-weight="bold"
+     fill="#222"
+     id="text10">Automatic pulse generation from a rectangular MW pulse</text>
+  <text
+     x="410"
+     y="38"
+     text-anchor="middle"
+     font-size="11"
+     fill="#888"
+     id="text12">schematic, not to scale</text>
+  <!-- baselines -->
+  <line
+     x1="120"
+     y1="114"
+     x2="660"
+     y2="114"
+     id="line14"
+     style="stroke:#cfcfcf;stroke-width:1" />
+  <line
+     x1="120"
+     y1="196"
+     x2="660"
+     y2="196"
+     id="line16"
+     style="stroke:#cfcfcf;stroke-width:1" />
+  <line
+     x1="120"
+     y1="278"
+     x2="660"
+     y2="278"
+     id="line18"
+     style="stroke:#cfcfcf;stroke-width:1" />
+  <line
+     x1="120"
+     y1="360"
+     x2="660"
+     y2="360"
+     id="line20"
+     style="stroke:#cfcfcf;stroke-width:1" />
+  <!-- vertical guides: MW start (380) and MW end (560) -->
+  <line
+     x1="380"
+     y1="70"
+     x2="380"
+     y2="380"
+     id="line22"
+     style="stroke:#9aa0b5;stroke-width:1;stroke-dasharray:4, 3" />
+  <line
+     x1="560"
+     y1="70"
+     x2="560"
+     y2="380"
+     id="line24"
+     style="stroke:#9aa0b5;stroke-width:1;stroke-dasharray:4, 3" />
+  <text
+     x="380"
+     y="66"
+     font-size="11"
+     id="text26"
+     style="font-size:11px;text-anchor:middle;fill:#666666">MW start</text>
+  <text
+     x="560"
+     y="66"
+     font-size="11"
+     id="text28"
+     style="font-size:11px;text-anchor:middle;fill:#666666">MW end</text>
+  <!-- lane labels -->
+  <text
+     x="110"
+     y="98"
+     font-size="13"
+     font-weight="bold"
+     id="text30"
+     style="font-weight:bold;font-size:13px;text-anchor:end;fill:#333333">MW</text>
+  <text
+     x="110"
+     y="180"
+     font-size="13"
+     font-weight="bold"
+     id="text32"
+     style="font-weight:bold;font-size:13px;text-anchor:end;fill:#333333">AMP_ON</text>
+  <text
+     x="110"
+     y="262"
+     font-size="13"
+     font-weight="bold"
+     id="text34"
+     style="font-weight:bold;font-size:13px;text-anchor:end;fill:#333333">LNA_PROTECT</text>
+  <text
+     x="110"
+     y="344"
+     font-size="13"
+     font-weight="bold"
+     id="text36"
+     style="font-weight:bold;font-size:13px;text-anchor:end;fill:#333333">±x / ±y</text>
+  <!-- MW pulse (reference): 380 .. 560 -->
+  <rect
+     x="380"
+     y="80"
+     width="180"
+     height="34"
+     rx="2"
+     id="rect38"
+     style="fill:#3949ab;stroke:#283593;stroke-width:1.5" />
+  <!-- AMP_ON: start - 170 .. end - 60  =>  210 .. 500 -->
+  <rect
+     x="210"
+     y="162"
+     width="290"
+     height="34"
+     rx="2"
+     id="rect40"
+     style="fill:#f0b429;stroke:#c79214;stroke-width:1.5" />
+  <!-- LNA_PROTECT: start - 170 .. end + 40  =>  210 .. 600 -->
+  <rect
+     x="210"
+     y="244"
+     width="390"
+     height="34"
+     rx="2"
+     id="rect42"
+     style="fill:#e05a4c;stroke:#b23a2e;stroke-width:1.5" />
+  <!-- Phase (+/-x, +/-y): start - 30 .. end + 0  =>  350 .. 560 -->
+  <rect
+     x="350"
+     y="326"
+     width="210"
+     height="34"
+     rx="2"
+     id="rect44"
+     style="fill:#2fa37a;stroke:#1f7d5c;stroke-width:1.5" />
+  <!-- lead guide at x=210 (AMP_ON / LNA_PROTECT start) -->
+  <!-- phase start guide at x=350 -->
+  <!-- AMP_ON / LNA_PROTECT lead measure: 210 -> 380 -->
+  <line
+     x1="210.88031"
+     y1="141.00014"
+     x2="378.74466"
+     y2="141.00014"
+     id="line50"
+     style="stroke:#555555;stroke-width:0.99369889;marker-start:url(#arrStart);marker-end:url(#arrEnd)" />
+  <text
+     x="295"
+     y="135.00014"
+     font-size="11"
+     id="text52"
+     style="font-size:11px;text-anchor:middle;fill:#444444">switch_amp_delay = switch_protect_delay = 170 ns</text>
+  <!-- amp_delay (negative): 560 -> 500 -->
+  <line
+     x1="560"
+     y1="141.00014"
+     x2="500"
+     y2="141.00014"
+     id="line54"
+     style="stroke:#555555;stroke-width:1;marker-end:url(#arrEnd)" />
+  <text
+     x="584"
+     y="145.00014"
+     font-size="11"
+     id="text56"
+     style="font-size:11px;text-anchor:start;fill:#444444">amp_delay = −60 ns</text>
+  <!-- protect_delay: 560 -> 600 -->
+  <line
+     x1="560"
+     y1="226"
+     x2="600"
+     y2="226"
+     id="line58"
+     style="stroke:#555555;stroke-width:1;marker-end:url(#arrEnd)" />
+  <text
+     x="606"
+     y="230"
+     font-size="11"
+     id="text60"
+     style="font-size:11px;text-anchor:start;fill:#444444">protect_delay = 40 ns</text>
+  <!-- phase lead: 350 -> 380 -->
+  <line
+     x1="350"
+     y1="310"
+     x2="379.13596"
+     y2="310"
+     id="line62"
+     style="stroke:#555555;stroke-width:0.98549384;marker-end:url(#arrEnd)" />
+  <text
+     x="344"
+     y="314"
+     font-size="11"
+     id="text64"
+     style="font-size:11px;text-anchor:end;fill:#444444">switch_phase_delay = 30 ns</text>
+  <!-- phase_delay note -->
+  <text
+     x="566"
+     y="320"
+     font-size="11"
+     id="text66"
+     style="font-size:11px;text-anchor:start;fill:#444444">phase_delay = 0 ns</text>
+  <!-- time axis -->
+  <line
+     x1="120"
+     y1="408"
+     x2="690"
+     y2="408"
+     id="line68"
+     style="stroke:#555555;stroke-width:1.20000005;marker-end:url(#arrEnd)" />
+  <text
+     x="700"
+     y="412"
+     font-size="12"
+     id="text70"
+     style="font-size:12px;text-anchor:start;fill:#444444">time</text>
+</svg>

@@ -119,4 +119,5 @@ nav:
           - Cryomech control center: projects/cryomech.md
       - Examples:
           - CW EPR: script_examples/cw_epr.md
+          - Pulsed EPR: script_examples/pulsed_epr.md
   - Contributors: contributors.md
