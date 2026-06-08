@@ -6,9 +6,17 @@
 
 The simplest way is to install Atomize from PyPI:
 
-```bash
-pip3 install atomize-py
-```
+=== "Linux / macOS"
+
+    ```bash
+    pip3 install atomize-py
+    ```
+
+=== "Windows"
+
+    ```powershell
+    pip install atomize-py
+    ```
 
 ### From source (editable install)
 
@@ -16,11 +24,21 @@ To get the latest version, hack on the code, or write your own instrument
 modules, clone the repository and install it in *editable* mode (`-e`), so
 that changes to the source take effect without reinstalling:
 
-```bash
-git clone https://github.com/Anatoly1010/Atomize.git
-cd Atomize
-pip3 install -e .
-```
+=== "Linux / macOS"
+
+    ```bash
+    git clone https://github.com/Anatoly1010/Atomize.git
+    cd Atomize
+    pip3 install -e .
+    ```
+
+=== "Windows"
+
+    ```powershell
+    git clone https://github.com/Anatoly1010/Atomize.git
+    cd Atomize
+    pip install -e .
+    ```
 
 ### Optional dependencies (extras)
 
@@ -34,6 +52,9 @@ These work with both the PyPI and the source installs (replace `.` with
 | `[test]` | `pip3 install -e .[test]` | `pytest` and the test dependencies for running the suite   |
 
 You can combine extras: `pip3 install -e .[math,test]`.
+
+!!! note
+    On Windows use `pip` instead of `pip3` in the commands above.
 
 ### Isolated environment (recommended)
 
@@ -62,11 +83,15 @@ environment.
 
 ### Running
 
-Once installed, run the GUI from the terminal:
+Once installed, run the GUI from the terminal (the same command on Linux,
+macOS, and Windows):
 
 ```bash
 atomize
 ```
+
+If you installed Atomize into an isolated environment, activate it first (see
+[Isolated environment](#isolated-environment-recommended) above).
 
 ## General Configuration
 
