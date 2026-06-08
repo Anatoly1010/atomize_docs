@@ -116,6 +116,7 @@ nav:
           - X-band pulsed EPR: projects/xband.md
           - Q-band pulsed EPR: projects/qband.md
           - EPR endstation: projects/endstation.md
+          - Cryomech control center: projects/cryomech.md
       - Examples:
           - CW EPR: script_examples/cw_epr.md
   - Contributors: contributors.md
