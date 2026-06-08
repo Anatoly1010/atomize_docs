@@ -2,13 +2,67 @@
 
 ## Installation
 
-Atomize can be installed from PyPi:
+### From PyPI
+
+The simplest way is to install Atomize from PyPI:
 
 ```bash
 pip3 install atomize-py
 ```
 
-Run GUI from terminal:
+### From source (editable install)
+
+To get the latest version, hack on the code, or write your own instrument
+modules, clone the repository and install it in *editable* mode (`-e`), so
+that changes to the source take effect without reinstalling:
+
+```bash
+git clone https://github.com/Anatoly1010/Atomize.git
+cd Atomize
+pip3 install -e .
+```
+
+### Optional dependencies (extras)
+
+Some features need extra packages, installed via "extras" in square brackets.
+These work with both the PyPI and the source installs (replace `.` with
+`atomize-py` for a PyPI install, e.g. `pip3 install atomize-py[math]`):
+
+| Extra    | Command                   | Adds                                                       |
+| -------- | ------------------------- | --------------------------------------------------------- |
+| `[math]` | `pip3 install -e .[math]` | `scipy` for fitting, signal processing, and DEER analysis |
+| `[test]` | `pip3 install -e .[test]` | `pytest` and the test dependencies for running the suite   |
+
+You can combine extras: `pip3 install -e .[math,test]`.
+
+### Isolated environment (recommended)
+
+To avoid conflicts with system-wide packages, install Atomize into a virtual
+environment:
+
+=== "Linux / macOS"
+
+    ```bash
+    python3 -m venv atomize-env
+    source atomize-env/bin/activate
+    pip3 install atomize-py        # or: pip3 install -e . from a source checkout
+    ```
+
+=== "Windows"
+
+    ```powershell
+    python -m venv atomize-env
+    atomize-env\Scripts\activate
+    pip install atomize-py         # or: pip install -e . from a source checkout
+    ```
+
+The environment must be activated each time before launching Atomize. As an
+alternative, [conda](https://docs.conda.io/) can be used to manage the isolated
+environment.
+
+### Running
+
+Once installed, run the GUI from the terminal:
 
 ```bash
 atomize
