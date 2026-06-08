@@ -52,7 +52,7 @@ A Telegram bot provides remote monitoring and control from a phone. After author
 - switch the compressor between **Auto On/Off**, **Auto Continuous**, and **Off**;
 - set the TC **setpoint** (`sp50` → 50 K) and **heater range** (`sh10` / `sh1` / `shoff`).
 
-![Cryomech Telegram bot](../images/cryomech_bot.png)
+![Cryomech Telegram bot](../images/cryomech_bot.png){ width="350" }
 
 Commands sent from the bot are handed to the control window through a small file-based handshake, so the bot never talks to the instruments directly — the control window remains the single owner of all device I/O.
 
