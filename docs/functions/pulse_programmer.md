@@ -121,7 +121,7 @@ The symbol at the index `J` of the `acq_cycle` array means that the correspondin
 
 The output of the function is the real and imaginary parts of the `answer` array after complete cycle of mathematical transformations. These can be both 1D and 2D arrays, depending on the shape of the input data arrays.
 
-Although this function is available for Insys FM214x3GDA, it is better to use a modified version of [`digitizer_get_curve()`](digitizer.md#digitizer_get_curve-points). In this case acquisition phases should be given directly in the phase list key argument of the [`DETECTION` pulse](#pulser_pulse).
+Although this function is available for Insys FM214x3GDA, it is better to use a modified version of [`digitizer_get_curve()`](digitizer.md#digitizer_get_curve-points). In this case acquisition phases should be given directly in the phase list key argument of the [`DETECTION` pulse](#pulser_pulse). For Insys FM214x3GDA the function has a modified signature `pulser_acquisition_cycle(data1, data2, points, phases, adc_window, acq_cycle=['+x'], lo=None, hi=None)` and is normally called internally by [`digitizer_get_curve()`](digitizer.md#digitizer_get_curve-points): the data is taken from the running on-board accumulators (the legacy `data1` and `data2` arguments are accepted but ignored), and the keywords `lo` and `hi` indicate the range of points to recompute. The factor table above applies to the `acq_cycle` argument in the same way.
 
 ---
 

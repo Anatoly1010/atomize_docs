@@ -109,6 +109,8 @@ nav:
       - Signal processing: functions/math_modules/signal_processing.md
       - FFT / phase correction: functions/math_modules/fft.md
       - DEER / PDS analysis: functions/math_modules/deer.md
+      - Coherence pathways & phase cycling: functions/math_modules/coherence_pathways.md
+      - Pulse excitation profiles: functions/math_modules/pulse_excitation.md
   - Projects:
       - Spectrometers:
           - X-band pulsed EPR: projects/xband.md
