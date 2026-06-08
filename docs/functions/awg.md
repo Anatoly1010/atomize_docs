@@ -577,6 +577,48 @@ This is a special function for clearing pulse array `{self.pulse_array}` and oth
 
 ---
 
+### awg_correction(**kargs) { #awg_correction data-toc-label="awg_correction" }
+
+```python
+# measured resonator profile, applied only to the high-amplitude (pi) pulses
+awg_correction(only_pi_half = 'True', coef_array = [bl, a1, x1, w1, a2, x2, w2, a3, x3, w3], \
+               low_level = 16, limit = 23)
+
+# ideal RLC resonator, amplitude + phase, applied to every swept pulse
+awg_correction(only_pi_half = 'False', model = 'ideal', f0 = 9700, q_factor = 88, \
+               phase_correction = 'True', low_level = 16, limit = 23)
+```
+
+This function (Insys FM214x3GDA) enables resonator-profile predistortion of the frequency-swept pulses (`'WURST'` and `'SECH/TANH'`, see [`awg_pulse()`](#awg_pulse)) so that the effective excitation B<sub>1</sub> is equalized across the swept band. Each sample of a swept pulse is mapped to its instantaneous chirp frequency (flipped high-frequency-first for an `LO − RF` bridge) and its amplitude — and optionally phase — is corrected accordingly. The correction has no effect on non-swept pulses.
+
+There are two correction models:
+
+- **`model = 'measured'`** (default) — the amplitude is corrected with the measured resonator magnitude profile, given as a triple-Lorentzian fit in `coef_array = [bl, a1, x1, w1, a2, x2, w2, a3, x3, w3]` (the same coefficients written to `correction.param` by the resonator-tuning tool). No phase correction is applied (the magnitude fit carries no phase information).
+- **`model = 'ideal'`** — the amplitude (`1/|H|`) and, when `phase_correction = 'True'`, the phase are corrected with an ideal RLC resonator transfer function `H = 1 / (1 + i Q (ν/f0 − f0/ν))`, where `f0` is the resonator centre frequency in MHz and `q_factor` the loaded Q. The phase term is `+angle(H)`, the sign for an `LO − RF` (lower-sideband) bridge; verify it once on the bench for your setup.
+
+The minimum effective B<sub>1</sub> is clamped by the ratio `low_level / limit` (both in MHz), which also caps the amplitude boost applied to the band edges. `only_pi_half = 'True'` restricts the correction to the high-amplitude (pi) pulses (those with `amplitude` coefficient `> 1` in [`awg_pulse()`](#awg_pulse)); `only_pi_half = 'False'` applies it to every swept pulse.
+
+!!! note
+    The amplitude clamp equalizes the band only when the sweep is centred on the resonator (i.e. the microwave sweep is symmetric about `f0`). A sweep that sits entirely off resonance is clamped to a flat correction.
+
+**Allowed model:** `'measured'`, `'ideal'`
+{: .enum }
+
+**Default (Insys FM214x3GDA):** `f0 = 9700 MHz`, `q_factor = 88`, `low_level = 16`, `limit = 23`
+{: .enum }
+
+---
+
+### awg_correction_off() { #awg_correction_off data-toc-label="awg_correction_off" }
+
+```python
+awg_correction_off()    # disable resonator-profile correction
+```
+
+This function disables the resonator-profile correction set by [`awg_correction()`](#awg_correction); subsequent swept pulses are sent as programmed. The function is usually used in GUI applications that use the device module.
+
+---
+
 ### awg_test_flag(flag) { #awg_test_flag data-toc-label="awg_test_flag" }
 
 ```python

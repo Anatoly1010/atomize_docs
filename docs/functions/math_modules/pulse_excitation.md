@@ -41,8 +41,10 @@ axis** at once, so a microsecond WURST profile computes in well under 0.1 s.
 
 !!! warning "What is and isn't modelled"
     A single isolated $S=1/2$, coherent dynamics only — **no relaxation**
-    (T<sub>1</sub>/T<sub>2</sub>), no B<sub>1</sub> inhomogeneity or resonator
-    bandwidth, no coupled/nuclear spins. The on-resonance flip angle from
+    (T<sub>1</sub>/T<sub>2</sub>), no B<sub>1</sub> inhomogeneity, no
+    coupled/nuclear spins. A finite **resonator bandwidth** *can* be included via
+    the optional `resonator` argument (see
+    [Non-ideal pulses](#resonator)). The on-resonance flip angle from
     [`flip_angle`](#flip_angle) is the pulse *area*; for swept/adiabatic pulses
     the effective rotation is offset-dependent and not a single number.
 
@@ -71,7 +73,7 @@ frequency (MHz), which shifts the whole excitation band along the offset axis
     AWG builds the waveform; `b` is therefore tied to that sample rate. The other
     shapes are sample-rate-independent.
 
-## `excitation_profile(shape, tp, nu1, offsets, params, dt=0.5, phi0=0.0, init=(0,0,1))` { #excitation_profile }
+## `excitation_profile(shape, tp, nu1, offsets, params, dt=0.5, phi0=0.0, init=(0,0,1), resonator=None)` { #excitation_profile }
 
 The excitation/inversion profile of a **single** pulse from an initial state
 (default equilibrium $+z$).
@@ -86,6 +88,7 @@ The excitation/inversion profile of a **single** pulse from an initial state
 | `dt` | propagation step (ns); smaller = more accurate / slower |
 | `phi0` | constant pulse phase (rad) — x/y/… |
 | `init` | initial magnetization `(Mx, My, Mz)` |
+| `resonator` | optional dict applying a finite-bandwidth resonator to the pulse, see [Non-ideal pulses](#resonator); `None` = ideal transmitter |
 
 Returns `Mx, My, Mz` arrays over `offsets`. `Mz` is the inversion profile;
 `hypot(Mx, My)` is the transverse excitation.
@@ -141,10 +144,12 @@ general.message('flip = %.1f deg' % np.degrees(fa))
 Two lower-level helpers let you chain pulses for multi-pulse experiments.
 `excitation_profile` is just `propagate_pulse` on a tiled equilibrium state.
 
-### `propagate_pulse(M, shape, tp, nu1, offsets, params, dt=0.5, phi0=0.0)` { #propagate_pulse }
+### `propagate_pulse(M, shape, tp, nu1, offsets, params, dt=0.5, phi0=0.0, resonator=None)` { #propagate_pulse }
 
 Apply one pulse to an existing Bloch-vector array `M` of shape
-`(len(offsets), 3)`; returns the new array (input not mutated).
+`(len(offsets), 3)`; returns the new array (input not mutated). The optional
+`resonator` dict ([Non-ideal pulses](#resonator)) filters the pulse through a
+finite-bandwidth resonator before it acts on `M`.
 
 ### `free_evolution(M, offsets, tau)` { #free_evolution }
 
@@ -170,3 +175,70 @@ general.plot_1d('echo profile', offsets*1e3, np.hypot(M[:, 0], M[:, 1]),
     during the delay, add the absolute-time term yourself:
     `phi0 += 2*pi*nu0_k*(t_start_k)` (in GHz·ns). This only matters when a later
     pulse sits at a **non-zero carrier** (e.g. a DEER pump).
+
+## Non-ideal pulses: resonator transfer function { #resonator }
+
+A real resonator has a finite bandwidth, so the spins do not see the programmed
+waveform but its filtered version. Pass a `resonator` dict to
+[`excitation_profile`](#excitation_profile) or [`propagate_pulse`](#propagate_pulse)
+to model this with an ideal RLC transfer function
+
+$$ H(\nu) = \frac{1}{1 + iQ\left(\dfrac{\nu}{\nu_0} - \dfrac{\nu_0}{\nu}\right)}, $$
+
+the same form the Insys AWG hardware correction uses (see
+[`awg_correction()`](../awg.md#awg_correction)). `|H|` peaks at the resonator
+centre $\nu_0$ and the power bandwidth (FWHM) is $\nu_0/Q$.
+
+| Key | Description |
+| --- | ----------- |
+| `nu0` | resonator centre frequency (**GHz**, absolute) |
+| `Q` | loaded quality factor (power bandwidth $=\nu_0/Q$) |
+| `detuning` | resonator centre minus carrier (**GHz**); `0` = carrier on resonance |
+| `mode` | `'simulate'` (multiply by $H$ — the distorted, uncorrected pulse) or `'compensate'` (multiply by $1/H$ — the pre-distorted pulse the hardware sends) |
+| `ringdown` | `simulate` only: ns of post-pulse ring-down to propagate (see below); `0` = none |
+
+```python
+offsets = np.linspace(-0.25, 0.25, 401)               # GHz
+res = {'nu0': 9.7, 'Q': 88, 'detuning': 0.0, 'mode': 'simulate'}
+# uncorrected WURST through the resonator
+Mx, My, Mz = pe.excitation_profile('WURST', tp=200, nu1=0.031, offsets=offsets,
+                                   params={'n': 20, 'bw': 200, 'center': 0},
+                                   resonator=res)
+# the same pulse pre-distorted (compensate) — recovers the ideal profile
+res_c = dict(res, mode='compensate')
+Mxc, Myc, Mzc = pe.excitation_profile('WURST', tp=200, nu1=0.031, offsets=offsets,
+                                      params={'n': 20, 'bw': 200, 'center': 0},
+                                      resonator=res_c)
+```
+
+The filtering is done in the frequency domain (zero-padded FFT, so a rectangular
+pulse's edges ring up/down rather than wrapping around). In `compensate` mode the
+$1/H$ boost is capped (far off resonance $H\to0$), mirroring the hardware clamp.
+
+### `resonator_transfer(freqs, nu0, Q, detuning=0.0)` { #resonator_transfer }
+
+The complex transfer function $H$ evaluated at rotating-frame frequencies `freqs`
+(**GHz**). A component at `f` sits at the absolute frequency
+`nu0 - detuning + f`.
+
+### `apply_resonator(w, dt, nu0, Q, detuning=0.0, mode='simulate', max_gain=10.0, ringdown=0.0)` { #apply_resonator }
+
+Filter a complex baseband waveform `w` (sampled every `dt` ns) through the
+resonator and return the distorted waveform. `max_gain` caps the `compensate`
+boost. This is the low-level routine the `resonator` dict drives.
+
+### `ringdown_time(nu0, Q)` { #ringdown_time }
+
+The resonator amplitude ring-down time constant $\tau = Q/(\pi\nu_0)$ (ns with
+`nu0` in GHz); the stored field decays as $e^{-t/\tau}$. With
+`mode='simulate'`, setting `ringdown` (e.g. $5\tau$) appends the post-pulse
+ring-down so the spins keep nutating under the decaying field — this restores the
+flip angle a finite-bandwidth resonator otherwise steals from a short hard pulse.
+
+```python
+res = {'nu0': 9.7, 'Q': 88, 'detuning': 0.0, 'mode': 'simulate',
+       'ringdown': 5 * pe.ringdown_time(9.7, 88)}      # ~14 ns tail
+Mx, My, Mz = pe.excitation_profile('rectangular', tp=8, nu1=1/(4*8),
+                                   offsets=offsets, params={'center': 0},
+                                   resonator=res)
+```
