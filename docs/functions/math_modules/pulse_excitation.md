@@ -46,7 +46,9 @@ axis** at once, so a microsecond WURST profile computes in well under 0.1 s.
     the optional `resonator` argument (see
     [Non-ideal pulses](#resonator)). The on-resonance flip angle from
     [`flip_angle`](#flip_angle) is the pulse *area*; for swept/adiabatic pulses
-    the effective rotation is offset-dependent and not a single number.
+    the effective rotation is offset-dependent and not a single number — use
+    [`adiabaticity_profile`](#adiabaticity_profile) to check whether a chirped
+    pulse actually inverts across its band.
 
 ## Pulse shapes
 
@@ -137,6 +139,42 @@ Exact for non-swept shapes; the nominal area for chirp/adiabatic pulses.
 ```python
 fa = pe.flip_angle('gaussian', tp=40, nu1=0.02, params={'sigma': 10})
 general.message('flip = %.1f deg' % np.degrees(fa))
+```
+
+## `adiabaticity_profile(shape, tp, nu1, offsets, params, dt=0.5, phi0=0.0, resonator=None)` { #adiabaticity_profile }
+
+Adiabaticity factor $Q(\Delta\omega)$ of a **frequency-swept** pulse (WURST,
+sech/tanh) versus resonance offset. In the frame following the instantaneous RF
+frequency the effective field has transverse part $\omega_1(t)=2\pi\nu_1 a(t)$
+and longitudinal part $\Delta\Omega(t)=2\pi[\Delta\omega-\nu_\text{inst}(t)]$;
+adiabatic passage needs the field to reorient slowly compared with its own
+magnitude,
+
+$$ Q=\frac{|\Omega_\text{eff}|}{|\dot\alpha|},\qquad \alpha=\operatorname{atan2}(\omega_1,\Delta\Omega), $$
+
+evaluated at each spin's resonance crossing ($\Delta\Omega=0$). $Q\gg1$ (rule of
+thumb $\gtrsim5$) means the spin is cleanly inverted; at the sweep centre this is
+the textbook $Q=2\pi\nu_1^2\,t_p/\Delta\nu$. Passing a `resonator` dict
+([Non-ideal pulses](#resonator)) filters the waveform first, so a `compensate`d
+pulse can be compared with a `simulate`d (distorted) one to see whether the AWG
+pre-distortion restores adiabaticity at the band edges (it counts the
+resonator's amplitude roll-off across the sweep — the dominant effect on
+adiabaticity — while keeping the programmed sweep as the instantaneous
+frequency, which avoids the phase-derivative spikes a filtered waveform would
+otherwise produce). Returns $Q$ for every offset. **Read it only inside the
+swept band** ($|\Delta\omega - \text{centre}| < \Delta\nu/2$): there $Q$ is flat
+in the interior and dips toward zero at the sweep edges (where the crossing
+falls on the near-zero tail of the envelope — the genuine reason adiabatic
+inversion rolls off there). Outside the band a spin is never swept through, so
+the returned $Q$ is large but meaningless (it does *not* imply inversion). Only
+meaningful for swept shapes.
+
+```python
+offsets = np.linspace(-0.15, 0.15, 401)                 # GHz
+params = {'n': 20, 'bw': 200, 'center': 0}              # 200 MHz WURST sweep
+Q = pe.adiabaticity_profile('WURST', tp=400, nu1=0.03, offsets=offsets, params=params)
+general.plot_1d('adiabaticity', offsets*1e3, Q, xname='Offset', xscale='MHz',
+                yname='Q', yscale='')                   # log-y; Q >~ 5 inverts
 ```
 
 ## Building sequences
