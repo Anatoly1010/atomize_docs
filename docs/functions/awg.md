@@ -7,12 +7,12 @@
 | **Spectrum M4I 6631 X8** | 07/2021  | PCIe       |
 | **Insys FM214x3GDA**     | 03/2025  | PCIe       |
 
-The original [library](https://spectrum-instrumentation.com/en/m4i6631-x8) for Spectrum M4I 6631 X8 was written by Spectrum. The library header files (`pyspcm.py`, `spcm_tools.py`) should be added to the path directly in the module file:
+The original [library](https://spectrum-instrumentation.com/en/m4i6631-x8) for Spectrum M4I 6631 X8 was written by Spectrum. The path to the library header files (`pyspcm.py`, `spcm_tools.py`) and the card device node are read from the device configuration file (the `[SPECIFIC]` section, keys `header_dir` and `device`), so they can be set per machine without editing the module:
 
-```python
-sys.path.append('/path/to/python/header/of/Spectrum/library')
-from pyspcm import *
-from spcm_tools import *
+```ini
+[SPECIFIC]
+header_dir = /path/to/python/header/of/Spectrum/library
+device = /dev/spcm0
 ```
 
 The [Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda) device is available via `ctypes`. The original library can be found [here](https://github.com/Anatoly1010/Atomize_ITC/tree/master/libs).

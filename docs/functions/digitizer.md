@@ -9,12 +9,12 @@
 | **[Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda)**               | 03/2025 | [Atomize_ITC libs](https://github.com/Anatoly1010/Atomize_ITC/tree/master/libs)               |
 | **L card L-502**                                                                | 03/2022 | [L card](https://www.lcard.ru/products/boards/l-502?qt-ltab=6#qt-ltab)                        |
 
-The original [library](https://spectrum-instrumentation.com/en/m4i4450-x8) was written by Spectrum. The library header files (`pyspcm.py`, `spcm_tools.py`) should be added to the path directly in the module file:
+The original [library](https://spectrum-instrumentation.com/en/m4i4450-x8) was written by Spectrum. The path to the library header files (`pyspcm.py`, `spcm_tools.py`) and the card device node are read from the device configuration file (the `[SPECIFIC]` section, keys `header_dir` and `device`), so they can be set per machine without editing the module:
 
-```python
-sys.path.append('/path/to/python/header/of/Spectrum/library')
-from pyspcm import *
-from spcm_tools import *
+```ini
+[SPECIFIC]
+header_dir = /path/to/python/header/of/Spectrum/library
+device = /dev/spcm0
 ```
 
 The Insys device is available via `ctypes`. The original library can be found [here](https://github.com/Anatoly1010/Atomize_ITC/tree/master/libs).
@@ -529,12 +529,12 @@ res_i, res_q = digitizer_iq(
     data_i, data_q, freq, ph, ph1, ph2, integral=True)
 ```
 
-This function performs a software digital down-conversion (IQ demodulation) with phase correction of the quadrature data returned by the [`digitizer_get_curve()`](#digitizer_get_curve-points) function. The arguments `arr_i` and `arr_q` are the in-phase and quadrature arrays (both 1D and 2D arrays are accepted). The complex signal `arr_i + 1j*arr_q` is multiplied by `exp(-1j*(2*pi*freq*t + ph + ph1*t + ph2*t**2))`, where `t` is the time axis built from the current sample rate (`2.5 GHz` divided by the [decimation](#digitizer_decimation) coefficient). The argument `freq` (in MHz) is the down-conversion frequency offset, `ph` is the zero-order (constant) phase correction in radians, while `ph1` and `ph2` are the first- and second-order phase-correction coefficients. The first- and second-order terms are applied only if at least one of them is nonzero.
+This function performs a software digital down-conversion (IQ demodulation) with phase correction of the quadrature data returned by the [`digitizer_get_curve()`](#digitizer_get_curve-points) function. The arguments `arr_i` and `arr_q` are the in-phase and quadrature arrays (both 1D and 2D arrays are accepted). The complex signal `arr_i + 1j*arr_q` is multiplied by `exp(-1j*(2*pi*freq*t + ph + ph1*t + ph2*t**2))`, where `t` is the time axis built from the current sampling frequency. For Insys FM214x3GDA this frequency is `2.5 GHz` divided by the [decimation](#digitizer_decimation) coefficient; for the Spectrum M4I.4450-X8 and M4I.2211-X8 digitizers it is the configured [sample rate](#digitizer_sample_rate). The argument `freq` (in MHz) is the down-conversion frequency offset, `ph` is the zero-order (constant) phase correction in radians, while `ph1` and `ph2` are the first- and second-order phase-correction coefficients. The first- and second-order terms are applied only if at least one of them is nonzero.
 
 If the keyword `integral` is `True` and the input arrays are 2D, the corrected data is integrated over the [window](#digitizer_window) and two 1D arrays (`res_i`, `res_q`) are returned; otherwise the corrected in-phase and quadrature arrays are returned. If the input arrays contain `np.nan` (no new data) they are returned unchanged.
 
 !!! note
-    This function is available only for Insys FM214x3GDA.
+    This function is available for Insys FM214x3GDA and the Spectrum M4I.4450-X8 / M4I.2211-X8 digitizers.
 
 ---
 

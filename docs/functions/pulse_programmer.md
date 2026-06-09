@@ -51,7 +51,7 @@ The keyword arguments:
 
 This function sets a pulse with specified parameters. The default argument is `name = 'P0'`, `channel = 'DETECTION'`, `start = '0 ns'`, `length = '100 ns'`, `delta_start = '0 ns'`, `length_increment = '0 ns'`, `phase_list = []`. The pulse sequence will be checked for overlap. In the auto defence mode (default option; can be changed in the config file) channels `AMP_ON` and `LNA_PROTECT` will be added automatically according to the delays indicated in the config file. In this mode `AMP_ON` and `LNA_PROTECT` pulses will be joined in one pulse if the distance between them is less than 12 ns (can be changed in the config file).
 
-**Allowed channels:** `'DETECTION'`, `'AMP_ON'`, `'LNA_PROTECT'`, `'MW'`, `'-X'`, `'+Y'`, `'TRIGGER_AWG'`, `'AWG'`, `'LASER'`, `'SYNT2'`, `'CH10'`, …, `'CH20'`
+**Allowed channels:** `'DETECTION'`, `'TRIGGER'`, `'AMP_ON'`, `'LNA_PROTECT'`, `'MW'`, `'-X'`, `'+Y'`, `'TRIGGER_AWG'`, `'AWG'`, `'LASER'`, `'SYNT2'`, `'CH10'`, …, `'CH20'`
 {: .enum }
 
 **Allowed phase_list values:** `'+x'`, `'-x'`, `'+y'`, `'-y'`
@@ -68,7 +68,7 @@ This function sets a pulse with specified parameters. The default argument is `n
 
 In the case of Insys FM214x3GDA `start`, `length`, `delta_start`, and `length_increment` will be rounded to a multiple of 3.2.
 
-In the case of Pulse Blaster ESR 500 Pro `DETECTION` pulse should have an empty `phase_list`. The acquisition phases should be indicated directly in [`pulser_acquisition_cycle()`](#pulser_acquisition_cycle) function. In the case of Insys FM214x3GDA a `phase_list` of `DETECTION` pulse is used to [phase cycle](digitizer.md#digitizer_get_curve-points) the data.
+In the case of Pulse Blaster ESR 500 Pro and Pulse Blaster Micran the `DETECTION` pulse may carry a `phase_list`. This list declares the acquisition phase cycle and is used by [`pulser_acquisition_cycle()`](#pulser_acquisition_cycle) whenever that function is called without an explicit `acq_cycle` argument; passing `acq_cycle` directly still overrides it. Alternatively, the acquisition phases can be indicated directly in [`pulser_acquisition_cycle()`](#pulser_acquisition_cycle) and the `DETECTION` pulse left without a `phase_list`. The plain `TRIGGER` channel must always have an empty `phase_list`. In the case of Insys FM214x3GDA a `phase_list` of `DETECTION` pulse is used to [phase cycle](digitizer.md#digitizer_get_curve-points) the data.
 
 ---
 
@@ -92,13 +92,16 @@ This function switches all pulses to the next phase. The phase sequence is decla
 
 ---
 
-### pulser_acquisition_cycle(data1, data2, acq_cycle) { #pulser_acquisition_cycle data-toc-label="pulser_acquisition_cycle" }
+### pulser_acquisition_cycle(data1, data2, acq_cycle=None) { #pulser_acquisition_cycle data-toc-label="pulser_acquisition_cycle" }
 
 ```python
 # Two-step phase cycle (+x, -x)
 i, q = pulser_acquisition_cycle(
     np.array([1, 0]), np.array([0, 1]),
     acq_cycle=['+x', '-x'])
+
+# acq_cycle omitted: the phase_list of the DETECTION pulse is used
+i, q = pulser_acquisition_cycle(np.array([1, 0]), np.array([0, 1]))
 ```
 
 This function can be used to shorten the syntax for acquisition in the case of phase cycling. The arguments are (i) two numpy arrays from a quadrature detector, (ii) array of mathematical operations to perform. Data arrays can be both 2D and 1D, representing, respectively, the case of raw oscillograms or integrated data. The length of `acq_cycle` array and the 1D arrays or the amount of the individual oscillograms in the 2D array should be equal. The data arrays will be treated inside the function as a complex number:
@@ -120,6 +123,8 @@ The symbol at the index `J` of the `acq_cycle` array means that the correspondin
 | `-y`   | `-1j`  | `answer = answer - 1j*data1[J] + data2[J]`      |
 
 The output of the function is the real and imaginary parts of the `answer` array after complete cycle of mathematical transformations. These can be both 1D and 2D arrays, depending on the shape of the input data arrays.
+
+For Pulse Blaster ESR 500 Pro and Pulse Blaster Micran the `acq_cycle` argument is optional. When it is omitted (or an empty list is given) the function falls back to the `phase_list` declared on the [`DETECTION` pulse](#pulser_pulse); an explicitly supplied `acq_cycle` always takes precedence.
 
 Although this function is available for Insys FM214x3GDA, it is better to use a modified version of [`digitizer_get_curve()`](digitizer.md#digitizer_get_curve-points). In this case acquisition phases should be given directly in the phase list key argument of the [`DETECTION` pulse](#pulser_pulse). For Insys FM214x3GDA the function has a modified signature `pulser_acquisition_cycle(data1, data2, points, phases, adc_window, acq_cycle=['+x'], lo=None, hi=None)` and is normally called internally by [`digitizer_get_curve()`](digitizer.md#digitizer_get_curve-points): the data is taken from the running on-board accumulators (the legacy `data1` and `data2` arguments are accepted but ignored), and the keywords `lo` and `hi` indicate the range of points to recompute. The factor table above applies to the `acq_cycle` argument in the same way.
 
