@@ -185,7 +185,7 @@ to model this with an ideal RLC transfer function
 
 $$ H(\nu) = \frac{1}{1 + iQ\left(\dfrac{\nu}{\nu_0} - \dfrac{\nu_0}{\nu}\right)}, $$
 
-the same form the Insys AWG hardware correction uses (see
+the same form the AWG hardware correction uses (see
 [`awg_correction()`](../awg.md#awg_correction)). `|H|` peaks at the resonator
 centre $\nu_0$ and the power bandwidth (FWHM) is $\nu_0/Q$.
 

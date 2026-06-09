@@ -589,7 +589,7 @@ awg_correction(only_pi_half = 'False', model = 'ideal', f0 = 9700, q_factor = 88
                phase_correction = 'True', low_level = 16, limit = 23)
 ```
 
-This function (Insys FM214x3GDA) enables resonator-profile predistortion of the frequency-swept pulses (`'WURST'` and `'SECH/TANH'`, see [`awg_pulse()`](#awg_pulse)) so that the effective excitation B<sub>1</sub> is equalized across the swept band. Each sample of a swept pulse is mapped to its instantaneous chirp frequency (flipped high-frequency-first for an `LO − RF` bridge) and its amplitude — and optionally phase — is corrected accordingly. The correction has no effect on non-swept pulses.
+This function (Insys FM214x3GDA and Spectrum M4I 6631 X8) enables resonator-profile predistortion of the frequency-swept pulses (`'WURST'` and `'SECH/TANH'`, see [`awg_pulse()`](#awg_pulse)) so that the effective excitation B<sub>1</sub> is equalized across the swept band. Each sample of a swept pulse is mapped to its instantaneous chirp frequency (flipped high-frequency-first for an `LO − RF` bridge) and its amplitude — and optionally phase — is corrected accordingly. The correction has no effect on non-swept pulses.
 
 There are two correction models:
 
@@ -604,7 +604,7 @@ The minimum effective B<sub>1</sub> is clamped by the ratio `low_level / limit` 
 **Allowed model:** `'measured'`, `'ideal'`
 {: .enum }
 
-**Default (Insys FM214x3GDA):** `f0 = 9700 MHz`, `q_factor = 88`, `low_level = 16`, `limit = 23`
+**Default (Insys FM214x3GDA, Spectrum M4I 6631 X8):** `f0 = 9700 MHz`, `q_factor = 88`, `low_level = 16`, `limit = 23`
 {: .enum }
 
 ---

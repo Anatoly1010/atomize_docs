@@ -559,4 +559,4 @@ The phase symbols are `'+x'`, `'+y'`, `'-x'`, `'-y'` (the shorthands `+`, `-`, `
 The function returns a dictionary with two keys: `'pulses'` (a list of phase lists, one per pulse, to be passed to the [`phase_list`](pulse_programmer.md#pulser_pulse) of the corresponding pulse) and `'receiver'` (the phase list of the [`DETECTION` pulse](pulse_programmer.md#pulser_pulse) used to [phase cycle](#digitizer_get_curve-points) the data).
 
 !!! note
-    This function is available only for Insys FM214x3GDA.
+    This function is available for Insys FM214x3GDA, Spectrum M4I 4450 X8, and Spectrum M4I 2211 X8.
