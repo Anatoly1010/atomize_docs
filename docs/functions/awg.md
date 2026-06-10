@@ -319,7 +319,7 @@ This function should be called with two keyword arguments, namely `name` and `le
 awg_add_phase(name='P0', add_phase=pi)
 ```
 
-This function should be called with two keyword arguments, namely `name` and `add_phase`. The first argument specifies the name of the pulse as a string. The second argument defines a value of phase in radians to add. The main purpose of the function is phase cycling. Please note, that the function does not update the AWG card. The [`awg_update()`](#awg_update) function should be called to apply changes. The function has no meaning for the `'Sequence'` card mode. One should redefine all the sequence instead.
+This function should be called with two keyword arguments, namely `name` and `add_phase`. The first argument specifies the name of the pulse as a string. The second argument defines a value of phase in radians to add. Arguments can be either single strings or lists, for example: `name = ['P0', 'P1']`, `add_phase = [0, np.pi]`. The main purpose of the function is phase cycling. Please note, that the function does not update the AWG card. The [`awg_update()`](#awg_update) function should be called to apply changes. The function has no meaning for the `'Sequence'` card mode. One should redefine all the sequence instead.
 
 ---
 
