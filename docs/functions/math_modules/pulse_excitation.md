@@ -234,6 +234,7 @@ centre $\nu_0$ and the power bandwidth (FWHM) is $\nu_0/Q$.
 | `detuning` | resonator centre minus carrier (**GHz**); `0` = carrier on resonance |
 | `mode` | `'simulate'` (multiply by $H$ — the distorted, uncorrected pulse) or `'compensate'` (multiply by $1/H$ — the pre-distorted pulse the hardware sends) |
 | `ringdown` | `simulate` only: ns of post-pulse ring-down to propagate (see below); `0` = none |
+| `measured` | optional `(freq_GHz, H_complex)` measured transfer function (e.g. VNA S21); replaces the ideal RLC $H$ (see [`measured_transfer`](#measured_transfer)). `nu0`/`detuning` then only set the carrier and `nu0`/`Q` the ring-down clock |
 
 ```python
 offsets = np.linspace(-0.25, 0.25, 401)               # GHz
@@ -259,11 +260,28 @@ The complex transfer function $H$ evaluated at rotating-frame frequencies `freqs
 (**GHz**). A component at `f` sits at the absolute frequency
 `nu0 - detuning + f`.
 
-### `apply_resonator(w, dt, nu0, Q, detuning=0.0, mode='simulate', max_gain=10.0, ringdown=0.0)` { #apply_resonator }
+### `measured_transfer(freqs, freq_meas, H_meas, carrier)` { #measured_transfer }
+
+A drop-in replacement for [`resonator_transfer`](#resonator_transfer) that uses a
+**measured** complex transfer function (e.g. a VNA $S_{21}$ sweep) instead of the
+ideal RLC, so the real non-Lorentzian magnitude ripple and phase are modelled.
+`freq_meas` is the absolute microwave frequency (**GHz**) of the measurement,
+`H_meas` the complex transfer there, and `carrier` (**GHz**) maps a rotating-frame
+component at `f` to the absolute frequency `carrier + f`. Magnitude and *unwrapped*
+phase are interpolated separately and the result is normalised to **unit peak
+magnitude and zero phase at the carrier** — the same convention as
+`resonator_transfer` ($|H|=1$ at centre, phase referenced to the pulse start), so
+only the relative across-band distortion is applied. Out-of-band frequencies clamp
+to the nearest measured point. Drive it through the `resonator` dict's `measured`
+key (see the table above).
+
+### `apply_resonator(w, dt, nu0, Q, detuning=0.0, mode='simulate', max_gain=10.0, ringdown=0.0, measured=None)` { #apply_resonator }
 
 Filter a complex baseband waveform `w` (sampled every `dt` ns) through the
 resonator and return the distorted waveform. `max_gain` caps the `compensate`
-boost. This is the low-level routine the `resonator` dict drives.
+boost. Pass `measured=(freq_GHz, H_complex)` to filter through a measured transfer
+function instead of the ideal RLC. This is the low-level routine the `resonator`
+dict drives.
 
 ### `ringdown_time(nu0, Q)` { #ringdown_time }
 
