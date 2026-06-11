@@ -37,3 +37,31 @@ EPR spectroscopy endstation is a multi-functional setup located at [the Novosibi
 | Component      | Model    |
 | -------------- | -------- |
 | NMR gaussmeter | Sibir 1  |
+
+## Per-tool working directories
+
+The endstation runs as several independent Qt processes — the main window plus
+each control-center tool in its own `QProcess`. Every open/save dialog uses the
+[last-opened-directory](../functions/general_functions/last_dir.md) helper so it
+reopens where you left off, remembered independently per tool and across
+relaunches.
+
+On top of the common `script` and `data` categories, the endstation build adds
+one category per preset tool, so each remembers its own folder independently:
+
+| Key | Tool | File type |
+| --- | ---- | --------- |
+| `cw` | CW EPR control | `*.cw` |
+| `tr` | TR EPR control | `*.tr` |
+| `tune` | resonator tune preset | `*.tn` |
+| `phase` | RECT phasing | `*.phase` |
+| `phase_awg` | AWG phasing | `*.phase_awg` |
+| `phase_cor` | phase correction | `*.csv` |
+
+The `data` category here also covers the TR data-open dialogs in addition to the
+1D / 2D ones.
+
+On the endstation build these `<key>_lastdir.txt` notes are stored under the
+repo's `libs/` runtime directory, next to the other runtime-IPC files (these
+files are git-ignored), rather than under the per-user config directory used by
+plain Atomize.
