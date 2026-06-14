@@ -64,22 +64,30 @@ with [`plot_1d()`](../plotting_functions/usage.md) or saved with
 `import atomize.math_modules.deer as deer`
 
 Distance-distribution analysis for pulsed-dipolar spectroscopy (DEER/PELDOR,
-RIDME, DQC, SIFTER): background correction + Tikhonov/NNLS inversion of the
-orientation-averaged dipolar kernel, with GCV (or L-curve) regularization and a
-choice of sequential or joint (DeerLab-style) background fitting. Times in µs,
-distances in nm.
+RIDME, DQC, SIFTER): background correction + inversion of the orientation-averaged
+dipolar kernel by **Tikhonov/NNLS** (GCV or L-curve regularization, sequential or
+joint DeerLab-style background) **or** a model-free **analytic Mellin transform**.
+Times in µs, distances in nm.
 
 | Function | Description |
 | -------- | ----------- |
 | [`deer_invert(t, V, …)`](deer.md#deer_invert) | One-call pipeline: background-correct → kernel → P(r) (`engine`/`method`) |
-| [`deer_invert_joint(t, V, …)`](deer.md#deer_invert_joint) | Joint (separable-NLLS) fit of background + λ together with P(r) |
+| [`deer_invert_joint(t, V, …)`](deer.md#deer_invert_joint) | Joint fit of background + λ (λ-pinned) together with P(r) |
+| [`deer_invert_mellin(t, V, …)`](deer.md#deer_invert_mellin) | Model-free analytic Mellin-transform inversion (auto cutoff, MC CI) |
 | [`deer_validate(t, V, …)`](deer.md#deer_validate) | Ensemble validation: background-sweep → median P(r) + uncertainty band |
+| [`fit_zero_time(t, V, …)`](deer.md#fit_zero_time) | Fit the dipolar zero-time t₀ (reference time) |
+| [`tikhonov_ci(K, F, alpha, P, …)`](deer.md#tikhonov_ci) | Covariance 95% confidence band on the Tikhonov P(r) |
 | [`dipolar_kernel(t, r, …)`](deer.md#dipolar_kernel) | Orientation-averaged kernel K(t, r) (Fresnel closed form) |
 | [`dipolar_frequency(r, …)`](deer.md#dipolar_frequency) | Perpendicular dipolar frequency ν⊥(r) = ν_dd/r³ |
-| [`background_fit(t, V, bg_start, bg_end=None, …)`](deer.md#background_fit) | Fit intermolecular background on a tail window |
+| [`background_fit(t, V, bg_start, bg_end=None, …)`](deer.md#background_fit) | Fit intermolecular background on a tail window (sequential) |
+| [`joint_background(t, V, …)`](deer.md#joint_background) | λ-pinned joint background only (coarse, hardened; backs the Mellin engine) |
 | [`tikhonov_nnls(K, F, alpha, L=None)`](deer.md#tikhonov_nnls) | Non-negative Tikhonov solve K P = F |
 | [`regularization_matrix(n, order=2)`](deer.md#regularization_matrix) | Derivative operator L for smoothing |
 | [`l_curve(K, F, alphas, L=None, method='gcv')`](deer.md#l_curve) | Regularization scan; α by GCV (default) or Menger L-corner |
+| [`mellin_kernel_spectrum(tau, …)`](deer.md#mellin_kernel_spectrum) | Mellin image Φ(½+iτ) of the dipolar kernel (closed form) |
+| [`mellin_signal_spectrum(t, F, tau, delta, …)`](deer.md#mellin_signal_spectrum) | Mellin image Ṽ(½+iτ) of the form factor (δ-split) |
+| [`mellin_inverse(P_tau, tau, w)`](deer.md#mellin_inverse) | Inverse Mellin transform → p(w) |
+| [`mellin_delta(t, F, level=0.95)`](deer.md#mellin_delta) | Auto Mellin split point δ (F(δ) ≈ 0.95) |
 | [`default_r_axis(rmin=1.5, rmax=8.0, n=200)`](deer.md#default_r_axis) | Default distance grid (nm) |
 | [`simulate(t, r, P, …)`](deer.md#simulate) | Forward-simulate a DEER trace from P(r) |
 

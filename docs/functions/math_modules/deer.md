@@ -16,12 +16,24 @@ has a closed form in Fresnel integrals, so $K$ is built without a
 per-orientation loop.
 
 Recovering $P(r)$ from $F(t)$ is a Fredholm equation of the first kind
-(ill-posed); this module solves it with **Tikhonov regularization +
-non-negativity** (NNLS). The regularization weight $\alpha$ is chosen
-automatically — by default via **generalized cross-validation (GCV)**, with the
-classic **L-curve** corner also available. The background can be removed
-**sequentially** (fit the tail, divide it out, invert) or fit **jointly** with
-$P(r)$ in a single separable-NLLS pass (DeerLab-style).
+(ill-posed). This module solves it two ways:
+
+- **Tikhonov regularization + non-negativity** (NNLS) — the default. The
+  regularization weight $\alpha$ is chosen automatically (by **generalized
+  cross-validation (GCV)** by default, or the classic **L-curve** corner). The
+  background can be removed **sequentially** (fit the tail, divide it out,
+  invert) or fit **jointly** with $P(r)$ (DeerLab-style). A covariance
+  confidence band ([`tikhonov_ci()`](#tikhonov_ci)) is returned with every
+  inversion.
+- **Analytic integral Mellin transform** — a *model-free* inversion
+  ([`deer_invert_mellin()`](#deer_invert_mellin), Matveeva, Nekrasov & Maryasov,
+  *PCCP* **2017**, [10.1039/C7CP04059H](https://doi.org/10.1039/C7CP04059H)). No
+  Tikhonov, no NNLS: $P(r)$ is recovered in closed form, so it is not broadened
+  and bimodal peaks are not merged. Noise enters $P(r)$ additively and groups at
+  short $r$.
+
+The dipolar **zero-time** can be fit automatically with
+[`fit_zero_time()`](#fit_zero_time) before either inversion.
 
 !!! tip "Why GCV is the default"
     A DEER L-curve is nearly *vertical* — the residual stays at the noise floor
@@ -85,11 +97,15 @@ invert to $P(r)$ by Tikhonov + NNLS. This is what most users want.
 - **`method`** — automatic-$\alpha$ criterion: `'gcv'` (default — generalized
   cross-validation, robust) or `'curvature'` (classic maximum-Menger-curvature
   L-corner). See [`l_curve()`](#l_curve).
-- **`engine`** — how the background is handled: `'sequential'` (default; fit the
-  tail, divide it out, then invert) or `'joint'` (fit background + modulation
-  depth together with $P(r)$ in one pass — see
-  [`deer_invert_joint()`](#deer_invert_joint)). The joint engine is more robust
-  when the background window is short or hard to place.
+- **`engine`** — how the inversion is done:
+  `'sequential'` (default; fit the background tail, divide it out, then invert),
+  `'joint'` (fit background + modulation depth together with $P(r)$ in one pass —
+  see [`deer_invert_joint()`](#deer_invert_joint); more robust when the background
+  window is short or hard to place), or `'mellin'` (the model-free analytic
+  transform — see [`deer_invert_mellin()`](#deer_invert_mellin)).
+- **`**kwargs`** — forwarded to [`deer_invert_mellin()`](#deer_invert_mellin) when
+  `engine='mellin'` (`delta`, `tau_max`, `n_tau`, `bg_engine`, `n_mc`, …);
+  ignored otherwise.
 
 Returns a dict:
 
@@ -102,12 +118,13 @@ Returns a dict:
 | `P` | Raw distance masses ($\ge 0$) |
 | `P_norm` | Masses normalized to sum $= 1$ |
 | `P_density` | Density $P(r) = $ `P_norm`$/dr$ (integral $= 1$) — plot this |
+| `P_lower`, `P_upper` | 95% covariance confidence band on the density (see [`tikhonov_ci()`](#tikhonov_ci)) |
 | `kernel` | The dipolar kernel matrix $K$ |
 | `alpha` | The regularization weight used |
 | `l_curve` | The [`l_curve()`](#l_curve) result dict (or `None`) |
 | `background` | The [`background_fit()`](#background_fit) result dict |
 | `lambda`, `k`, `dim` | Modulation depth, background decay rate, dimension |
-| `engine` | `'sequential'` or `'joint'` (the background engine used) |
+| `engine` | `'sequential'`, `'joint'`, or `'mellin'` |
 
 ```python
 import numpy as np
@@ -135,12 +152,11 @@ res = deer.deer_invert_joint(t, V, r=None, bg_start=None, bg_end=None,
                              scan_lcurve=True, alpha_factor=1.0)
 ```
 
-DEER inversion with a **joint** (separable-NLLS / variable-projection) fit of the
-background and modulation depth *together* with the regularized non-negative
-$P(r)$ — the strategy DeerLab uses. More robust than the sequential
-[`deer_invert()`](#deer_invert) pipeline on real traces with short or shallow
-backgrounds, where the tail fit and the inversion are coupled. Also reachable as
-`deer.deer_invert(..., engine='joint')`.
+DEER inversion with a **joint** fit of the background and modulation depth
+*together* with the regularized non-negative $P(r)$ — the strategy DeerLab uses.
+More robust than the sequential [`deer_invert()`](#deer_invert) pipeline on real
+traces with short or shallow backgrounds, where the tail fit and the inversion
+are coupled. Also reachable as `deer.deer_invert(..., engine='joint')`.
 
 Starting from the full model
 
@@ -149,25 +165,85 @@ V(t) = B(t)\,\big[(1-\lambda) + \lambda\,(K P)(t)\big],\qquad
 B(t) = e^{-(k|t|)^{d/3}},
 $$
 
-the substitution $\tilde P = \lambda P$ and $K'(t,r) = K(t,r) - 1$ (note
-$K(0,r)=1$) makes the linear part free of $\lambda$:
+the background decay rate $k$ (and $d$ when `fit_dim=True`) is the only nonlinear
+unknown. For each trial rate the modulation depth $\lambda$ is **pinned** to the
+mean baseline of $V/B$ over the background window $[\text{bg\_start},
+\text{bg\_end}]$ — where the intramolecular form factor has decayed and
+$V \approx (1-\lambda)\,B$ — and the non-negative regularized $P(r)$ follows from
+$K P = (V/B - (1-\lambda))/\lambda$. The rate is chosen to minimize the
+whole-trace residual $\lVert V - B[(1-\lambda) + \lambda K P]\rVert$ with
+`scipy.optimize.minimize_scalar` (or `least_squares` when `fit_dim=True`).
+
+!!! note "Why $\lambda$ is pinned to the baseline"
+    With $\lambda$ left free the fit is **degenerate**: a near-flat background
+    plus extra long-$r$ $P(r)$ mass reproduces $V$ just as well as the correct
+    deeper background, and the rate collapses to $k \to 0$. Pinning $\lambda$ to
+    the decayed-tail baseline removes that direction and recovers the correct
+    background — matching DeerLab's joint fit. So here `bg_start`/`bg_end` set the
+    **baseline window** (not just an initial guess).
+
+Returns the same dict as [`deer_invert()`](#deer_invert), with `engine='joint'`.
+
+!!! tip "Lightweight variant for the Mellin engine"
+    [`joint_background()`](#joint_background) runs the same λ-pinned rate fit but
+    returns **only** the background (no full-resolution inversion / L-curve) on a
+    coarse internal grid, and is further hardened against collapse on short
+    traces / short `bg_end`. It is what [`deer_invert_mellin()`](#deer_invert_mellin)
+    and Mellin validation use.
+
+---
+
+## tikhonov_ci() { #tikhonov_ci data-toc-label="tikhonov_ci" }
+
+```python
+lower, upper = deer.tikhonov_ci(K, F, alpha, P, L=None, dr=1.0, z=1.96)
+```
+
+Covariance-based confidence band on the regularized $P(r)$ — the asymptotic
+(curvature) CI DeerLab shows by default, returned with every Tikhonov inversion.
+For the linear Tikhonov estimator $P = (K^\top K + \alpha^2 L^\top L)^{-1} K^\top F$
+the form-factor noise propagates as
 
 $$
-V/B - 1 = K'\,\tilde P,\qquad \lambda = \textstyle\sum \tilde P,\quad
-P = \tilde P/\lambda .
+\operatorname{cov}(P) = \sigma^2\, M M^\top,\qquad
+M = (K^\top K + \alpha^2 L^\top L)^{-1} K^\top,
 $$
 
-So only the background ($k$, and $d$ when `fit_dim=True`) is nonlinear. For each
-trial background the optimal $\tilde P \ge 0$ is the regularized NNLS solution of
-the V-space-weighted system $\operatorname{diag}(B)\,K'\,\tilde P = V - B$ (which
-down-weights the noisy long-$t$ tail), and the V-space residual is minimized over
-$(k[, d])$ with `scipy.optimize.least_squares`. Because $K'$ is constant, $\alpha$
-(GCV by default) is stable across the search and is re-selected once at the
-converged background.
+with $\sigma^2$ estimated from the fit residuals (effective dof
+$= N - \operatorname{tr}(K M)$). Returns `(lower, upper)` at confidence `z`
+(default 1.96 ≈ 95%) on the same density scale as `P/sum(P)/dr`, clipped at 0. The
+non-negativity constraint is **not** propagated, so the band is a slightly
+conservative linear approximation (as in DeerLab's moment-based CI).
 
-`bg_start`/`bg_end` only **seed** the initial background guess here; the joint
-fit uses the whole trace. Returns the same dict as
-[`deer_invert()`](#deer_invert), with `engine='joint'`.
+---
+
+## fit_zero_time() { #fit_zero_time data-toc-label="fit_zero_time" }
+
+```python
+t0 = deer.fit_zero_time(t, V, bg_start=None, bg_end=None,
+                        n_grid=16, search_frac=0.15, refine=True, **kwargs)
+```
+
+Find the dipolar **zero-time** $t_0$ (the reference time) that best aligns the
+kernel with the data, by minimizing the V-space reconstruction residual. DEER is
+sensitive to where $t = 0$ of the dipolar evolution sits: an error of even a few
+tens of ns misaligns the kernel, broadens $P(r)$ and biases the mean distance
+long. This is the equivalent of DeerLab's fitted `reftime`, and it matters more
+than the background depth.
+
+A candidate offset $s$ shifts both the time axis and the (data-anchored)
+background window, so only the kernel alignment changes; the residual is smooth
+with a single minimum, found by a coarse grid over the first `search_frac` of the
+trace plus a parabolic `refine`. For speed the search uses a fixed-$\alpha$
+*sequential* inversion on a capped distance grid (the offset is set by the
+residual **shape**, not the engine or exact regularization); `**kwargs` pass
+through to [`deer_invert()`](#deer_invert) (`r`, `dim`, `fit_dim`, …). Returns
+$t_0$ in the same units as `t` (µs).
+
+```python
+t0 = deer.fit_zero_time(t, V, bg_start=1.0, r=r)
+res = deer.deer_invert(t - t0, V, r=r, bg_start=1.0 - t0)
+```
 
 ---
 
@@ -205,7 +281,9 @@ fast (no per-trial L-curve scan).
 - **`noise`, `n_noise`** — when both are positive, each background-start trial is
   repeated with `n_noise` Gaussian-noise realizations of standard deviation `noise`
   added to $V$ (estimate `noise` from the trace residual).
-- **`engine`** — `'sequential'` or `'joint'`, as in [`deer_invert()`](#deer_invert).
+- **`engine`** — `'sequential'`, `'joint'`, or `'mellin'`, as in
+  [`deer_invert()`](#deer_invert). Extra Mellin parameters (`delta`, `tau_max`, …)
+  pass through via `**kwargs`.
 - **`percentiles`** — the lower/upper percentiles of the band (default 5–95%).
 
 Returns a dict:
@@ -231,8 +309,191 @@ print(f"peak r = {val['peak']:.2f} nm  over {val['n_trials']} trials")
 ```
 
 In the Data Treatment GUI this is the **"Validate (background sweep → P(r) band)"**
-checkbox on the DEER / PDS tab; the distance view then shows the median curve over
-its shaded band.
+checkbox; the distance view then shows the median curve over its shaded band.
+
+---
+
+## deer_invert_mellin() { #deer_invert_mellin data-toc-label="deer_invert_mellin" }
+
+```python
+res = deer.deer_invert_mellin(t, V, r=None, bg_start=None, bg_end=None,
+                              dim=3.0, fit_dim=False, nu_dd=deer.NU_DD,
+                              delta=None, tau_max=30.0, n_tau=601,
+                              bg_engine='joint', n_mc=0, ci_z=1.96, seed=0)
+```
+
+**Model-free** DEER inversion by the analytic integral **Mellin transform**
+(Matveeva, Nekrasov & Maryasov, *PCCP* **2017**,
+[10.1039/C7CP04059H](https://doi.org/10.1039/C7CP04059H)). No Tikhonov, no NNLS,
+no L-curve: the distance distribution is recovered in closed form, so it is **not
+broadened** and bimodal peaks are **not merged**. Also reachable as
+`deer.deer_invert(..., engine='mellin')`.
+
+Writing the (background-corrected, normalized) form factor as a multiplicative
+convolution over the dipolar variable $w = 2\pi\nu_{dd}/r^3$,
+
+$$
+F(T) = \int_0^\infty p(w)\,\varphi(wT)\,dw,\qquad
+\varphi(u) = \int_0^1 \cos\!\big(u(1-3x^2)\big)\,dx,
+$$
+
+the Mellin transform separates the variables: with $\tilde V(s)$, $\Phi(s)$, $P(s)$
+the Mellin images of $F$, $\varphi$, $p$, one has $\tilde V(s) = P(1-s)\,\Phi(s)$,
+so on the critical line $s = \tfrac12 + i\tau$ (using that $F$, $\varphi$ are real)
+
+$$
+P(\tfrac12 + i\tau) = \overline{\tilde V(\tfrac12+i\tau)\,/\,\Phi(\tfrac12+i\tau)},
+$$
+
+and the inverse Mellin transform gives $p(w)$ directly; the Jacobian maps it to
+$f(r)$. The kernel image $\Phi$ is computed in closed form
+([`mellin_kernel_spectrum()`](#mellin_kernel_spectrum)) and the signal image
+$\tilde V$ by the $\delta$-split of the paper
+([`mellin_signal_spectrum()`](#mellin_signal_spectrum)).
+
+!!! info "Noise groups at short $r$"
+    The whole chain is linear, so noise enters $f(r)$ **additively**. It
+    consistently piles up as ripples at **short distances**, below the reliable
+    range — that is the method's signature, not real structure. Unlike Tikhonov it
+    does not smear it across all $r$.
+
+- **`bg_engine`** — `'joint'` (default) or `'sequential'`, how the form factor is
+  prepared (see [`joint_background()`](#joint_background) /
+  [`background_fit()`](#background_fit)). **This matters a lot:** the Mellin kernel
+  $\varphi(wT)\to0$, so the recovered density cannot represent a DC pedestal left
+  by an imperfect background — a too-shallow background shows up as a constant gap
+  between data and fit. The joint engine gives a clean $F\to0$ and is the default.
+- **`delta`** — the Mellin split point $\delta$ (µs), the lone regularizing knob:
+  on $[0,\delta]$ the form factor is taken constant and integrated analytically,
+  $[\delta, T_\max]$ numerically. `None` auto-selects it from $F(\delta)\approx0.95$
+  (the paper's recommendation; see [`mellin_delta()`](#mellin_delta)).
+- **`tau_max`, `n_tau`** — the Mellin variable runs over $[-\tau_\max, \tau_\max]$
+  with `n_tau` samples. The high-$\tau$ cutoff is the regularizer. **`tau_max=None`
+  auto-selects it by the discrepancy principle** (see below).
+- **`n_mc`** — number of Monte-Carlo noise realizations for the confidence band
+  (0 = off). With `n_mc > 0` the form factor is re-inverted `n_mc` times with
+  Gaussian noise (σ from the fit residual, background held fixed) and the 95%
+  percentile envelope of $P(r)$ is returned as `P_lower` / `P_upper`. 50–100 is
+  typical.
+
+!!! tip "Automatic cutoff — the discrepancy principle"
+    The cutoff $\tau_\max$ regularizes the inversion, and the V-space forward-fit
+    residual $\sigma_\text{fit}$ is **U-shaped** in it: too small under-fits
+    ($\sigma_\text{fit} \gg$ noise), too large injects the noisy high-$\tau$
+    spectrum into $P(r)$ and the residual climbs again. The minimum sits at the
+    noise floor. With `tau_max=None` the routine picks the smallest cutoff whose
+    $\sigma_\text{fit}$ is within 3 % of that minimum, and reports `sigma_fit` and
+    the tail `sigma_noise` so the regime is visible: $\sigma_\text{fit} \approx
+    \sigma_\text{noise}$ is well matched, $\gg$ underfit, $\ll$ overfit.
+
+Returns the same dict shape as [`deer_invert()`](#deer_invert) (so the GUI and
+exporters are shared), with these Mellin-specific keys:
+
+| Key | Description |
+| --- | ----------- |
+| `engine` | `'mellin'` |
+| `P_density` | Recovered density (clipped $\ge 0$, area-normalized) — plot this |
+| `P_signed_density` | The **raw signed** $f(r)$ before clipping (its short-$r$ ripples are the propagated noise) |
+| `P_lower`, `P_upper` | Monte-Carlo 95 % band (when `n_mc > 0`; else `None`) |
+| `delta`, `tau_max` | The split point and cutoff used |
+| `auto_taumax` | Whether `tau_max` was auto-selected |
+| `sigma_fit`, `sigma_noise` | Forward-fit residual vs tail noise floor (the discrepancy diagnostic) |
+| `tau`, `V_image`, `kernel_image` | The $\tau$ grid and the Mellin spectra $\tilde V(\tau)$, $\Phi(\tau)$ |
+
+`alpha` is `NaN` and `l_curve` is `None` (no Tikhonov regularization here).
+
+```python
+res = deer.deer_invert_mellin(t, V, r=r, bg_start=1.0,
+                              tau_max=None, n_mc=50)   # auto cutoff + CI band
+peak = res['r'][res['P_density'].argmax()]
+print(f"peak r = {peak:.2f} nm, sigma_fit/sigma_noise = "
+      f"{res['sigma_fit']/res['sigma_noise']:.2f}")
+```
+
+---
+
+## joint_background() { #joint_background data-toc-label="joint_background" }
+
+```python
+bg = deer.joint_background(t, V, bg_start=None, bg_end=None, dim=3.0,
+                           fit_dim=False, nu_dd=deer.NU_DD, n_r=60, rate_alpha=1.0)
+```
+
+The λ-pinned joint background of [`deer_invert_joint()`](#deer_invert_joint),
+stripped to return **only** the background (same dict shape as
+[`background_fit()`](#background_fit)). The rate is fit on a coarse internal
+distance grid (`n_r`) at a fixed regularization (`rate_alpha`): $k$ and $\lambda$
+are insensitive to the $P(r)$ resolution, so this is ~30× faster than a full joint
+inversion — fast enough to re-run per background-start during Mellin validation. It
+backs [`deer_invert_mellin()`](#deer_invert_mellin) with `bg_engine='joint'`.
+
+Two robustness fixes versus the in-line joint fit, both aimed at the Mellin
+engine (which cannot absorb a residual background the way Tikhonov hides it as
+spurious long-$r$ mass):
+
+- **λ pinned over the full available tail** $[\text{bg\_start}, T_\max]$ rather
+  than $[\text{bg\_start}, \text{bg\_end}]$ — so $k$ is essentially independent of
+  `bg_end` and cannot slide to a near-flat background when `bg_end` is pulled in.
+- **The rate-fit's internal grid is capped at the trace-supported distance**
+  $r_\max \approx 5\,(T_\max/2)^{1/3}$ nm. Distances beyond $r_\max$ give a decay
+  so slow it is indistinguishable from the background; excluding them keeps $k$
+  determined on short traces.
+
+---
+
+## mellin_kernel_spectrum() { #mellin_kernel_spectrum data-toc-label="mellin_kernel_spectrum" }
+
+```python
+Phi = deer.mellin_kernel_spectrum(tau, n_u=512)
+```
+
+Mellin image $\Phi(\tfrac12 + i\tau)$ of the orientation-averaged dipolar kernel
+$\varphi(u) = \int_0^1\cos(u(1-3x^2))\,dx$, on the critical line, vectorized over
+`tau`. Computed in closed form — $\Phi(s) = \Gamma(s)\cos(\pi s/2)\int_0^1
+|1-3x^2|^{-s}dx$, the $x$-integral splitting (via $x = x_0\sin\theta$ and
+$x = x_0\cosh u$, $x_0 = 1/\sqrt3$) into an exact Beta-function term plus a smooth
+quadrature — avoiding the appendix ${}_3F_3$ hypergeometric. Valid for
+$0 < \operatorname{Re} s < 3/2$.
+
+---
+
+## mellin_signal_spectrum() { #mellin_signal_spectrum data-toc-label="mellin_signal_spectrum" }
+
+```python
+Vimg = deer.mellin_signal_spectrum(t, F, tau, delta, F0=1.0, du=0.02)
+```
+
+Mellin image $\tilde V(\tfrac12 + i\tau)$ of the form factor $F(T)$ via the
+$\delta$-split: on $[0,\delta]$ take $F \approx F_0$ and integrate analytically;
+on $[\delta, T_\max]$ substitute $u = \ln T$ so $e^{i\tau\ln T} \to e^{i\tau u}$
+has a *constant* frequency $\tau$, and integrate on a log-$T$ grid of step `du`
+(choose $du \lesssim \pi/\max|\tau|$). `t` in µs, only $T>0$ used; $F$ normalized
+to $F(0) = $ `F0`.
+
+---
+
+## mellin_inverse() { #mellin_inverse data-toc-label="mellin_inverse" }
+
+```python
+p_w = deer.mellin_inverse(P_tau, tau, w)
+```
+
+Inverse Mellin transform on the line $s = \tfrac12 + i\tau$ back to $p(w)$:
+$\operatorname{Re}[p(w)] = \tfrac{1}{2\pi}\,w^{-1/2}\int
+\operatorname{Re}[P(\tau)\,e^{-i\tau\ln w}]\,d\tau$, with `P_tau` $= P(\tfrac12 +
+i\tau)$ sampled on `tau`. Returns the real $p(w)$ for each `w`.
+
+---
+
+## mellin_delta() { #mellin_delta data-toc-label="mellin_delta" }
+
+```python
+delta = deer.mellin_delta(t, F, level=0.95)
+```
+
+Practical Mellin split point $\delta$: the first $T>0$ where the form factor has
+fallen to `level` of $F(0)$ (the paper's $F(\delta)\approx0.95$ estimate). Falls
+back to the first positive sample if $F$ never drops that far.
 
 ---
 
