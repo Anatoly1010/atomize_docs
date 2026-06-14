@@ -221,24 +221,39 @@ conservative linear approximation (as in DeerLab's moment-based CI).
 
 ```python
 t0 = deer.fit_zero_time(t, V, bg_start=None, bg_end=None,
-                        n_grid=16, search_frac=0.15, refine=True, **kwargs)
+                        n_grid=16, search_frac=0.15, refine=True,
+                        method='parabola', drop=0.15, smooth_w=5, **kwargs)
 ```
 
-Find the dipolar **zero-time** $t_0$ (the reference time) that best aligns the
-kernel with the data, by minimizing the V-space reconstruction residual. DEER is
-sensitive to where $t = 0$ of the dipolar evolution sits: an error of even a few
-tens of ns misaligns the kernel, broadens $P(r)$ and biases the mean distance
-long. This is the equivalent of DeerLab's fitted `reftime`, and it matters more
-than the background depth.
+Find the dipolar **zero-time** $t_0$ (the reference time). DEER is sensitive to
+where $t = 0$ of the dipolar evolution sits: an error of even a few tens of ns
+misaligns the kernel, broadens $P(r)$ and biases the mean distance long. This is
+the equivalent of DeerLab's fitted `reftime`, and it matters more than the
+background depth.
 
-A candidate offset $s$ shifts both the time axis and the (data-anchored)
-background window, so only the kernel alignment changes; the residual is smooth
-with a single minimum, found by a coarse grid over the first `search_frac` of the
-trace plus a parabolic `refine`. For speed the search uses a fixed-$\alpha$
-*sequential* inversion on a capped distance grid (the offset is set by the
-residual **shape**, not the engine or exact regularization); `**kwargs` pass
-through to [`deer_invert()`](#deer_invert) (`r`, `dim`, `fit_dim`, …). Returns
-$t_0$ in the same units as `t` (µs).
+Two methods, selected by **`method`**:
+
+- **`'parabola'` (default)** — fit a quadratic to the **echo maximum** (the
+  classic DeerAnalysis approach: $V \approx V_\text{pk} - c\,(t-t_0)^2$ near the
+  echo) and take its vertex. Noise-robust: the initial peak is the argmax of a
+  *smoothed* $V$ restricted to the first 30 % of the trace (so a stray noise spike
+  cannot be mistaken for the echo), and the fit window widens symmetrically out to
+  where the smoothed signal has fallen `drop` of its peak-to-min amplitude — wide
+  enough to average down noise, narrow enough to stay on the parabolic top (a
+  too-wide window is biased by the dipolar oscillation/decay and the truncated
+  pre-zero side). Data-only, fast, and **~3× more accurate** than the residual
+  search at high noise on traces with a clear echo maximum. Falls back to
+  `'residual'` when no concave echo peak is found (e.g. the trace already starts
+  at the zero-time).
+- **`'residual'`** — minimize the V-space reconstruction residual. A candidate
+  offset $s$ shifts both the time axis and the (data-anchored) background window,
+  so only the kernel alignment changes; the residual is smooth with a single
+  minimum, found by a coarse grid over the first `search_frac` of the trace plus a
+  parabolic `refine`. For speed it uses a fixed-$\alpha$ *sequential* inversion on
+  a capped distance grid; `**kwargs` pass through to [`deer_invert()`](#deer_invert)
+  (`r`, `dim`, `fit_dim`, …). Robust when the echo maximum is ambiguous or absent.
+
+Returns $t_0$ in the same units as `t` (µs).
 
 ```python
 t0 = deer.fit_zero_time(t, V, bg_start=1.0, r=r)
@@ -319,7 +334,8 @@ checkbox; the distance view then shows the median curve over its shaded band.
 res = deer.deer_invert_mellin(t, V, r=None, bg_start=None, bg_end=None,
                               dim=3.0, fit_dim=False, nu_dd=deer.NU_DD,
                               delta=None, tau_max=30.0, n_tau=601,
-                              bg_engine='joint', n_mc=0, ci_z=1.96, seed=0)
+                              bg_engine='joint', n_mc=0, ci_z=1.96, seed=0,
+                              taumax_method='discrepancy', noise_space='V')
 ```
 
 **Model-free** DEER inversion by the analytic integral **Mellin transform**
@@ -351,11 +367,17 @@ $f(r)$. The kernel image $\Phi$ is computed in closed form
 $\tilde V$ by the $\delta$-split of the paper
 ([`mellin_signal_spectrum()`](#mellin_signal_spectrum)).
 
-!!! info "Noise groups at short $r$"
+!!! info "Noise groups at short $r$ — and is kept signed"
     The whole chain is linear, so noise enters $f(r)$ **additively**. It
     consistently piles up as ripples at **short distances**, below the reliable
     range — that is the method's signature, not real structure. Unlike Tikhonov it
-    does not smear it across all $r$.
+    does not smear it across all $r$. The recovered `P_density` is kept **signed**
+    (those ripples can dip below zero — they are *not* clipped/"corrected"). The
+    forward fit `F_fit`, however, is built from the **non-negative** density: a
+    negative density propagated through $K$ would flip the curvature of $F_\text{fit}$
+    at $t=0$ into a spurious double peak, so the time-domain *model* is clipped
+    (this changes only the fit curve, never the reported `P_density`, so $F_\text{fit}
+    \ne K\,P_\text{density}$ exactly).
 
 - **`bg_engine`** — `'joint'` (default) or `'sequential'`, how the form factor is
   prepared (see [`joint_background()`](#joint_background) /
@@ -363,28 +385,46 @@ $\tilde V$ by the $\delta$-split of the paper
   $\varphi(wT)\to0$, so the recovered density cannot represent a DC pedestal left
   by an imperfect background — a too-shallow background shows up as a constant gap
   between data and fit. The joint engine gives a clean $F\to0$ and is the default.
-- **`delta`** — the Mellin split point $\delta$ (µs), the lone regularizing knob:
-  on $[0,\delta]$ the form factor is taken constant and integrated analytically,
-  $[\delta, T_\max]$ numerically. `None` auto-selects it from $F(\delta)\approx0.95$
-  (the paper's recommendation; see [`mellin_delta()`](#mellin_delta)).
+- **`delta`** — the Mellin split point $\delta$ (µs): on $[0,\delta]$ the form
+  factor is integrated analytically, $[\delta, T_\max]$ numerically. The echo top
+  is **parabolic** $F\approx F_0 + b\,T^2$, so the $[0,\delta]$ term keeps that
+  quadratic (not constant $F$) — removing a systematic error in $F_\text{fit}$ right
+  at the echo (the "thin parabola" near $t=0$) and letting $\delta$ be wider. `None`
+  auto-selects $\delta$ at $F(\delta)\approx0.85$ (see
+  [`mellin_signal_spectrum()`](#mellin_signal_spectrum) / [`mellin_delta()`](#mellin_delta)).
 - **`tau_max`, `n_tau`** — the Mellin variable runs over $[-\tau_\max, \tau_\max]$
   with `n_tau` samples. The high-$\tau$ cutoff is the regularizer. **`tau_max=None`
-  auto-selects it by the discrepancy principle** (see below).
+  auto-selects it** by `taumax_method` (see below).
+- **`taumax_method`** — `'discrepancy'` (default, noise-floor anchored) or
+  `'lcurve'` (corner of $\log\sigma_\text{fit}$ vs $\log\lVert L_2 P\rVert$).
+  L-curve is provided for comparison but under-regularizes on DEER (the residual
+  is nearly flat in $\tau_\max$, so the corner is ill-defined) — prefer the default.
+- **`noise_space`** — `'V'` (default) or `'F'`: the space the noise floor and
+  per-cutoff residual are measured in for the discrepancy selection. `'V'` (the
+  whole background-normalized curve) is stationary and robust; `'F'` (the
+  background-corrected form factor) is noise-amplified toward the tail.
 - **`n_mc`** — number of Monte-Carlo noise realizations for the confidence band
-  (0 = off). With `n_mc > 0` the form factor is re-inverted `n_mc` times with
-  Gaussian noise (σ from the fit residual, background held fixed) and the 95%
-  percentile envelope of $P(r)$ is returned as `P_lower` / `P_upper`. 50–100 is
-  typical.
+  (0 = off). The band is built by **additive-noise propagation**: the white
+  electrical-noise level is read from the **decayed tail of $V$** by smoothing
+  (returned as `noise_level`), added to the smooth $V$ fit, and propagated through
+  the *fixed* background to $F$ — so $F$ inherits the realistic $1/(\lambda B)$
+  amplification toward the tail. The band is the **per-distance STD** across the
+  realizations: `P_lower`/`P_upper` $= $ `P_density` $\mp\,$`ci_z`$\cdot$`P_std`.
+  ~100 realizations are typical.
 
-!!! tip "Automatic cutoff — the discrepancy principle"
-    The cutoff $\tau_\max$ regularizes the inversion, and the V-space forward-fit
-    residual $\sigma_\text{fit}$ is **U-shaped** in it: too small under-fits
-    ($\sigma_\text{fit} \gg$ noise), too large injects the noisy high-$\tau$
-    spectrum into $P(r)$ and the residual climbs again. The minimum sits at the
-    noise floor. With `tau_max=None` the routine picks the smallest cutoff whose
-    $\sigma_\text{fit}$ is within 3 % of that minimum, and reports `sigma_fit` and
-    the tail `sigma_noise` so the regime is visible: $\sigma_\text{fit} \approx
-    \sigma_\text{noise}$ is well matched, $\gg$ underfit, $\ll$ overfit.
+!!! tip "Automatic cutoff — discrepancy anchored to the noise floor"
+    The cutoff $\tau_\max$ regularizes the inversion: $\sigma_\text{fit}$ (the
+    V-space forward residual) falls with $\tau_\max$ and **flattens** at the noise
+    level. Chasing its *minimum* overshoots below the floor — an over-fit that
+    injects the noisy high-$\tau$ spectrum into $P(r)$ (roughness explodes for a
+    noise-level $\sigma_\text{fit}$ gain). So the routine instead picks the
+    **smallest cutoff whose $\sigma_\text{fit}$ reaches the noise floor** within its
+    statistical spread (floor from the V residual's successive differences
+    $/\sqrt2$; tolerance $\sim 2/\sqrt{2N}$). This self-adapts: clean data needs a
+    large cutoff to reach the tiny floor (keeps sharp features), noisy/short data
+    reaches it early and stays smooth. `sigma_fit` and the tail `sigma_noise` are
+    reported so the regime stays visible ($\approx$ matched, $\gg$ underfit,
+    $\ll$ overfit).
 
 Returns the same dict shape as [`deer_invert()`](#deer_invert) (so the GUI and
 exporters are shared), with these Mellin-specific keys:
@@ -392,9 +432,11 @@ exporters are shared), with these Mellin-specific keys:
 | Key | Description |
 | --- | ----------- |
 | `engine` | `'mellin'` |
-| `P_density` | Recovered density (clipped $\ge 0$, area-normalized) — plot this |
-| `P_signed_density` | The **raw signed** $f(r)$ before clipping (its short-$r$ ripples are the propagated noise) |
-| `P_lower`, `P_upper` | Monte-Carlo 95 % band (when `n_mc > 0`; else `None`) |
+| `P_density` | Recovered **signed** density (area-normalized; short-$r$ noise ripples kept, can be < 0) — plot this |
+| `P_signed_density` | Alias of `P_density` (kept for back-compat) |
+| `P_lower`, `P_upper` | Monte-Carlo band $= $ `P_density` $\mp$ `ci_z`·`P_std` (when `n_mc > 0`; else `None`) |
+| `P_std` | Per-distance STD across the MC realizations (when `n_mc > 0`) |
+| `noise_level` | White electrical-noise σ read from the decayed tail of $V$ |
 | `delta`, `tau_max` | The split point and cutoff used |
 | `auto_taumax` | Whether `tau_max` was auto-selected |
 | `sigma_fit`, `sigma_noise` | Forward-fit residual vs tail noise floor (the discrepancy diagnostic) |
@@ -416,7 +458,8 @@ print(f"peak r = {peak:.2f} nm, sigma_fit/sigma_noise = "
 
 ```python
 bg = deer.joint_background(t, V, bg_start=None, bg_end=None, dim=3.0,
-                           fit_dim=False, nu_dd=deer.NU_DD, n_r=60, rate_alpha=1.0)
+                           fit_dim=False, nu_dd=deer.NU_DD, n_r=60,
+                           rate_alpha=1.0, lam_pin_frac=0.5)
 ```
 
 The λ-pinned joint background of [`deer_invert_joint()`](#deer_invert_joint),
@@ -427,17 +470,25 @@ are insensitive to the $P(r)$ resolution, so this is ~30× faster than a full jo
 inversion — fast enough to re-run per background-start during Mellin validation. It
 backs [`deer_invert_mellin()`](#deer_invert_mellin) with `bg_engine='joint'`.
 
-Two robustness fixes versus the in-line joint fit, both aimed at the Mellin
+Three robustness measures versus the in-line joint fit, all aimed at the Mellin
 engine (which cannot absorb a residual background the way Tikhonov hides it as
 spurious long-$r$ mass):
 
-- **λ pinned over the full available tail** $[\text{bg\_start}, T_\max]$ rather
-  than $[\text{bg\_start}, \text{bg\_end}]$ — so $k$ is essentially independent of
-  `bg_end` and cannot slide to a near-flat background when `bg_end` is pulled in.
-- **The rate-fit's internal grid is capped at the trace-supported distance**
-  $r_\max \approx 5\,(T_\max/2)^{1/3}$ nm. Distances beyond $r_\max$ give a decay
-  so slow it is indistinguishable from the background; excluding them keeps $k$
-  determined on short traces.
+- **λ pinned over the later, more-decayed part of the tail** (`lam_pin_frac`, the
+  last 50 % of $[\text{bg\_start}, T_\max]$ by default). $\lambda$ is the
+  *asymptotic* baseline ($F\to0$); pinning $\langle F\rangle = 0$ over the whole
+  tail biases it high when a broad/long-$r$ component has not decayed ($\langle
+  F\rangle > 0$ there), underestimating $\lambda$ and pushing $k$ too steep — a
+  residual tail droop the Mellin engine cannot represent. The later window is more
+  decayed, so $k$ returns near-true. (The rate-fit residual still spans the whole
+  trace; `bg_end` only seeds the initial guess.)
+- **Adaptive rate-fit distance cap.** $k$ is fit on both the trace-supported tight
+  cap $r_\max \approx 5\,(T_\max/2)^{1/3}$ nm *and* a wider one, preferring the
+  wider result **unless** widening collapses the background toward flat ($k\to0$,
+  the long-$r$/background degeneracy the tight cap guards against). This stops a
+  genuine broad/long-$r$ component being forced into the background (which would
+  leave a Mellin-unrepresentable pedestal) while still keeping $k$ determined on
+  short single-peak traces.
 
 ---
 
@@ -452,7 +503,7 @@ $\varphi(u) = \int_0^1\cos(u(1-3x^2))\,dx$, on the critical line, vectorized ove
 `tau`. Computed in closed form — $\Phi(s) = \Gamma(s)\cos(\pi s/2)\int_0^1
 |1-3x^2|^{-s}dx$, the $x$-integral splitting (via $x = x_0\sin\theta$ and
 $x = x_0\cosh u$, $x_0 = 1/\sqrt3$) into an exact Beta-function term plus a smooth
-quadrature — avoiding the appendix ${}_3F_3$ hypergeometric. Valid for
+quadrature — avoiding ${}_3F_3$ hypergeometric. Valid for
 $0 < \operatorname{Re} s < 3/2$.
 
 ---
@@ -460,15 +511,31 @@ $0 < \operatorname{Re} s < 3/2$.
 ## mellin_signal_spectrum() { #mellin_signal_spectrum data-toc-label="mellin_signal_spectrum" }
 
 ```python
-Vimg = deer.mellin_signal_spectrum(t, F, tau, delta, F0=1.0, du=0.02)
+Vimg = deer.mellin_signal_spectrum(t, F, tau, delta, F0=1.0, du=0.02,
+                                   parabolic=True, fit_level=0.80)
 ```
 
 Mellin image $\tilde V(\tfrac12 + i\tau)$ of the form factor $F(T)$ via the
-$\delta$-split: on $[0,\delta]$ take $F \approx F_0$ and integrate analytically;
-on $[\delta, T_\max]$ substitute $u = \ln T$ so $e^{i\tau\ln T} \to e^{i\tau u}$
-has a *constant* frequency $\tau$, and integrate on a log-$T$ grid of step `du`
+$\delta$-split: on $[0,\delta]$ integrate analytically; on $[\delta, T_\max]$
+substitute $u = \ln T$ so $e^{i\tau\ln T} \to e^{i\tau u}$ has a *constant*
+frequency $\tau$, and integrate on a log-$T$ grid of step `du`
 (choose $du \lesssim \pi/\max|\tau|$). `t` in µs, only $T>0$ used; $F$ normalized
 to $F(0) = $ `F0`.
+
+The echo top is **parabolic** ($F$ is even in $T$ with negative curvature), so with
+**`parabolic`** (default) the $[0,\delta]$ term keeps the quadratic
+$F\approx F_0 + b\,T^2$ instead of assuming $F$ constant:
+
+$$
+\int_0^\delta (F_0 + b\,T^2)\,T^{s-1}\,dT
+  = F_0\,\frac{\delta^s}{s} + b\,\frac{\delta^{s+2}}{s+2},\qquad s=\tfrac12+i\tau.
+$$
+
+The curvature $b$ is least-squares fit over a widened low-$T$ window (out to where
+$F$ has fallen to `fit_level`·$F_0$), so a few $\delta$-wide samples cannot make it
+noisy. This removes a systematic error in the recovered $F_\text{fit}$ at the echo
+(the "thin parabola" near $t=0$) and lets $\delta$ be widened. Set
+`parabolic=False` for the original constant-$F$ split.
 
 ---
 
@@ -492,7 +559,7 @@ delta = deer.mellin_delta(t, F, level=0.95)
 ```
 
 Practical Mellin split point $\delta$: the first $T>0$ where the form factor has
-fallen to `level` of $F(0)$ (the paper's $F(\delta)\approx0.95$ estimate). Falls
+fallen to `level` of $F(0)$ ($F(\delta)\approx0.95$). Falls
 back to the first positive sample if $F$ never drops that far.
 
 ---
