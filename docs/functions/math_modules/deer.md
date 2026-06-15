@@ -361,7 +361,7 @@ res = deer.deer_invert_mellin(t, V, r=None, bg_start=None, bg_end=None,
                               bg_engine='joint', n_mc=0, ci_z=1.96, seed=0,
                               taumax_method='discrepancy', noise_space='V',
                               wiener=0.0, taumax_extend=True,
-                              extend_short_frac=0.18)
+                              extend_short_frac=0.18, fit_rmin_frac=0.18)
 ```
 
 **Model-free** DEER inversion by the analytic integral **Mellin transform**
@@ -399,13 +399,15 @@ $\tilde V$ by the $\delta$-split of the paper
     range — that is the method's signature, not real structure. Unlike Tikhonov it
     does not smear it across all $r$. The recovered `P_density` is kept **signed**
     (those ripples can dip below zero — they are *not* clipped/"corrected"). The
-    forward fit `F_fit`, however, is built from the **non-negative** density: a
-    negative density propagated through $K$ would flip the curvature of $F_\text{fit}$
-    at $t=0$ into a spurious double peak, so the time-domain *model* is clipped
-    (this changes only the fit curve, never the reported `P_density`, so $F_\text{fit}
-    \ne K\,P_\text{density}$ exactly). The clipping concentrates the short-$r$ noise
-    mass, so the echo top of $F_\text{fit}$ decays a little too fast at high noise —
-    a clean no-double-peak fit is preferred over matching that last bit of the top.
+    forward fit `F_fit`, however, is built from the **non-negative** density with a
+    **low-$r$ taper** (`fit_rmin_frac`): negatives propagated through $K$ would flip
+    the $t=0$ curvature into a spurious double peak (so they are clipped), and the
+    clipped short-$r$ noise spike would make the echo top decay too fast (a
+    too-narrow top), so the low-$r$ region — where the noise piles — is smoothly
+    down-weighted with a raised-cosine taper. This matches the echo top *and* avoids
+    the double peak. It changes only the fit curve, never the reported `P_density`
+    ($F_\text{fit}\ne K\,P_\text{density}$); a genuine short-$r$ peak is attenuated
+    (not deleted) in `F_fit` and is untouched in the displayed $P(r)$.
 
 - **`bg_engine`** — `'joint'` (default), `'sequential'`, or `'none'`, how the form
   factor is prepared (see [`joint_background()`](#joint_background) /
