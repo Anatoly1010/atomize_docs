@@ -390,8 +390,12 @@ $\tilde V$ by the $\delta$-split of the paper
   is **parabolic** $F\approx F_0 + b\,T^2$, so the $[0,\delta]$ term keeps that
   quadratic (not constant $F$) — removing a systematic error in $F_\text{fit}$ right
   at the echo (the "thin parabola" near $t=0$) and letting $\delta$ be wider. `None`
-  auto-selects $\delta$ at $F(\delta)\approx0.85$ (see
-  [`mellin_signal_spectrum()`](#mellin_signal_spectrum) / [`mellin_delta()`](#mellin_delta)).
+  auto-selects $\delta$ at $F(\delta)\approx0.85$, then **clips it to $[90, 120]$ ns**:
+  the floor keeps the analytic echo-top anchor wide enough on *sharp* (fast-decaying)
+  distributions — which otherwise cross the level within a couple of samples and leave
+  $F_\text{fit}$ too steep at $t=0$ — and the cap stops a slow-decaying long-$r$ trace
+  from over-smoothing $P(r)$. (See
+  [`mellin_signal_spectrum()`](#mellin_signal_spectrum) / [`mellin_delta()`](#mellin_delta).)
 - **`tau_max`, `n_tau`** — the Mellin variable runs over $[-\tau_\max, \tau_\max]$
   with `n_tau` samples. The high-$\tau$ cutoff is the regularizer. **`tau_max=None`
   auto-selects it** by `taumax_method` (see below).
@@ -555,12 +559,24 @@ i\tau)$ sampled on `tau`. Returns the real $p(w)$ for each `w`.
 ## mellin_delta() { #mellin_delta data-toc-label="mellin_delta" }
 
 ```python
-delta = deer.mellin_delta(t, F, level=0.95)
+delta = deer.mellin_delta(t, F, level=0.95, floor=0.09, cap=0.12)
 ```
 
 Practical Mellin split point $\delta$: the first $T>0$ where the form factor has
 fallen to `level` of $F(0)$ ($F(\delta)\approx0.95$). Falls
 back to the first positive sample if $F$ never drops that far.
+
+The raw level estimate is then **clipped to `[floor, cap]`** (µs; set either to
+`None` to disable, and both are clamped to the last sample). The **floor** is the
+key correction for *sharp* distributions: a fast-decaying form factor crosses
+`level` within a couple of samples, leaving the analytic parabolic $[0,\delta]$
+echo-top anchor too narrow (the "thin parabola"), so the recovered $F_\text{fit}$
+top comes out too steep and the short-$r$ density is unstable — widening $\delta$ to
+$\approx 90$ ns gives the parabolic term enough low-$T$ support. The **cap**
+($\approx 120$ ns) stops a slow-decaying (long-$r$) trace from over-smoothing
+$P(r)$ by integrating too much of the modulation analytically. Both bounds were
+tuned overlap-optimally over the synthetic benchmark (13 distributions × 4 noise
+levels × 2 conditions; the floor lifts e.g. `gauss_narrow` easy from 0.90 to 0.92).
 
 ---
 
