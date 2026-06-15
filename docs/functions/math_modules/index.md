@@ -75,6 +75,7 @@ Times in µs, distances in nm.
 | [`deer_invert_joint(t, V, …)`](deer.md#deer_invert_joint) | Joint fit of background + λ (λ-pinned) together with P(r) |
 | [`deer_invert_mellin(t, V, …)`](deer.md#deer_invert_mellin) | Model-free analytic Mellin-transform inversion (auto cutoff, MC CI) |
 | [`deer_validate(t, V, …)`](deer.md#deer_validate) | Ensemble validation: background-sweep → median P(r) + uncertainty band |
+| [`residual_whiteness(resid, …)`](deer.md#residual_whiteness) | Residual goodness-of-fit (Durbin–Watson, lag-1 autocorrelation, ACF) |
 | [`fit_zero_time(t, V, …)`](deer.md#fit_zero_time) | Fit the dipolar zero-time t₀ (reference time) |
 | [`tikhonov_ci(K, F, alpha, P, …)`](deer.md#tikhonov_ci) | Covariance 95% confidence band on the Tikhonov P(r) |
 | [`dipolar_kernel(t, r, …)`](deer.md#dipolar_kernel) | Orientation-averaged kernel K(t, r) (Fresnel closed form) |

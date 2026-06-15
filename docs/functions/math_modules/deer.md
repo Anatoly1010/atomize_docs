@@ -359,9 +359,10 @@ res = deer.deer_invert_mellin(t, V, r=None, bg_start=None, bg_end=None,
                               dim=3.0, fit_dim=False, nu_dd=deer.NU_DD,
                               delta=None, tau_max=30.0, n_tau=601,
                               bg_engine='joint', n_mc=0, ci_z=1.96, seed=0,
-                              taumax_method='discrepancy', noise_space='V',
+                              taumax_method='penalty', noise_space='V',
                               wiener=0.0, taumax_extend=True,
-                              extend_short_frac=0.18, fit_rmin_frac=0.18)
+                              extend_short_frac=0.18, fit_rmin_frac=0.18,
+                              signed_fit=True)
 ```
 
 **Model-free** DEER inversion by the analytic integral **Mellin transform**
@@ -399,15 +400,18 @@ $\tilde V$ by the $\delta$-split of the paper
     range — that is the method's signature, not real structure. Unlike Tikhonov it
     does not smear it across all $r$. The recovered `P_density` is kept **signed**
     (those ripples can dip below zero — they are *not* clipped/"corrected"). The
-    forward fit `F_fit`, however, is built from the **non-negative** density with a
-    **low-$r$ taper** (`fit_rmin_frac`): negatives propagated through $K$ would flip
-    the $t=0$ curvature into a spurious double peak (so they are clipped), and the
-    clipped short-$r$ noise spike would make the echo top decay too fast (a
-    too-narrow top), so the low-$r$ region — where the noise piles — is smoothly
-    down-weighted with a raised-cosine taper. This matches the echo top *and* avoids
-    the double peak. It changes only the fit curve, never the reported `P_density`
-    ($F_\text{fit}\ne K\,P_\text{density}$); a genuine short-$r$ peak is attenuated
-    (not deleted) in `F_fit` and is untouched in the displayed $P(r)$.
+    forward fit `F_fit` is, **by default (`signed_fit=True`), built from that same
+    signed density** ($F_\text{fit}=K\,P_\text{density}$) — the honest forward model
+    of what the inverse produced, which reproduces the echo-top/trough amplitude
+    faithfully (a whiter residual). With `signed_fit=False` it is instead built from
+    the **non-negative** density with a **low-$r$ taper** (`fit_rmin_frac`): there
+    the negatives propagated through $K$ would flip the $t=0$ curvature into a
+    spurious double peak (so they are clipped), and the clipped short-$r$ noise spike
+    would make the echo top decay too fast, so the low-$r$ region is smoothly
+    down-weighted with a raised-cosine taper. Prefer the clipped form for low-$\lambda$
+    data carrying a strong short-$r$ noise spike (where the negatives can double-peak
+    the echo top). Either way this affects only the fit curve / `sigma_fit` /
+    whiteness, **never the reported `P_density`**.
 
 - **`bg_engine`** — `'joint'` (default), `'sequential'`, or `'none'`, how the form
   factor is prepared (see [`joint_background()`](#joint_background) /
@@ -434,10 +438,18 @@ $\tilde V$ by the $\delta$-split of the paper
 - **`tau_max`, `n_tau`** — the Mellin variable runs over $[-\tau_\max, \tau_\max]$
   with `n_tau` samples. The high-$\tau$ cutoff is the regularizer. **`tau_max=None`
   auto-selects it** by `taumax_method` (see below).
-- **`taumax_method`** — `'discrepancy'` (default, noise-floor anchored) or
-  `'lcurve'` (corner of $\log\sigma_\text{fit}$ vs $\log\lVert L_2 P\rVert$).
-  L-curve is provided for comparison but under-regularizes on DEER (the residual
-  is nearly flat in $\tau_\max$, so the corner is ill-defined) — prefer the default.
+- **`taumax_method`** — `'penalty'` (default), `'discrepancy'` (noise-floor
+  anchored), or `'lcurve'` (corner of $\log\sigma_\text{fit}$ vs
+  $\log\lVert L_2 P\rVert$). **`'penalty'`** minimizes the forward-fit RMS
+  regularized by a **symmetric-noise penalty**: $\operatorname{argmin}\big(
+  \text{rmsF}/\min(\text{rmsF}) + \text{neg}\big)$, where `neg` is the
+  $|$negative area$|$ of the signed density (noise enters as paired $+$bump/$-$dip
+  excursions, so the negative lobe measures it directly). The ratio term forces an
+  adequate fit; the `neg` term stops over-extension once the fit plateaus. It tracks
+  the overlap-optimal oracle within $\sim0.002$–$0.003$ in both the no-background and
+  with-background regimes, beating the older discrepancy floor + leakage extension.
+  L-curve is provided for comparison but under-regularizes on DEER (the residual is
+  nearly flat in $\tau_\max$, so the corner is ill-defined) — prefer the default.
 - **`noise_space`** — `'V'` (default) or `'F'`: the space the noise floor and
   per-cutoff residual are measured in for the discrepancy selection. `'V'` (the
   whole background-normalized curve) is stationary and robust; `'F'` (the
@@ -450,7 +462,12 @@ $\tilde V$ by the $\delta$-split of the paper
   clean/low-noise data extends (sharper echo top, bimodals resolved — a clean
   narrow Gaussian goes 0.92 → 0.96 overlap), noisy data stays at the discrepancy
   pick (leakage rises immediately). Only for `taumax_method='discrepancy'` with
-  auto `tau_max`.
+  auto `tau_max` — the default `'penalty'` method subsumes it and does not use it.
+- **`signed_fit`** (default `True`) — build the forward fit (and the penalty
+  selector's `rmsF`) from the honest **signed** density $K\,P$ rather than the
+  clipped, low-$r$-tapered non-negative one. See the *"Noise groups at short $r$"*
+  box above; set `False` for low-$\lambda$ data where the short-$r$ negative spike
+  would double-peak the echo top.
 - **`wiener`** (default `0` = off) — strength of a **Wiener-regularized inverse
   filter** on the kernel-image division. The plain inverse $1/\Phi(\tau)$ amplifies
   noise where $\Phi$ is small (high $|\tau|$), and the $r$-space Jacobian
@@ -472,19 +489,22 @@ $\tilde V$ by the $\delta$-split of the paper
   realizations: `P_lower`/`P_upper` $= $ `P_density` $\mp\,$`ci_z`$\cdot$`P_std`.
   ~100 realizations are typical.
 
-!!! tip "Automatic cutoff — discrepancy anchored to the noise floor"
-    The cutoff $\tau_\max$ regularizes the inversion: $\sigma_\text{fit}$ (the
-    V-space forward residual) falls with $\tau_\max$ and **flattens** at the noise
-    level. Chasing its *minimum* overshoots below the floor — an over-fit that
-    injects the noisy high-$\tau$ spectrum into $P(r)$ (roughness explodes for a
-    noise-level $\sigma_\text{fit}$ gain). So the routine instead picks the
-    **smallest cutoff whose $\sigma_\text{fit}$ reaches the noise floor** within its
-    statistical spread (floor from the V residual's successive differences
-    $/\sqrt2$; tolerance $\sim 2/\sqrt{2N}$). This self-adapts: clean data needs a
-    large cutoff to reach the tiny floor (keeps sharp features), noisy/short data
-    reaches it early and stays smooth. `sigma_fit` and the tail `sigma_noise` are
-    reported so the regime stays visible ($\approx$ matched, $\gg$ underfit,
-    $\ll$ overfit).
+!!! tip "Automatic cutoff — RMS penalized by symmetric noise (default)"
+    The cutoff $\tau_\max$ regularizes the inversion: the forward-fit RMS falls as
+    it captures the parabolic echo top, then sits on a **broad noise-floor
+    plateau**, so neither chasing its minimum (over-extends, injects the noisy
+    high-$\tau$ spectrum into $P(r)$) nor the discrepancy floor (under-shoots before
+    $P(r)$ has sharpened) is right. The injected noise enters the area-normalized
+    **signed** density as paired $+$bump/$-$dip excursions, so its $|$negative
+    area$|$ (`neg`) measures it directly. The default `'penalty'` method picks
+    $\operatorname{argmin}\big(\text{rmsF}/\min(\text{rmsF}) + \text{neg}\big)$: the
+    ratio term ($\ge 1$, large while the echo top is under-resolved) forces an
+    adequate fit, the `neg` term halts the extension the moment the cutoff would
+    only add symmetric noise. Self-adapting: clean data plateaus late (sharp $P(r)$
+    kept), noisy data accrues `neg` early (stays smooth). `sigma_fit` and the tail
+    `sigma_noise` are reported so the regime stays visible ($\approx$ matched,
+    $\gg$ underfit, $\ll$ overfit), and `whiteness` flags a residual that is still
+    structured (see [`residual_whiteness()`](#residual_whiteness)).
 
 Returns the same dict shape as [`deer_invert()`](#deer_invert) (so the GUI and
 exporters are shared), with these Mellin-specific keys:
@@ -500,6 +520,7 @@ exporters are shared), with these Mellin-specific keys:
 | `delta`, `tau_max` | The split point and cutoff used |
 | `auto_taumax` | Whether `tau_max` was auto-selected |
 | `sigma_fit`, `sigma_noise` | Forward-fit residual vs tail noise floor (the discrepancy diagnostic) |
+| `whiteness` | Residual-whiteness goodness-of-fit dict (Durbin–Watson, lag-1 autocorrelation, ACF + white-noise band) — see [`residual_whiteness()`](#residual_whiteness) |
 | `tau`, `V_image`, `kernel_image` | The $\tau$ grid and the Mellin spectra $\tilde V(\tau)$, $\Phi(\tau)$ |
 
 `alpha` is `NaN` and `l_curve` is `None` (no Tikhonov regularization here).
@@ -685,6 +706,37 @@ $\approx 90$ ns gives the parabolic term enough low-$T$ support. The **cap**
 $P(r)$ by integrating too much of the modulation analytically. Both bounds were
 tuned overlap-optimally over the synthetic benchmark (13 distributions × 4 noise
 levels × 2 conditions; the floor lifts e.g. `gauss_narrow` easy from 0.90 to 0.92).
+
+---
+
+## residual_whiteness() { #residual_whiteness data-toc-label="residual_whiteness" }
+
+```python
+w = deer.residual_whiteness(resid, max_lag=None)
+```
+
+**Residual-whiteness goodness-of-fit diagnostic** (DeerLab-style). An adequate DEER
+fit leaves a **white** (uncorrelated) residual; a structured, *oscillating* residual
+is the hallmark of a distance distribution that has not captured all the dipolar
+modulation — typically an over-smoothed (too-broad) $P(r)$ at an over-regularized
+cutoff, but also missing dipolar pathways or orientation selection. Such model
+inadequacy shows up as **autocorrelation** even when the residual *amplitude* already
+matches the noise level — so the discrepancy principle alone cannot see it (Edwards &
+Stoll, *JMR* **288** (2018) 58; Fábregas Ibáñez *et al.*, *Magn. Reson.* **1** (2020)
+209). Returned as a dict:
+
+| Key | Description |
+| --- | ----------- |
+| `durbin_watson` | $\mathrm{DW}=\sum(e_i-e_{i-1})^2/\sum e_i^2\in[0,4]$; $\approx 2$ white, $<2$ positive autocorrelation (the oscillating-residual case), $>2$ anti-correlation |
+| `acf1` | lag-1 autocorrelation $r_1=\sum e_i e_{i-1}/\sum e_i^2$ ($\approx 1-\mathrm{DW}/2$); 0 = white — the headline number |
+| `acf`, `lags` | the autocorrelation function vs lag (for an autocorrelogram) |
+| `ci95` | $\pm 1.96/\sqrt N$, the 95 % white-noise band for the ACF |
+| `white` | bool, $\lvert r_1\rvert \le$ `ci95` (residual consistent with white noise) |
+
+[`deer_invert_mellin()`](#deer_invert_mellin) runs it on the V-space fit residual and
+returns it under `whiteness`. The standalone **DEER / PDS Analysis** tool surfaces it
+as the *Residual* and *Residual ACF* top-plot views (autocorrelogram + white-noise
+band) and the `DW`/$r_1$ verdict in the info panel.
 
 ---
 
