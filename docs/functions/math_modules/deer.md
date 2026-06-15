@@ -101,8 +101,11 @@ invert to $P(r)$ by Tikhonov + NNLS. This is what most users want.
   `'sequential'` (default; fit the background tail, divide it out, then invert),
   `'joint'` (fit background + modulation depth together with $P(r)$ in one pass —
   see [`deer_invert_joint()`](#deer_invert_joint); more robust when the background
-  window is short or hard to place), or `'mellin'` (the model-free analytic
-  transform — see [`deer_invert_mellin()`](#deer_invert_mellin)).
+  window is short or hard to place), `'mellin'` (the model-free analytic
+  transform — see [`deer_invert_mellin()`](#deer_invert_mellin)), or `'none'`
+  (**no background**: $B(t)=1$, fit only the modulation depth $\lambda$ — for
+  pre-corrected / simulated / full-modulation $\lambda\!\to\!1$ data; fitting a
+  decay there would absorb the dipolar decay and badly broaden $P(r)$).
 - **`**kwargs`** — forwarded to [`deer_invert_mellin()`](#deer_invert_mellin) when
   `engine='mellin'` (`delta`, `tau_max`, `n_tau`, `bg_engine`, `n_mc`, …);
   ignored otherwise.
@@ -222,7 +225,8 @@ conservative linear approximation (as in DeerLab's moment-based CI).
 ```python
 t0 = deer.fit_zero_time(t, V, bg_start=None, bg_end=None,
                         n_grid=16, search_frac=0.15, refine=True,
-                        method='parabola', drop=0.15, smooth_w=5, **kwargs)
+                        method='parabola', drop=0.15, smooth_w=5,
+                        xcheck=True, xcheck_tol_frac=0.004, **kwargs)
 ```
 
 Find the dipolar **zero-time** $t_0$ (the reference time). DEER is sensitive to
@@ -252,6 +256,26 @@ Two methods, selected by **`method`**:
   parabolic `refine`. For speed it uses a fixed-$\alpha$ *sequential* inversion on
   a capped distance grid; `**kwargs` pass through to [`deer_invert()`](#deer_invert)
   (`r`, `dim`, `fit_dim`, …). Robust when the echo maximum is ambiguous or absent.
+
+**`xcheck`** (default **off**, opt-in) targets the parabola's one failure mode: a
+**flat, shallow echo top at high noise**. There the maximum is ill-defined and an
+upward noise excursion late on the top drags the vertex tens of ns **late** — a
+systematic late bias that grows with noise (≈ +27 ns at σ = 0.04 on the synthetic
+benchmark, vs ~1 ns at low noise). With `xcheck` the `'residual'` estimate is
+computed independently and, when the two disagree by more than `xcheck_tol_frac`
+of the trace span (~0.4 %), the more robust residual is used.
+
+!!! warning "Off by default — does not improve end-to-end accuracy"
+    The cross-check lowers the **mean** $t_0$ error (5.1 → 4.0 ns on the
+    benchmark) but is left off because it does **not** improve the recovered
+    $P(r)$: (1) at extreme noise (σ = 0.04) the residual fallback is itself
+    high-variance and can overshoot tens of ns *early*, raising the **worst-case**
+    $t_0$ error (29.6 → 45.9 ns); (2) the Mellin forward model carries a small
+    residual bias that a slightly-late $t_0$ happens to compensate, so a *more
+    accurate* $t_0$ can **lower** the distance overlap (benchmark mean
+    0.853 → 0.838). It helps moderate-noise traces (σ ≈ 0.02) but hurts the
+    cleanest and the noisiest. Enable only when an accurate $t_0$ per se is the
+    goal, not better $P(r)$.
 
 Returns $t_0$ in the same units as `t` (µs).
 
@@ -335,7 +359,9 @@ res = deer.deer_invert_mellin(t, V, r=None, bg_start=None, bg_end=None,
                               dim=3.0, fit_dim=False, nu_dd=deer.NU_DD,
                               delta=None, tau_max=30.0, n_tau=601,
                               bg_engine='joint', n_mc=0, ci_z=1.96, seed=0,
-                              taumax_method='discrepancy', noise_space='V')
+                              taumax_method='discrepancy', noise_space='V',
+                              wiener=0.0, taumax_extend=True,
+                              extend_short_frac=0.18)
 ```
 
 **Model-free** DEER inversion by the analytic integral **Mellin transform**
@@ -377,14 +403,21 @@ $\tilde V$ by the $\delta$-split of the paper
     negative density propagated through $K$ would flip the curvature of $F_\text{fit}$
     at $t=0$ into a spurious double peak, so the time-domain *model* is clipped
     (this changes only the fit curve, never the reported `P_density`, so $F_\text{fit}
-    \ne K\,P_\text{density}$ exactly).
+    \ne K\,P_\text{density}$ exactly). The clipping concentrates the short-$r$ noise
+    mass, so the echo top of $F_\text{fit}$ decays a little too fast at high noise —
+    a clean no-double-peak fit is preferred over matching that last bit of the top.
 
-- **`bg_engine`** — `'joint'` (default) or `'sequential'`, how the form factor is
-  prepared (see [`joint_background()`](#joint_background) /
+- **`bg_engine`** — `'joint'` (default), `'sequential'`, or `'none'`, how the form
+  factor is prepared (see [`joint_background()`](#joint_background) /
   [`background_fit()`](#background_fit)). **This matters a lot:** the Mellin kernel
   $\varphi(wT)\to0$, so the recovered density cannot represent a DC pedestal left
   by an imperfect background — a too-shallow background shows up as a constant gap
   between data and fit. The joint engine gives a clean $F\to0$ and is the default.
+  `'none'` sets $B(t)=1$ and fits only $\lambda$ — use it for data with **no**
+  background (pre-corrected / simulated / full-modulation $\lambda\!\to\!1$): there
+  the form factor decays to zero on its own, so fitting a background absorbs that
+  dipolar decay and badly broadens $P(r)$ (a $\sigma\,0.20$ Gaussian came out at
+  $\sigma\,0.7$, overlap $0.81$ vs $0.98$ with `'none'`).
 - **`delta`** — the Mellin split point $\delta$ (µs): on $[0,\delta]$ the form
   factor is integrated analytically, $[\delta, T_\max]$ numerically. The echo top
   is **parabolic** $F\approx F_0 + b\,T^2$, so the $[0,\delta]$ term keeps that
@@ -407,6 +440,27 @@ $\tilde V$ by the $\delta$-split of the paper
   per-cutoff residual are measured in for the discrepancy selection. `'V'` (the
   whole background-normalized curve) is stationary and robust; `'F'` (the
   background-corrected form factor) is noise-amplified toward the tail.
+- **`taumax_extend`** (default on) — **resolution-aware extension** of the auto
+  cutoff. The discrepancy stops once the data residual hits the noise floor, but
+  $P(r)$ can keep **sharpening** past that point; the cutoff is then pushed up
+  while the spurious **short-$r$ leakage** (bottom `extend_short_frac` of the $r$
+  grid) keeps dropping, and stopped at the first increase. Self-adapting:
+  clean/low-noise data extends (sharper echo top, bimodals resolved — a clean
+  narrow Gaussian goes 0.92 → 0.96 overlap), noisy data stays at the discrepancy
+  pick (leakage rises immediately). Only for `taumax_method='discrepancy'` with
+  auto `tau_max`.
+- **`wiener`** (default `0` = off) — strength of a **Wiener-regularized inverse
+  filter** on the kernel-image division. The plain inverse $1/\Phi(\tau)$ amplifies
+  noise where $\Phi$ is small (high $|\tau|$), and the $r$-space Jacobian
+  ($\sim r^{-2.5}$) concentrates it into a spurious **short-$r$ spike** that can
+  steal the real peak on noisy bimodal traces. The filter
+  $\overline{\Phi}/(|\Phi|^2+\varepsilon)$ rolls that off, with $\varepsilon$ scaled
+  by the measured tail noise so it is a no-op on clean data and leaves genuine
+  short-$r$ peaks intact. A value $\approx 0.12$ helps at **moderate** noise
+  ($\sigma\approx0.02$: removes the spike, overlap +0.1–0.2). Off by default — at
+  extreme noise the result is dominated by zero-time/$\tau_\max$ auto-selection
+  instability, where the filter is a net wash; enable it when the data are
+  moderately noisy and show the tell-tale short-$r$ spike.
 - **`n_mc`** — number of Monte-Carlo noise realizations for the confidence band
   (0 = off). The band is built by **additive-noise propagation**: the white
   electrical-noise level is read from the **decayed tail of $V$** by smoothing
@@ -455,6 +509,58 @@ peak = res['r'][res['P_density'].argmax()]
 print(f"peak r = {peak:.2f} nm, sigma_fit/sigma_noise = "
       f"{res['sigma_fit']/res['sigma_noise']:.2f}")
 ```
+
+---
+
+## deer_mellin_consensus() { #deer_mellin_consensus data-toc-label="deer_mellin_consensus" }
+
+```python
+res = deer.deer_mellin_consensus(t, V, r=None, bg_start=None, bg_end=None,
+                                 dim=3.0, fit_dim=False, nu_dd=deer.NU_DD,
+                                 n_t0=9, n_mc=6, chi_tol=1.05,
+                                 taumax_window=(0.8, 0.9, 1.0, 1.1, 1.25),
+                                 n_bg=5, bg_span_frac=0.05,
+                                 gate_rel_noise=0.06, seed=0,
+                                 percentiles=(2.5, 97.5), **kwargs)
+```
+
+**Robust ("consensus") Mellin inversion for noisy traces.** At high *relative*
+noise ($\sigma/\lambda \gtrsim 0.06$) a DEER trace **does not determine** the
+zero-time $t_0$ *or* the cutoff $\tau_\max$ — the V-space forward residual is white
+(structureless) across a wide range of both, so they are **unidentifiable** and a
+single auto-pick swings wildly per noise realization (recovered overlap can move
+0.5→0.85 with $t_0$ changes the residual cannot even see). The honest answer is not
+a sharper point estimate but a **consensus** over everything the data cannot rule
+out, plus a **band** that shows the real uncertainty — the model-free analogue of
+[`deer_validate()`](#deer_validate).
+
+- **Identifiable** (rel noise `< gate_rel_noise`): the single pick is reliable, so
+  it is returned with an `n_mc` Monte-Carlo band (`consensus=False`). Genuinely
+  sharp clean distributions are left untouched.
+- **Unidentifiable** (rel noise `≥ gate_rel_noise`): build an ensemble over the
+  data-consistent zero-times (`n_t0` grid kept within `chi_tol` of the best
+  forward-fit χ) × a `taumax_window` of cutoffs *around* the auto-pick (fractions,
+  so it tracks the data), **plus an `n_bg`-point background-start sweep** (±
+  `bg_span_frac` of the trace — subsuming the [`deer_validate()`](#deer_validate)
+  axis) and `n_mc` measurement-noise realizations. The contributions are *additive*
+  (not a full multiplied grid) to keep the cost down and the per-distance median
+  smooth.
+  The reported $P(r)$ is the ensemble **median** with a `percentiles` band
+  (`consensus=True`).
+
+Same return dict as [`deer_invert_mellin()`](#deer_invert_mellin) (so the GUI and
+exporters are shared), plus `consensus` (bool), `rel_noise`, `n_trials`,
+`t0`, `t0_consistent`, `tau_maxs`, `ensemble`, and `base` (the central single-pick
+result, for the time-domain forward-fit display). `**kwargs` pass through to
+[`deer_invert_mellin()`](#deer_invert_mellin) (`delta`, `taumax_method`, `wiener`, …).
+
+!!! tip "When to use"
+    On a synthetic benchmark this lifts the mean true↔recovered overlap on the
+    hard, moderately-noisy cases by **+0.1 to +0.16** (e.g. a narrow + broad
+    bimodal at $\sigma=0.02$: 0.68 → 0.84) while leaving clean traces unchanged.
+    Prefer it whenever the data are noisy or the single-pick $P(r)$ shows the
+    tell-tale short-$r$ noise spike; for clean data it self-reduces to the single
+    pick, so it is always a safe default for noisy work.
 
 ---
 
@@ -615,7 +721,10 @@ bg = deer.background_fit(t, V, bg_start, bg_end=None, dim=3.0, fit_dim=False)
 
 Fits the intermolecular background on the window $\text{bg\_start} \le t \le
 \text{bg\_end}$ and returns the background-corrected form factor. $V$ is
-normalized so $V(0) = 1$; the tail window is fit to
+normalized so $V(0) = 1$ — using a **quadratic-vertex estimate** of the echo top
+(over ±5 samples around $t=0$) rather than the single nearest sample, so a noisy
+echo-max point cannot scale the whole form factor and narrow the recovered echo
+top at high noise. The tail window is fit to
 $(1-\lambda)\,e^{-(k|t|)^{d/3}}$ with modulation depth $\lambda = 1 - A$, and
 
 $$
