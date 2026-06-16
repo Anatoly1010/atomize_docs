@@ -557,6 +557,15 @@ print(f"peak r = {peak:.2f} nm, sigma_fit/sigma_noise = "
 
 ## deer_mellin_consensus() { #deer_mellin_consensus data-toc-label="deer_mellin_consensus" }
 
+!!! warning "Superseded — kept for explicit/diagnostic use only"
+    The noise-adaptive $\delta$ + short-r taper now default in
+    [`deer_invert_mellin()`](#deer_invert_mellin) make the **single pick more
+    accurate** than this marginalization on the benchmark (no-bg mean overlap 0.884
+    vs 0.861 — the ensemble median over $t_0$/$\tau_\max$-shifted curves
+    over-broadens), so the DEER GUI no longer exposes a consensus mode. Prefer the
+    plain single pick; use this only to inspect the $t_0\times\tau_\max$ ambiguity
+    explicitly.
+
 ```python
 res = deer.deer_mellin_consensus(t, V, r=None, bg_start=None, bg_end=None,
                                  dim=3.0, fit_dim=False, nu_dd=deer.NU_DD,
