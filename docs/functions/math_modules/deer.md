@@ -362,7 +362,7 @@ res = deer.deer_invert_mellin(t, V, r=None, bg_start=None, bg_end=None,
                               taumax_method='penalty', noise_space='V',
                               wiener=0.0, taumax_extend=True,
                               extend_short_frac=0.18, fit_rmin_frac=0.18,
-                              signed_fit=True)
+                              signed_fit=True, taper_short=True)
 ```
 
 **Model-free** DEER inversion by the analytic integral **Mellin transform**
@@ -394,24 +394,39 @@ $f(r)$. The kernel image $\Phi$ is computed in closed form
 $\tilde V$ by the $\delta$-split of the paper
 ([`mellin_signal_spectrum()`](#mellin_signal_spectrum)).
 
-!!! info "Noise groups at short $r$ — and is kept signed"
-    The whole chain is linear, so noise enters $f(r)$ **additively**. It
-    consistently piles up as ripples at **short distances**, below the reliable
-    range — that is the method's signature, not real structure. Unlike Tikhonov it
-    does not smear it across all $r$. The recovered `P_density` is kept **signed**
-    (those ripples can dip below zero — they are *not* clipped/"corrected"). The
-    forward fit `F_fit` is, **by default (`signed_fit=True`), built from that same
-    signed density** ($F_\text{fit}=K\,P_\text{density}$) — the honest forward model
-    of what the inverse produced, which reproduces the echo-top/trough amplitude
-    faithfully (a whiter residual). With `signed_fit=False` it is instead built from
-    the **non-negative** density with a **low-$r$ taper** (`fit_rmin_frac`): there
-    the negatives propagated through $K$ would flip the $t=0$ curvature into a
-    spurious double peak (so they are clipped), and the clipped short-$r$ noise spike
-    would make the echo top decay too fast, so the low-$r$ region is smoothly
-    down-weighted with a raised-cosine taper. Prefer the clipped form for low-$\lambda$
-    data carrying a strong short-$r$ noise spike (where the negatives can double-peak
-    the echo top). Either way this affects only the fit curve / `sigma_fit` /
-    whiteness, **never the reported `P_density`**.
+!!! info "The short-$r$ noise spike (\"double peak near $t=0$\") — and how it is tamed"
+    The whole chain is linear, so noise enters $f(r)$ **additively**, and the
+    $r$-space Jacobian ($\sim r^{-2.5}$) piles it into a spurious spike at **short
+    distances** — the visible **"double peak near $t=0$"** in $P(r)$ — and that same
+    high-$|\tau|$ content makes the forward-fit echo top decay too fast (a
+    **too-narrow parabola**). Two natural, default-on mechanisms tame this **without
+    distorting the genuine peaks** (an earlier amplitude-based Wiener shrink / hard
+    significance gate were rejected — they raised the overlap metric but *carved*
+    smooth shoulders and left flat dead zones):
+
+    - **Noise-adaptive $\delta$** (the source fix). $\delta$ is the split between the
+      clean analytic **parabola** term ($[0,\delta]$) and the numeric Mellin integral
+      over $[\delta, T_\max]$ — and the numeric part is where the high-$|\tau|$ noise
+      enters. $\delta$'s floor/cap scale with the measured relative noise
+      $\sigma_e/\lambda$: unchanged $0.09/0.12$ on clean data (sharp resolution kept),
+      raised to $\sim0.13/0.16$ when noisy. This suppresses the spike **and** restores
+      the echo-top width *at source* (benchmark forward-fit half-width vs the true
+      $F$: $0.78\to\sim1.0$ at $\sigma=0.04$); it does **not** touch the displayed
+      density.
+    - **`taper_short`** (default on). A purely **geometric** raised-cosine
+      (`fit_rmin_frac`: 0 at the grid edge → 1 by that fraction of the range)
+      multiplies the displayed **signed** density so $P(r)$ goes *smoothly* to zero at
+      the unreliable short-$r$ edge instead of carrying the residual spike. Because it
+      is distance-based (not amplitude- or noise-based), the mid/long-$r$ density is
+      **bit-identical** to the honest Mellin result — no shape carving, no hard zeros
+      — and a genuine short-$r$ peak is attenuated, not deleted. The tapered density
+      also feeds `F_fit`, so the echo top matches the data. Set `taper_short=False`
+      for the raw signed density (which can dip below zero) plus the separate
+      `signed_fit` / low-$r$-taper forward model.
+
+    Together: on the synthetic benchmark the short-$r$ spurious mass at $\sigma=0.04$
+    drops from $\sim$20% to $\sim$2% on the sharp bimodals with the echo-top width
+    restored, mean overlap $0.854\to0.870$, and the displayed $P(r)$ stays natural.
 
 - **`bg_engine`** — `'joint'` (default), `'sequential'`, or `'none'`, how the form
   factor is prepared (see [`joint_background()`](#joint_background) /
@@ -429,27 +444,30 @@ $\tilde V$ by the $\delta$-split of the paper
   is **parabolic** $F\approx F_0 + b\,T^2$, so the $[0,\delta]$ term keeps that
   quadratic (not constant $F$) — removing a systematic error in $F_\text{fit}$ right
   at the echo (the "thin parabola" near $t=0$) and letting $\delta$ be wider. `None`
-  auto-selects $\delta$ at $F(\delta)\approx0.85$, then **clips it to $[90, 120]$ ns**:
-  the floor keeps the analytic echo-top anchor wide enough on *sharp* (fast-decaying)
-  distributions — which otherwise cross the level within a couple of samples and leave
-  $F_\text{fit}$ too steep at $t=0$ — and the cap stops a slow-decaying long-$r$ trace
-  from over-smoothing $P(r)$. (See
-  [`mellin_signal_spectrum()`](#mellin_signal_spectrum) / [`mellin_delta()`](#mellin_delta).)
+  auto-selects $\delta$ at $F(\delta)\approx0.85$, then **clips it to a noise-adaptive
+  $[90, 120]$ ns window**: the clip floor/cap are **raised with the measured relative
+  noise** $\sigma_e/\lambda$ (unchanged on clean data, pushed to $\sim130/160$ ns at
+  $\sigma=0.04$, $\lambda=0.4$). A larger $\delta$ hands more of the steep, noisy
+  near-echo region to the clean analytic parabola and less to the numeric integral —
+  which is where the high-$|\tau|$ noise that forms the short-$r$ spike and the
+  too-narrow parabola enters — so both are suppressed **at source** without
+  over-smoothing sharp distributions at low noise. (See
+  [`mellin_signal_spectrum()`](#mellin_signal_spectrum) / [`mellin_delta()`](#mellin_delta)
+  and the info box above.)
 - **`tau_max`, `n_tau`** — the Mellin variable runs over $[-\tau_\max, \tau_\max]$
   with `n_tau` samples. The high-$\tau$ cutoff is the regularizer. **`tau_max=None`
   auto-selects it** by `taumax_method` (see below).
 - **`taumax_method`** — `'penalty'` (default), `'discrepancy'` (noise-floor
-  anchored), or `'lcurve'` (corner of $\log\sigma_\text{fit}$ vs
-  $\log\lVert L_2 P\rVert$). **`'penalty'`** minimizes the forward-fit RMS
-  regularized by a **symmetric-noise penalty**: $\operatorname{argmin}\big(
-  \text{rmsF}/\min(\text{rmsF}) + \text{neg}\big)$, where `neg` is the
-  $|$negative area$|$ of the signed density (noise enters as paired $+$bump/$-$dip
-  excursions, so the negative lobe measures it directly). The ratio term forces an
-  adequate fit; the `neg` term stops over-extension once the fit plateaus. It tracks
-  the overlap-optimal oracle within $\sim0.002$–$0.003$ in both the no-background and
-  with-background regimes, beating the older discrepancy floor + leakage extension.
-  L-curve is provided for comparison but under-regularizes on DEER (the residual is
-  nearly flat in $\tau_\max$, so the corner is ill-defined) — prefer the default.
+  anchored), or `'lcurve'`. **`'penalty'`** minimises the forward-fit RMS regularised
+  by a symmetric-noise penalty (the $|$negative area$|$ of the signed density): the
+  ratio term forces an adequate fit while the penalty halts the extension once the
+  cutoff would only add symmetric high-$\tau$ noise — self-adapting (clean data keeps
+  sharp features, noisy data stays smooth) and tracking the overlap-optimal oracle
+  more closely than the discrepancy floor. `'discrepancy'` picks the smallest cutoff
+  reaching the noise floor, then applies the `taumax_extend` resolution extension.
+  `'lcurve'` (corner of $\log\sigma_\text{fit}$ vs $\log\lVert L_2 P\rVert$) is for
+  comparison only — it under-regularizes on DEER (the residual is nearly flat in
+  $\tau_\max$, so the corner is ill-defined).
 - **`noise_space`** — `'V'` (default) or `'F'`: the space the noise floor and
   per-cutoff residual are measured in for the discrepancy selection. `'V'` (the
   whole background-normalized curve) is stationary and robust; `'F'` (the
@@ -465,7 +483,7 @@ $\tilde V$ by the $\delta$-split of the paper
   auto `tau_max` — the default `'penalty'` method subsumes it and does not use it.
 - **`signed_fit`** (default `True`) — build the forward fit (and the penalty
   selector's `rmsF`) from the honest **signed** density $K\,P$ rather than the
-  clipped, low-$r$-tapered non-negative one. See the *"Noise groups at short $r$"*
+  clipped, low-$r$-tapered non-negative one. See the *"short-$r$ noise spike"*
   box above; set `False` for low-$\lambda$ data where the short-$r$ negative spike
   would double-peak the echo top.
 - **`wiener`** (default `0` = off) — strength of a **Wiener-regularized inverse
@@ -479,7 +497,18 @@ $\tilde V$ by the $\delta$-split of the paper
   ($\sigma\approx0.02$: removes the spike, overlap +0.1–0.2). Off by default — at
   extreme noise the result is dominated by zero-time/$\tau_\max$ auto-selection
   instability, where the filter is a net wash; enable it when the data are
-  moderately noisy and show the tell-tale short-$r$ spike.
+  moderately noisy and show the tell-tale short-$r$ spike. (With the default
+  adaptive-$\delta$ + `taper_short`, the spike is already largely handled, so
+  `wiener` is rarely needed.)
+- **`taper_short`** (default `True`) — smoothly taper the **displayed** $P(r)$ to zero
+  at the unreliable short-$r$ edge with a geometric raised-cosine (`fit_rmin_frac`),
+  removing the residual short-$r$ noise spike (the "double peak") while leaving
+  mid/long-$r$ **bit-identical** to the honest Mellin result. The tapered density also
+  feeds `F_fit`. See the info box above. `False` returns the raw signed density.
+- **`signed_fit`** (default `True`) — when `taper_short=False`, build `F_fit` from the
+  raw signed density (faithful echo-top amplitude); `False` uses the clipped,
+  low-$r$-tapered non-negative density instead (guards a double-peaked echo top from a
+  large short-$r$ negative spike on low-$\lambda$ data). Ignored when `taper_short=True`.
 - **`n_mc`** — number of Monte-Carlo noise realizations for the confidence band
   (0 = off). The band is built by **additive-noise propagation**: the white
   electrical-noise level is read from the **decayed tail of $V$** by smoothing
@@ -536,6 +565,15 @@ print(f"peak r = {peak:.2f} nm, sigma_fit/sigma_noise = "
 ---
 
 ## deer_mellin_consensus() { #deer_mellin_consensus data-toc-label="deer_mellin_consensus" }
+
+!!! warning "Superseded — kept for explicit/diagnostic use only"
+    The noise-adaptive $\delta$ + short-r taper now default in
+    [`deer_invert_mellin()`](#deer_invert_mellin) make the **single pick more
+    accurate** than this marginalization on the benchmark (no-bg mean overlap 0.884
+    vs 0.861 — the ensemble median over $t_0$/$\tau_\max$-shifted curves
+    over-broadens), so the DEER GUI no longer exposes a consensus mode. Prefer the
+    plain single pick; use this only to inspect the $t_0\times\tau_\max$ ambiguity
+    explicitly.
 
 ```python
 res = deer.deer_mellin_consensus(t, V, r=None, bg_start=None, bg_end=None,
