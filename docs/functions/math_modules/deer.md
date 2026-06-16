@@ -79,8 +79,9 @@ invert to $P(r)$ by Tikhonov + NNLS. This is what most users want.
   (1.5–8 nm, 200 points).
 - **`bg_start`, `bg_end`** — background-fit window (µs). `bg_start=None` defaults
   to the midpoint of the trace; `bg_end=None` fits to the end. See
-  [`background_fit()`](#background_fit). (With `engine='joint'` these only seed
-  the initial background guess — the joint fit uses the whole trace.)
+  [`background_fit()`](#background_fit). (With `engine='joint'` they set the
+  **tail baseline window** for the λ-pinned, truncated-grid joint background fit —
+  see [`deer_invert_joint()`](#deer_invert_joint).)
 - **`dim`, `fit_dim`** — fractal background dimension (3 = homogeneous 3D); set
   `fit_dim=True` to float it.
 - **`alpha`** — regularization weight. `None` selects it automatically by `method`.
@@ -169,21 +170,35 @@ B(t) = e^{-(k|t|)^{d/3}},
 $$
 
 the background decay rate $k$ (and $d$ when `fit_dim=True`) is the only nonlinear
-unknown. For each trial rate the modulation depth $\lambda$ is **pinned** to the
-mean baseline of $V/B$ over the background window $[\text{bg\_start},
-\text{bg\_end}]$ — where the intramolecular form factor has decayed and
-$V \approx (1-\lambda)\,B$ — and the non-negative regularized $P(r)$ follows from
-$K P = (V/B - (1-\lambda))/\lambda$. The rate is chosen to minimize the
-whole-trace residual $\lVert V - B[(1-\lambda) + \lambda K P]\rVert$ with
-`scipy.optimize.minimize_scalar` (or `least_squares` when `fit_dim=True`).
+unknown. The background + modulation depth are fit by
+[`joint_background()`](#joint_background) (the **same** background fit the Mellin
+engine uses): the modulation depth $\lambda$ is **pinned** to the tail baseline of
+$V/B$ over $[\text{bg\_start}, \text{bg\_end}]$ — where the intramolecular form
+factor has decayed and $V \approx (1-\lambda)\,B$ — and the rate is fit jointly
+with a coarse non-negative $P(r)$ on a distance grid **truncated** at the
+trace-supported $r_\text{max}$. The full-resolution non-negative $P(r)$ then
+follows from $K P = (V/B - (1-\lambda))/\lambda$ by Tikhonov + NNLS, with the
+regularization weight chosen by GCV on the fitted-background form factor (the same
+`l_curve` selection as [`deer_invert()`](#deer_invert)).
 
-!!! note "Why $\lambda$ is pinned to the baseline"
-    With $\lambda$ left free the fit is **degenerate**: a near-flat background
-    plus extra long-$r$ $P(r)$ mass reproduces $V$ just as well as the correct
-    deeper background, and the rate collapses to $k \to 0$. Pinning $\lambda$ to
-    the decayed-tail baseline removes that direction and recovers the correct
-    background — matching DeerLab's joint fit. So here `bg_start`/`bg_end` set the
-    **baseline window** (not just an initial guess).
+!!! note "Why the rate is fit on a truncated $r$ grid (and $\lambda$ pinned)"
+    Two coupled degeneracies are broken here. **(1) Background ↔ long-$r$.** On the
+    *full* $r$ grid a gentle background (a few-percent decay over the trace) can be
+    reproduced by spurious long-$r$ $P(r)$ mass instead, so an unconstrained rate
+    search collapses to $k \to 0$ and leaves residual curvature in $F$ that
+    **broadens $P(r)$**. Fitting the rate on a distance grid truncated at
+    $r_\text{max}$ removes that escape route and recovers the true shallow $k$.
+    **(2) Background depth ↔ $\lambda$.** With $\lambda$ free, a near-flat
+    background plus extra long-$r$ mass also mimics the correct deeper background;
+    pinning $\lambda$ to the decayed-tail baseline removes that direction. Together
+    they match DeerLab's joint fit. So `bg_start`/`bg_end` set the **baseline
+    window**, not just an initial guess.
+
+    *(Earlier versions fit the rate here on the full $r$ grid and fell into the
+    first degeneracy — collapsing $k\to0$ on shallow backgrounds and broadening
+    $P(r)$, worst at low noise. Routing through `joint_background()` fixed it: on
+    the synthetic benchmark, mean overlap on the `easy` set rose from 0.92 to 0.94
+    and the asymmetric-bimodal case at the lowest noise from 0.93 to 0.97.)*
 
 Returns the same dict as [`deer_invert()`](#deer_invert), with `engine='joint'`.
 
@@ -633,17 +648,19 @@ bg = deer.joint_background(t, V, bg_start=None, bg_end=None, dim=3.0,
                            rate_alpha=1.0, lam_pin_frac=0.5)
 ```
 
-The λ-pinned joint background of [`deer_invert_joint()`](#deer_invert_joint),
-stripped to return **only** the background (same dict shape as
-[`background_fit()`](#background_fit)). The rate is fit on a coarse internal
+The λ-pinned joint background, returning **only** the background (same dict shape
+as [`background_fit()`](#background_fit)). The rate is fit on a coarse internal
 distance grid (`n_r`) at a fixed regularization (`rate_alpha`): $k$ and $\lambda$
 are insensitive to the $P(r)$ resolution, so this is ~30× faster than a full joint
-inversion — fast enough to re-run per background-start during Mellin validation. It
-backs [`deer_invert_mellin()`](#deer_invert_mellin) with `bg_engine='joint'`.
+inversion — fast enough to re-run per background-start during Mellin validation.
+This is the **shared** background fit of **both** inversion engines:
+[`deer_invert_joint()`](#deer_invert_joint) (Tikhonov, `engine='joint'`) and
+[`deer_invert_mellin()`](#deer_invert_mellin) (`bg_engine='joint'`) both call it.
 
-Three robustness measures versus the in-line joint fit, all aimed at the Mellin
-engine (which cannot absorb a residual background the way Tikhonov hides it as
-spurious long-$r$ mass):
+Two robustness measures — both critical to **either** engine (the truncated-grid
+rate fit is exactly what stops a gentle background being absorbed as spurious
+long-$r$ $P(r)$ mass, which broadens the Tikhonov $P(r)$ *and* leaves a pedestal
+the Mellin kernel $\varphi\to0$ cannot represent):
 
 - **λ pinned over the later, more-decayed part of the tail** (`lam_pin_frac`, the
   last 50 % of $[\text{bg\_start}, T_\max]$ by default). $\lambda$ is the
