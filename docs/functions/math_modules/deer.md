@@ -795,6 +795,71 @@ band) and the `DW`/$r_1$ verdict in the info panel.
 
 ---
 
+## distribution_moments() { #distribution_moments data-toc-label="distribution_moments" }
+
+```python
+d = deer.distribution_moments(r, P)
+```
+
+**Shape descriptors of a distance distribution** $P(r)$ — the quantities most PDS work
+actually reports, computed from the non-central moments $M_n=\int r^n P(r)\,dr$ of the
+clipped, area-normalized density (Nekrasov, Matveeva, Syryamina, Agarkin & Bowman,
+*Phys. Chem. Chem. Phys.* **2026**, [DOI 10.1039/D5CP04144A](https://doi.org/10.1039/D5CP04144A),
+Eqns. 6–7 & 17). Negative excursions (the signed Mellin output) are clipped before
+normalizing so these stay proper distribution moments. Returns a dict:
+
+| Key | Description |
+| --- | ----------- |
+| `mean` | mean distance $r_0=M_1$ (nm) |
+| `width` | rms width $\delta r=\sqrt{M_2-M_1^2}$ (nm) |
+| `skew` | skewness $\gamma=(M_3-3M_1\delta r^2-M_1^3)/\delta r^3$ |
+| `m1`–`m4` | the raw non-central moments $M_1\ldots M_4$ |
+
+Unlike a shape-overlap coefficient, the moments expose the *direction* of an error — a
+shifted mean vs. a wrong width vs. a wrong skew. The standalone **DEER / PDS Analysis**
+tool shows `mean r`, `width δr` and `skew` in the info panel.
+
+---
+
+## moment_error_apriori() { #moment_error_apriori data-toc-label="moment_error_apriori" }
+
+```python
+ME_n = deer.moment_error_apriori(eps, dt, n_points, n=1)
+```
+
+**A priori rms error of the $n$-th moment of $P(r)$ from random noise alone** — the
+closed form of Nekrasov, Matveeva, Syryamina, Agarkin & Bowman, *PCCP* **2026**
+([DOI 10.1039/D5CP04144A](https://doi.org/10.1039/D5CP04144A), Eqn. 9, uniform
+acquisition):
+
+$$ME_n=\frac{\varepsilon\,\Delta t^{\,s}}{I(s)}\sqrt{\tfrac14+\sum_{i=2}^{N_T-1} i^{\,2(s-1)}},\qquad s=\frac{n}{3}$$
+
+with $I(s)$ the analytic dipolar-kernel integral for $g=2$ (their Eqns. 5–6:
+$I(1/3)=4.35466$, $I(2/3)=3.06158$, $I(1)=2.77339$, $I(4/3)=2.56993$). Because the
+Mellin transform is **additive**, the noise decouples from the (unknown) distribution,
+so the precision of a moment is a property of the **acquisition** — it needs no
+inversion and no ground truth.
+
+- **`eps`** — per-point rms noise on the **normalized form factor** $F(t)$ ($F(0)=1$);
+  for a background-corrected trace of modulation depth $\lambda$ this is the raw trace
+  noise amplified by $1/(\lambda B)$, i.e. $\varepsilon\approx\sigma_\text{trace}/\lambda$.
+- **`dt`** — time step **in nanoseconds** (the constants $I(s)$ are fixed for $g=2$ with
+  the dipolar frequency in GHz, i.e. time in ns); pass `dt_us*1e3`.
+- **`n_points`** — number of dipolar-trace points ($t\ge0$).
+- **`n`** — moment order (1–4). $n=1$ is the **mean distance**, the robust one: its
+  $i^{-4/3}$ weight is dominated by the *early* points, so $ME_1$ is nearly flat in
+  `n_points` — extending the trace does **not** improve the mean distance; lowering the
+  early-point noise does (the paper's NUA$_1$ result).
+
+Returns $ME_n$ in nm$^n$ (nm for the mean distance). Reproduces the paper's reported
+uniform-acquisition $\mathrm{std}(M_1)=0.0400$ nm for `eps=0.04, dt=24, n_points=231`
+($\to 0.0407$). The empirical scatter of $M_1$ from a full Tikhonov / Mellin inversion
+sits **at or below** this bound (regularization can only reduce noise-driven scatter),
+so $ME_1$ is a conservative a priori error bar — surfaced in the **DEER / PDS Analysis**
+tool as `mean r ± ME₁`.
+
+---
+
 ## dipolar_kernel() { #dipolar_kernel data-toc-label="dipolar_kernel" }
 
 ```python
