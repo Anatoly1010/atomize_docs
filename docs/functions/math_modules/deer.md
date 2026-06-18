@@ -1088,7 +1088,7 @@ and via `bg_engine='general'` in the Mellin / Gaussian engines.
 Returns the same dict shape as [`background_fit()`](#background_fit), with `k` /
 `dim` $=$ `NaN` (not applicable) and the coefficients in `params`
 (`a`, `b`, `c`, `d`) plus `model='general'`. In the **DEER / PDS Analysis** GUI
-this is the **"General (a·exp[b(t+c·dˣ)])"** background option, with an
+this is the **"General (a·exp[b(t+c·dᵗ)])"** background option, with an
 **Auto (fit)** toggle and per-coefficient boxes — Auto fits and writes the fitted
 values back, unchecking it uses the hand-set coefficients directly.
 
