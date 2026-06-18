@@ -667,7 +667,8 @@ res = deer.deer_invert_gauss(t, V, r=None, bg_start=None, bg_end=None,
                              bg_params=None, ic='aicc', n_mc=0, ci_z=1.96,
                              seed=0, sigma_min=None, sigma_max=None,
                              ci_mode='linear', ci_level=0.95,
-                             prune_spurious=True, weight_min=0.02)
+                             prune_spurious=True, weight_min=0.02,
+                             spike_weight_max=0.10)
 ```
 
 **Parametric** DEER inversion: model $P(r)$ as a **sum of $N$ Gaussians** and fit
@@ -701,13 +702,17 @@ are seeded from a quick Tikhonov pass so the non-linear fit converges.
 - **`ci_mode`** — per-component error bars: `'linear'` (default) or `'support'`
   (see the confidence-interval box below). **`ci_level`** is the confidence for
   `'support'` (default 0.95).
-- **`prune_spurious`** / **`weight_min`** — parsimony guard against over-fitting
-  (default on; see the box below).
+- **`prune_spurious`** / **`weight_min`** / **`spike_weight_max`** — parsimony
+  guard against over-fitting (default on; see the box below).
 - **`n_mc`** — when > 0, a parametric confidence **band** on $P(r)$ by sampling the
   fit covariance `n_mc` times (cheap, no re-inversion); `P_lower`/`P_upper`
   $=$ `P_density` $\mp$ `ci_z`·STD.
-- **`sigma_min`, `sigma_max`** — component-width bounds (default: grid-step
-  resolution floor to half the range).
+- **`sigma_min`, `sigma_max`** — component-width bounds. The lower bound
+  regularizes via the distance-discretization length (Dzuba, *JMR* **275** (2016) 1;
+  Matveeva *et al.*, *Z. Phys. Chem.* **231** (2017) 463): default
+  $\max(2.5\,dr,\,0.05\ \text{nm})$ — a component narrower than the resolvable
+  distance step is unphysical and just over-fits a noise wiggle as a near-delta
+  spike. Upper bound defaults to half the distance range.
 
 !!! info "Confidence intervals — linearized vs. rigorous support-plane"
     `ci_mode='linear'` (default) reports the 1σ diagonal of the linearized
@@ -730,15 +735,28 @@ are seeded from a quick Tikhonov pass so the non-linear fit converges.
     DEER traces are heavily oversampled, so at low noise the criterion's
     per-parameter penalty is negligible and it "explains" the small **systematic**
     residual left by background / $\lambda$ / echo-top preparation (which it wrongly
-    treats as i.i.d. noise) by adding spurious Gaussians — always recognizable as
-    **pinned at the width-resolution floor** ($\sigma \sim 1.5\,dr$) or carrying
-    $<$ `weight_min` of the area. With pruning on (default), the chosen $N$ is the
-    criterion-best fit that contains **no** such component, so a simple bimodal is
-    not reported as 3–4 Gaussians. The unpruned criterion pick is returned as
-    `n_gauss_ic` and `pruned` flags whether a reduction happened. (A noise-floor
-    discrepancy rule and a fixed RMS-ratio were tried and rejected — the systematic
-    residual breaks any noise-floor comparison at low noise.) Forcing `n_gauss`
-    bypasses pruning.
+    treats as i.i.d. noise) by adding a spurious Gaussian — recognizable as one
+    **pinned at the width-resolution floor** ($\sigma \sim s_\text{lo}$) **and**
+    carrying little weight ($<$ `spike_weight_max`), or carrying negligible weight
+    ($<$ `weight_min`) at any width. With pruning on (default), the chosen $N$ is
+    the criterion-best fit that contains **no** such component, so a simple bimodal
+    is not reported as 3–4 Gaussians. `n_gauss_ic` is the unpruned criterion pick
+    and `pruned` flags whether a reduction happened; forcing `n_gauss` bypasses it.
+
+    **The weight gate is essential.** Gating on width *alone* (the original rule)
+    collapsed genuine 3–4 Gaussian distributions all the way to $N=1$: a real
+    long-distance mode is rendered by least-squares as a floor-width **near-delta
+    spike** (the spike is the *global* LS optimum there — the kernel modulates
+    large $r$ only weakly, so a narrow component fits about as well as the true
+    broad one, and multi-start cannot escape it), which then tripped the
+    width test and cascaded the selection. A floor-width component that carries
+    **substantial** weight ($\gtrsim 0.18$) is a real peak, not an over-fit; only a
+    floor-width **and** low-weight ($\sim 0.05$) component is a genuine spurious
+    extra. On a 1–4 Gaussian synthetic benchmark the gate lifts $N=4$ recovery from
+    3 % to 28 % (under-fit $0.97\to0.72$) and overall correct-$N$ from 0.54 to 0.61,
+    while simple bimodals still correctly stay $N=2$. (A noise-floor discrepancy
+    rule and a fixed RMS-ratio were tried and rejected — the systematic residual
+    breaks any noise-floor comparison at low noise.)
 
 Returns the same dict shape as [`deer_invert()`](#deer_invert) (shared GUI /
 exporters), with these Gaussian-specific keys:
