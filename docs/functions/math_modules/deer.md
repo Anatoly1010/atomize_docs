@@ -668,7 +668,8 @@ res = deer.deer_invert_gauss(t, V, r=None, bg_start=None, bg_end=None,
                              seed=0, sigma_min=None, sigma_max=None,
                              ci_mode='linear', ci_level=0.95,
                              prune_spurious=True, weight_min=0.02,
-                             spike_weight_max=0.10)
+                             spike_weight_max=0.10, method='lsq',
+                             mc_trials=30000, mc_tol=0.5)
 ```
 
 **Parametric** DEER inversion: model $P(r)$ as a **sum of $N$ Gaussians** and fit
@@ -706,7 +707,10 @@ are seeded from a quick Tikhonov pass so the non-linear fit converges.
   guard against over-fitting (default on; see the box below).
 - **`n_mc`** — when > 0, a parametric confidence **band** on $P(r)$ by sampling the
   fit covariance `n_mc` times (cheap, no re-inversion); `P_lower`/`P_upper`
-  $=$ `P_density` $\mp$ `ci_z`·STD.
+  $=$ `P_density` $\mp$ `ci_z`·STD. (Ignored when `method='mc'`.)
+- **`method`** — `'lsq'` (default, gradient least-squares) or `'mc'` (Dzuba/Matveeva
+  frequency-domain Monte-Carlo; see the box below). **`mc_trials`** sets the
+  stochastic-multi-start budget and **`mc_tol`** the ensemble MSD tolerance.
 - **`sigma_min`, `sigma_max`** — component-width bounds. The lower bound
   regularizes via the distance-discretization length (Dzuba, *JMR* **275** (2016) 1;
   Matveeva *et al.*, *Z. Phys. Chem.* **231** (2017) 463): default
@@ -730,6 +734,27 @@ are seeded from a quick Tikhonov pass so the non-linear fit converges.
     (`center_ci_lo/hi`, `sigma_ci_lo/hi`) — the magnitudes the linearized bar
     under-/over-states when the $\chi^2$ surface is not parabolic. It costs a fit
     per grid step (~1–5 s); opt-in.
+
+!!! note "`method='mc'` — Dzuba/Matveeva frequency-domain Monte-Carlo"
+    An alternative solver after Dzuba, *JMR* **275** (2016) 1 and Matveeva *et al.*,
+    *Z. Phys. Chem.* **231** (2017) 463: the Gaussian parameters are found by a
+    **random search in the dipolar frequency (Pake) domain** rather than by gradient
+    descent in the time domain. `mc_trials` random initial parameter sets are drawn,
+    each locally polished, and the one whose Pake spectrum best matches the data
+    (smallest frequency-domain MSD) is kept. Two benefits over `'lsq'`: (i) the
+    random restarts **cannot be trapped** in the floor-width-spike basin that the
+    gradient fit can fall into; (ii) the frequency-domain comparison is **intrinsically
+    immune to ESEEM** (peaks at fixed frequencies) and **background error** (zero
+    frequency) — the motivation for working in the Pake domain. The data-consistent
+    trials (MSD within $(1+$`mc_tol`$)$ of the best) form an **ensemble** whose per-$r$
+    2.5/97.5 percentiles give a **non-linearized** confidence band (`P_lower`/`P_upper`)
+    and whose per-component spread sets `center_err`/`sigma_err`.
+
+    On **artifact-free synthetic** data `'mc'` **ties** `'lsq'` (at low noise the
+    gradient fit is already near-optimal; at high noise both are information-limited),
+    so it is **opt-in** (~seconds) — its payoff is robustness to the real-data
+    artifacts above and the honest ensemble error band, not a better synthetic
+    overlap. `n_mc` and `ci_mode` are ignored in this mode.
 
 !!! tip "Why $N$ is pruned (`prune_spurious`)"
     DEER traces are heavily oversampled, so at low noise the criterion's
