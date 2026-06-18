@@ -16,7 +16,7 @@ has a closed form in Fresnel integrals, so $K$ is built without a
 per-orientation loop.
 
 Recovering $P(r)$ from $F(t)$ is a Fredholm equation of the first kind
-(ill-posed). This module solves it two ways:
+(ill-posed). This module solves it three ways:
 
 - **Tikhonov regularization + non-negativity** (NNLS) — the default. The
   regularization weight $\alpha$ is chosen automatically (by **generalized
@@ -31,9 +31,20 @@ Recovering $P(r)$ from $F(t)$ is a Fredholm equation of the first kind
   Tikhonov, no NNLS: $P(r)$ is recovered in closed form, so it is not broadened
   and bimodal peaks are not merged. Noise enters $P(r)$ additively and groups at
   short $r$.
+- **Parametric sum-of-Gaussians fit** — a *model-based* inversion
+  ([`deer_invert_gauss()`](#deer_invert_gauss); the DeerAnalysis "Gaussian" mode /
+  DeerLab `dd_gaussN` approach). $P(r)$ is modelled as $N$ Gaussians fit directly
+  to the form factor, with $N$ chosen by an information criterion. When the
+  distribution really is a few discrete modes this is the most robust choice and
+  it gives genuine **parametric error bars** on each peak — including rigorous
+  support-plane confidence intervals (Stein, Beth & Hustedt, *Methods Enzymol.*
+  **2015**, [10.1016/bs.mie.2015.07.031](https://doi.org/10.1016/bs.mie.2015.07.031)).
 
 The dipolar **zero-time** can be fit automatically with
-[`fit_zero_time()`](#fit_zero_time) before either inversion.
+[`fit_zero_time()`](#fit_zero_time) before any of these. The intermolecular
+background is normally a stretched exponential ([`background_fit()`](#background_fit)),
+but a flexible empirical form $a\,e^{\,b(t + c\,d^{\,t})}$ is also available
+([`background_general()`](#background_general)).
 
 !!! tip "Why GCV is the default"
     A DEER L-curve is nearly *vertical* — the residual stays at the noise floor
@@ -103,13 +114,19 @@ invert to $P(r)$ by Tikhonov + NNLS. This is what most users want.
   `'joint'` (fit background + modulation depth together with $P(r)$ in one pass —
   see [`deer_invert_joint()`](#deer_invert_joint); more robust when the background
   window is short or hard to place), `'mellin'` (the model-free analytic
-  transform — see [`deer_invert_mellin()`](#deer_invert_mellin)), or `'none'`
-  (**no background**: $B(t)=1$, fit only the modulation depth $\lambda$ — for
-  pre-corrected / simulated / full-modulation $\lambda\!\to\!1$ data; fitting a
-  decay there would absorb the dipolar decay and badly broaden $P(r)$).
-- **`**kwargs`** — forwarded to [`deer_invert_mellin()`](#deer_invert_mellin) when
-  `engine='mellin'` (`delta`, `tau_max`, `n_tau`, `bg_engine`, `n_mc`, …);
-  ignored otherwise.
+  transform — see [`deer_invert_mellin()`](#deer_invert_mellin)), `'gauss'` (the
+  parametric sum-of-Gaussians fit — see [`deer_invert_gauss()`](#deer_invert_gauss)),
+  or `'none'` (**no background**: $B(t)=1$, fit only the modulation depth
+  $\lambda$ — for pre-corrected / simulated / full-modulation $\lambda\!\to\!1$
+  data; fitting a decay there would absorb the dipolar decay and badly broaden
+  $P(r)$). `'general'` selects the empirical
+  [`background_general()`](#background_general) background with an otherwise
+  sequential Tikhonov inversion.
+- **`**kwargs`** — forwarded to the model-free / parametric engines:
+  `engine='mellin'` takes `delta`, `tau_max`, `n_tau`, `bg_engine`, `n_mc`, …;
+  `engine='gauss'` takes `n_gauss`, `max_gauss`, `ic`, `ci_mode`, `bg_engine`, …;
+  `bg_params` (the [`background_general()`](#background_general) coefficients) is
+  forwarded to any engine. Ignored otherwise.
 
 Returns a dict:
 
@@ -128,7 +145,7 @@ Returns a dict:
 | `l_curve` | The [`l_curve()`](#l_curve) result dict (or `None`) |
 | `background` | The [`background_fit()`](#background_fit) result dict |
 | `lambda`, `k`, `dim` | Modulation depth, background decay rate, dimension |
-| `engine` | `'sequential'`, `'joint'`, or `'mellin'` |
+| `engine` | `'sequential'`, `'joint'`, `'mellin'`, `'gauss'`, `'none'`, or `'general'` |
 
 ```python
 import numpy as np
@@ -335,9 +352,10 @@ fast (no per-trial L-curve scan).
 - **`noise`, `n_noise`** — when both are positive, each background-start trial is
   repeated with `n_noise` Gaussian-noise realizations of standard deviation `noise`
   added to $V$ (estimate `noise` from the trace residual).
-- **`engine`** — `'sequential'`, `'joint'`, or `'mellin'`, as in
-  [`deer_invert()`](#deer_invert). Extra Mellin parameters (`delta`, `tau_max`, …)
-  pass through via `**kwargs`.
+- **`engine`** — `'sequential'`, `'joint'`, `'mellin'`, `'gauss'`, `'none'`, or
+  `'general'`, as in [`deer_invert()`](#deer_invert). Extra engine parameters
+  (Mellin `delta` / `tau_max`, Gaussian `n_gauss` / `max_gauss`, the `bg_params`
+  general-background coefficients, …) pass through via `**kwargs`.
 - **`percentiles`** — the lower/upper percentiles of the band (default 5–95%).
 
 Returns a dict:
@@ -640,6 +658,116 @@ result, for the time-domain forward-fit display). `**kwargs` pass through to
 
 ---
 
+## deer_invert_gauss() { #deer_invert_gauss data-toc-label="deer_invert_gauss" }
+
+```python
+res = deer.deer_invert_gauss(t, V, r=None, bg_start=None, bg_end=None,
+                             dim=3.0, fit_dim=False, nu_dd=deer.NU_DD,
+                             n_gauss=None, max_gauss=4, bg_engine='joint',
+                             bg_params=None, ic='aicc', n_mc=0, ci_z=1.96,
+                             seed=0, sigma_min=None, sigma_max=None,
+                             ci_mode='linear', ci_level=0.95,
+                             prune_spurious=True, weight_min=0.02)
+```
+
+**Parametric** DEER inversion: model $P(r)$ as a **sum of $N$ Gaussians** and fit
+their centres, widths and amplitudes directly to the form factor (the DeerAnalysis
+"Gaussian" mode / DeerLab `dd_gaussN` approach). Also reachable as
+`deer.deer_invert(..., engine='gauss')`. Complements the regularized
+([`deer_invert()`](#deer_invert)) and model-free
+([`deer_invert_mellin()`](#deer_invert_mellin)) engines: when the distribution
+really is a few discrete modes this is the most robust, and — unlike a regularized
+inversion — it gives genuine **parametric error bars** on each peak.
+
+$$
+P(r) = \sum_{k=1}^{N} a_k\,\exp\!\Big(\!-\tfrac{(r-r_k)^2}{2\sigma_k^2}\Big),
+\qquad a_k,\ \sigma_k > 0 .
+$$
+
+The amplitudes are fit **un-normalized**: the data anchor the overall scale through
+$F(0)=\sum_k(\text{masses})=1$, which removes the scale degeneracy a pre-normalized
+model would have and keeps the fit covariance well-conditioned. Component centres
+are seeded from a quick Tikhonov pass so the non-linear fit converges.
+
+- **`n_gauss`** — force a fixed number of components. `None` (default) selects $N$
+  automatically (see `ic` / `prune_spurious`).
+- **`max_gauss`** — largest $N$ tried during automatic selection (default 4).
+- **`ic`** — information criterion for automatic $N$: `'aicc'` (default, corrected
+  Akaike), `'aic'`, or `'bic'` (heavier penalty ⇒ fewer components).
+- **`bg_engine`** — `'joint'` (default), `'sequential'`, `'none'`, or `'general'`,
+  how the form factor is prepared (as in [`deer_invert_mellin()`](#deer_invert_mellin)).
+- **`bg_params`** — coefficients for the `'general'` background (see
+  [`background_general()`](#background_general)).
+- **`ci_mode`** — per-component error bars: `'linear'` (default) or `'support'`
+  (see the confidence-interval box below). **`ci_level`** is the confidence for
+  `'support'` (default 0.95).
+- **`prune_spurious`** / **`weight_min`** — parsimony guard against over-fitting
+  (default on; see the box below).
+- **`n_mc`** — when > 0, a parametric confidence **band** on $P(r)$ by sampling the
+  fit covariance `n_mc` times (cheap, no re-inversion); `P_lower`/`P_upper`
+  $=$ `P_density` $\mp$ `ci_z`·STD.
+- **`sigma_min`, `sigma_max`** — component-width bounds (default: grid-step
+  resolution floor to half the range).
+
+!!! info "Confidence intervals — linearized vs. rigorous support-plane"
+    `ci_mode='linear'` (default) reports the 1σ diagonal of the linearized
+    covariance $(J^\top J)^{-1}\sigma^2$ — fast (no extra fits), symmetric, the
+    local-quadratic approximation. Good for live use.
+
+    `ci_mode='support'` computes **rigorous support-plane / profile-likelihood**
+    intervals (Stein, Beth & Hustedt, *Methods Enzymol.* **2015**,
+    [10.1016/bs.mie.2015.07.031](https://doi.org/10.1016/bs.mie.2015.07.031)): each
+    centre / $\sigma$ is fixed on a grid and **all other parameters are re-fit**,
+    and the interval is taken where the residual sum of squares rises above its
+    minimum by the F-test threshold
+    $\text{SSR}\le\text{SSR}_\min\,(1 + F_{1,N-q}(\text{ci\_level})/(N-q))$. This
+    accounts for parameter correlations and yields **asymmetric** intervals
+    (`center_ci_lo/hi`, `sigma_ci_lo/hi`) — the magnitudes the linearized bar
+    under-/over-states when the $\chi^2$ surface is not parabolic. It costs a fit
+    per grid step (~1–5 s); opt-in.
+
+!!! tip "Why $N$ is pruned (`prune_spurious`)"
+    DEER traces are heavily oversampled, so at low noise the criterion's
+    per-parameter penalty is negligible and it "explains" the small **systematic**
+    residual left by background / $\lambda$ / echo-top preparation (which it wrongly
+    treats as i.i.d. noise) by adding spurious Gaussians — always recognizable as
+    **pinned at the width-resolution floor** ($\sigma \sim 1.5\,dr$) or carrying
+    $<$ `weight_min` of the area. With pruning on (default), the chosen $N$ is the
+    criterion-best fit that contains **no** such component, so a simple bimodal is
+    not reported as 3–4 Gaussians. The unpruned criterion pick is returned as
+    `n_gauss_ic` and `pruned` flags whether a reduction happened. (A noise-floor
+    discrepancy rule and a fixed RMS-ratio were tried and rejected — the systematic
+    residual breaks any noise-floor comparison at low noise.) Forcing `n_gauss`
+    bypasses pruning.
+
+Returns the same dict shape as [`deer_invert()`](#deer_invert) (shared GUI /
+exporters), with these Gaussian-specific keys:
+
+| Key | Description |
+| --- | ----------- |
+| `engine` | `'gauss'` |
+| `components` | list of `{amplitude, center, sigma, weight, center_err, sigma_err}` per Gaussian (plus `center_ci_lo/hi`, `sigma_ci_lo/hi` when `ci_mode='support'`) |
+| `n_gauss` | the chosen number of components |
+| `n_gauss_ic`, `pruned` | the unpruned criterion pick, and whether pruning reduced $N$ |
+| `aic`, `aicc`, `bic` | the information criteria of the chosen model |
+| `ic`, `ci_mode`, `ci_level` | the criterion and CI mode used |
+| `ic_curve` | list of `(N, criterion, rss)` over the $N$ tried |
+| `P_lower`, `P_upper`, `P_std` | parametric band on the density (when `n_mc > 0`; else `None`) |
+| `noise_level` | white electrical-noise σ from the decayed tail |
+
+`alpha` is `NaN` and `l_curve` is `None` (no Tikhonov regularization here).
+
+```python
+res = deer.deer_invert_gauss(t, V, r=r, bg_start=1.0, ci_mode='support')
+for c in res['components']:
+    print(f"r = {c['center']:.3f} (-{c['center']-c['center_ci_lo']:.3f}"
+          f"/+{c['center_ci_hi']-c['center']:.3f}) nm, "
+          f"sigma = {c['sigma']:.3f} nm, weight = {c['weight']:.2f}")
+print(f"N = {res['n_gauss']} (AICc pick {res['n_gauss_ic']}, pruned={res['pruned']})")
+```
+
+---
+
 ## joint_background() { #joint_background data-toc-label="joint_background" }
 
 ```python
@@ -911,6 +1039,68 @@ still evaluated over the whole trace. `bg_end=None` uses everything past
 
 Returns a dict with `lambda`, `k`, `dim`, `A`, `B`, `form_factor`, `V_norm`,
 `t`, `bg_start`, `bg_end`, and the boolean `mask` of the fit window.
+
+---
+
+## background_general() { #background_general data-toc-label="background_general" }
+
+```python
+bg = deer.background_general(t, V, bg_start, bg_end=None,
+                             a=None, b=None, c=None, d=None, fit=True)
+```
+
+A **flexible empirical** intermolecular background, an alternative to the
+stretched-exponential [`background_fit()`](#background_fit) for traces whose
+decay is not $e^{-(k|t|)^{d/3}}$. The tail baseline is modelled as
+
+$$
+g(t) = a\,\exp\!\big(b\,(t + c\,d^{\,t})\big),\qquad a,\ b,\ c,\ d\ \text{free},
+$$
+
+with $d^{\,t}$ a true power. The same convention as
+[`background_fit()`](#background_fit): $V$ is normalized so $V(0)=1$, the tail
+baseline $g(t)=(1-\lambda)\,B(t)$, so the background normalized to $B(0)=1$ is
+$B(t)=g(t)/g(0)$ with $g(0)=a\,e^{\,bc}$ (since $d^{\,0}=1$), the modulation depth
+$\lambda = 1 - g(0)$, and $F(t)=(V(t)/B(t)-(1-\lambda))/\lambda$. The amplitude
+$a$ **cancels** in the shape $B(t)=\exp\!\big(b(t+c(d^{\,t}-1))\big)$ — which stays
+strictly positive — so $b,c,d$ set the background shape and $a$ only its $t=0$
+level (hence $\lambda$). Reachable as `deer.deer_invert(..., engine='general')`
+and via `bg_engine='general'` in the Mellin / Gaussian engines.
+
+- **`fit`** — when `True` (default), the four coefficients are fit on the tail
+  window; any of `a`/`b`/`c`/`d` supplied are used as the initial guess. When
+  `False`, they are used **directly** as the background (manual mode — no fitting).
+- **`a`, `b`, `c`, `d`** — the coefficients (seeds when fitting, values when not).
+  Time $t$ is in **microseconds**, so they act on $t$ in µs.
+
+!!! note "Needs a clean (well-decayed) tail"
+    With four free parameters the model has more freedom than a stretched
+    exponential, so it will **chase residual dipolar modulation** if the fit window
+    still contains it — on a clean, well-decayed tail it recovers $\lambda$ to ~1%,
+    but on an under-decayed tail it over-estimates the modulation depth. When
+    fitting, `d` is constrained so the $d^{\,t}$ term keeps $\ge 5\%$ of its $t=0$
+    amplitude across the window ($d^{\,\text{span}}\ge 0.05$): otherwise $c$ and $d$
+    are unconstrained by the tail (where $d^{\,t}$ has vanished) and the fit is
+    degenerate. The model can still be over-parametrized for a gentle decay, so the
+    fitted $a$ / $c$ may be large (a near-constant exponential trading against the
+    offset) — mathematically valid, $\lambda$ is unaffected.
+
+Returns the same dict shape as [`background_fit()`](#background_fit), with `k` /
+`dim` $=$ `NaN` (not applicable) and the coefficients in `params`
+(`a`, `b`, `c`, `d`) plus `model='general'`. In the **DEER / PDS Analysis** GUI
+this is the **"General (a·exp[b(t+c·dˣ)])"** background option, with an
+**Auto (fit)** toggle and per-coefficient boxes — Auto fits and writes the fitted
+values back, unchecking it uses the hand-set coefficients directly.
+
+```python
+# fit the four coefficients on the tail
+bg = deer.background_general(t, V, bg_start=2.0)
+print(bg['params'], 'lambda =', round(bg['lambda'], 3))
+
+# or set them by hand (no fitting) and invert with that fixed background
+res = deer.deer_invert(t, V, r=r, bg_start=2.0, engine='general',
+                       bg_params=dict(a=0.6, b=-0.05, c=1.0, d=0.5, fit=False))
+```
 
 ---
 
