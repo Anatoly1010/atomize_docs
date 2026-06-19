@@ -33,9 +33,9 @@ Recovering $P(r)$ from $F(t)$ is a Fredholm equation of the first kind
   short $r$.
 - **Parametric sum-of-Gaussians fit** — a *model-based* inversion
   ([`deer_invert_gauss()`](#deer_invert_gauss); the DeerAnalysis "Gaussian" mode /
-  DeerLab `dd_gaussN` approach). $P(r)$ is modelled as $N$ Gaussians fit directly
-  to the form factor, with $N$ chosen by an information criterion. When the
-  distribution really is a few discrete modes this is the most robust choice and
+  DeerLab `dd_gaussN` approach). $P(r)$ is modelled as $N$ Gaussians fit jointly
+  with the background to the signal, with $N$ chosen by an information criterion.
+  When the distribution really is a few discrete modes this is the most robust choice and
   it gives genuine **parametric error bars** on each peak — including rigorous
   support-plane confidence intervals (Stein, Beth & Hustedt, *Methods Enzymol.*
   **2015**, [10.1016/bs.mie.2015.07.031](https://doi.org/10.1016/bs.mie.2015.07.031)).
@@ -186,36 +186,24 @@ V(t) = B(t)\,\big[(1-\lambda) + \lambda\,(K P)(t)\big],\qquad
 B(t) = e^{-(k|t|)^{d/3}},
 $$
 
-the background decay rate $k$ (and $d$ when `fit_dim=True`) is the only nonlinear
-unknown. The background + modulation depth are fit by
-[`joint_background()`](#joint_background) (the **same** background fit the Mellin
-engine uses): the modulation depth $\lambda$ is **pinned** to the tail baseline of
-$V/B$ over $[\text{bg\_start}, \text{bg\_end}]$ — where the intramolecular form
-factor has decayed and $V \approx (1-\lambda)\,B$ — and the rate is fit jointly
-with a coarse non-negative $P(r)$ on a distance grid **truncated** at the
-trace-supported $r_\text{max}$. The full-resolution non-negative $P(r)$ then
-follows from $K P = (V/B - (1-\lambda))/\lambda$ by Tikhonov + NNLS, with the
-regularization weight chosen by GCV on the fitted-background form factor (the same
-`l_curve` selection as [`deer_invert()`](#deer_invert)).
+the only nonlinear unknown is the background decay rate $k$ (and $d$ when
+`fit_dim=True`). The background and modulation depth are fit by
+[`joint_background()`](#joint_background), the same fit the Mellin engine uses.
+$\lambda$ is pinned to the tail baseline of $V/B$ over
+$[\text{bg\_start}, \text{bg\_end}]$ (where the form factor has decayed and
+$V \approx (1-\lambda)\,B$), and $k$ is fit together with a coarse non-negative
+$P(r)$ on a distance grid truncated at the supported $r_\text{max}$. The
+full-resolution $P(r)$ then follows from $K P = (V/B - (1-\lambda))/\lambda$ by
+Tikhonov + NNLS, with $\alpha$ chosen by GCV as in [`deer_invert()`](#deer_invert).
 
-!!! note "Why the rate is fit on a truncated $r$ grid (and $\lambda$ pinned)"
-    Two coupled degeneracies are broken here. **(1) Background ↔ long-$r$.** On the
-    *full* $r$ grid a gentle background (a few-percent decay over the trace) can be
-    reproduced by spurious long-$r$ $P(r)$ mass instead, so an unconstrained rate
-    search collapses to $k \to 0$ and leaves residual curvature in $F$ that
-    **broadens $P(r)$**. Fitting the rate on a distance grid truncated at
-    $r_\text{max}$ removes that escape route and recovers the true shallow $k$.
-    **(2) Background depth ↔ $\lambda$.** With $\lambda$ free, a near-flat
-    background plus extra long-$r$ mass also mimics the correct deeper background;
-    pinning $\lambda$ to the decayed-tail baseline removes that direction. Together
-    they match DeerLab's joint fit. So `bg_start`/`bg_end` set the **baseline
-    window**, not just an initial guess.
-
-    *(Earlier versions fit the rate here on the full $r$ grid and fell into the
-    first degeneracy — collapsing $k\to0$ on shallow backgrounds and broadening
-    $P(r)$, worst at low noise. Routing through `joint_background()` fixed it: on
-    the synthetic benchmark, mean overlap on the `easy` set rose from 0.92 to 0.94
-    and the asymmetric-bimodal case at the lowest noise from 0.93 to 0.97.)*
+!!! note "Why the rate is fit on a truncated grid"
+    This breaks two coupled ambiguities. First, on the full $r$ grid a gentle
+    background can be imitated by spurious long-distance $P(r)$ mass, so an
+    unconstrained rate search collapses to $k \to 0$ and broadens $P(r)$; truncating
+    the grid at $r_\text{max}$ removes that escape route. Second, with $\lambda$
+    free, a shallow background plus extra long-$r$ mass can also imitate the correct
+    deeper background, so $\lambda$ is pinned to the decayed-tail baseline. So
+    `bg_start`/`bg_end` set the **baseline window**, not just an initial guess.
 
 Returns the same dict as [`deer_invert()`](#deer_invert), with `engine='joint'`.
 
@@ -291,23 +279,19 @@ Two methods, selected by **`method`**:
 
 **`xcheck`** (default **off**, opt-in) targets the parabola's one failure mode: a
 **flat, shallow echo top at high noise**. There the maximum is ill-defined and an
-upward noise excursion late on the top drags the vertex tens of ns **late** — a
-systematic late bias that grows with noise (≈ +27 ns at σ = 0.04 on the synthetic
-benchmark, vs ~1 ns at low noise). With `xcheck` the `'residual'` estimate is
-computed independently and, when the two disagree by more than `xcheck_tol_frac`
-of the trace span (~0.4 %), the more robust residual is used.
+upward noise excursion late on the top can drag the vertex **late**. With `xcheck`
+the `'residual'` estimate is computed independently and, when the two disagree by
+more than `xcheck_tol_frac` of the trace span (~0.4 %), the more robust residual is
+used.
 
 !!! warning "Off by default — does not improve end-to-end accuracy"
-    The cross-check lowers the **mean** $t_0$ error (5.1 → 4.0 ns on the
-    benchmark) but is left off because it does **not** improve the recovered
-    $P(r)$: (1) at extreme noise (σ = 0.04) the residual fallback is itself
-    high-variance and can overshoot tens of ns *early*, raising the **worst-case**
-    $t_0$ error (29.6 → 45.9 ns); (2) the Mellin forward model carries a small
-    residual bias that a slightly-late $t_0$ happens to compensate, so a *more
-    accurate* $t_0$ can **lower** the distance overlap (benchmark mean
-    0.853 → 0.838). It helps moderate-noise traces (σ ≈ 0.02) but hurts the
-    cleanest and the noisiest. Enable only when an accurate $t_0$ per se is the
-    goal, not better $P(r)$.
+    The cross-check lowers the **mean** $t_0$ error but does **not** improve the
+    recovered $P(r)$, so it is left off: at extreme noise the residual fallback is
+    itself high-variance and can overshoot *early*, raising the worst-case error;
+    and the Mellin forward model carries a small bias that a slightly-late $t_0$
+    happens to compensate, so a *more accurate* $t_0$ can even lower the distance
+    overlap. Enable only when an accurate $t_0$ per se is the goal, not better
+    $P(r)$.
 
 Returns $t_0$ in the same units as `t` (µs).
 
@@ -427,39 +411,28 @@ $f(r)$. The kernel image $\Phi$ is computed in closed form
 $\tilde V$ by the $\delta$-split of the paper
 ([`mellin_signal_spectrum()`](#mellin_signal_spectrum)).
 
-!!! info "The short-$r$ noise spike (\"double peak near $t=0$\") — and how it is tamed"
-    The whole chain is linear, so noise enters $f(r)$ **additively**, and the
-    $r$-space Jacobian ($\sim r^{-2.5}$) piles it into a spurious spike at **short
-    distances** — the visible **"double peak near $t=0$"** in $P(r)$ — and that same
-    high-$|\tau|$ content makes the forward-fit echo top decay too fast (a
-    **too-narrow parabola**). Two natural, default-on mechanisms tame this **without
-    distorting the genuine peaks** (an earlier amplitude-based Wiener shrink / hard
-    significance gate were rejected — they raised the overlap metric but *carved*
-    smooth shoulders and left flat dead zones):
+!!! info "The short-$r$ noise spike (\"double peak near $t=0$\")"
+    The chain is linear, so noise enters $f(r)$ additively, and the $r$-space
+    Jacobian ($\sim r^{-2.5}$) concentrates it into a spurious spike at short
+    distances — the "double peak near $t=0$" in $P(r)$. The same high-$|\tau|$
+    content also makes the forward-fit echo top decay too fast. Two mechanisms, both
+    on by default, suppress this without distorting the real peaks:
 
-    - **Noise-adaptive $\delta$** (the source fix). $\delta$ is the split between the
-      clean analytic **parabola** term ($[0,\delta]$) and the numeric Mellin integral
-      over $[\delta, T_\max]$ — and the numeric part is where the high-$|\tau|$ noise
-      enters. $\delta$'s floor/cap scale with the measured relative noise
-      $\sigma_e/\lambda$: unchanged $0.09/0.12$ on clean data (sharp resolution kept),
-      raised to $\sim0.13/0.16$ when noisy. This suppresses the spike **and** restores
-      the echo-top width *at source* (benchmark forward-fit half-width vs the true
-      $F$: $0.78\to\sim1.0$ at $\sigma=0.04$); it does **not** touch the displayed
-      density.
-    - **`taper_short`** (default on). A purely **geometric** raised-cosine
-      (`fit_rmin_frac`: 0 at the grid edge → 1 by that fraction of the range)
-      multiplies the displayed **signed** density so $P(r)$ goes *smoothly* to zero at
-      the unreliable short-$r$ edge instead of carrying the residual spike. Because it
-      is distance-based (not amplitude- or noise-based), the mid/long-$r$ density is
-      **bit-identical** to the honest Mellin result — no shape carving, no hard zeros
-      — and a genuine short-$r$ peak is attenuated, not deleted. The tapered density
-      also feeds `F_fit`, so the echo top matches the data. Set `taper_short=False`
-      for the raw signed density (which can dip below zero) plus the separate
-      `signed_fit` / low-$r$-taper forward model.
+    - **Noise-adaptive $\delta$.** $\delta$ splits the form factor into an analytic
+      parabola term on $[0,\delta]$ and a numeric integral on $[\delta, T_\max]$; the
+      noise enters through the numeric part. $\delta$'s floor and cap grow with the
+      measured relative noise, so on noisy data more of the early signal goes to the
+      clean analytic term. This fixes the spike at its source and does not touch the
+      displayed density.
+    - **`taper_short`** (default on). A geometric raised-cosine taper
+      (`fit_rmin_frac`) sends the displayed $P(r)$ smoothly to zero at the unreliable
+      short-$r$ edge. Because it depends only on distance, the mid- and long-$r$
+      density is unchanged and a genuine short-$r$ peak is attenuated rather than
+      deleted. The tapered density also feeds `F_fit`. Set `taper_short=False` for
+      the raw signed density.
 
-    Together: on the synthetic benchmark the short-$r$ spurious mass at $\sigma=0.04$
-    drops from $\sim$20% to $\sim$2% on the sharp bimodals with the echo-top width
-    restored, mean overlap $0.854\to0.870$, and the displayed $P(r)$ stays natural.
+    Together they remove the short-$r$ spurious mass and restore the echo-top width
+    while $P(r)$ stays natural.
 
 - **`bg_engine`** — `'joint'` (default), `'sequential'`, or `'none'`, how the form
   factor is prepared (see [`joint_background()`](#joint_background) /
@@ -470,78 +443,54 @@ $\tilde V$ by the $\delta$-split of the paper
   `'none'` sets $B(t)=1$ and fits only $\lambda$ — use it for data with **no**
   background (pre-corrected / simulated / full-modulation $\lambda\!\to\!1$): there
   the form factor decays to zero on its own, so fitting a background absorbs that
-  dipolar decay and badly broadens $P(r)$ (a $\sigma\,0.20$ Gaussian came out at
-  $\sigma\,0.7$, overlap $0.81$ vs $0.98$ with `'none'`).
-- **`delta`** — the Mellin split point $\delta$ (µs): on $[0,\delta]$ the form
-  factor is integrated analytically, $[\delta, T_\max]$ numerically. The echo top
-  is **parabolic** $F\approx F_0 + b\,T^2$, so the $[0,\delta]$ term keeps that
-  quadratic (not constant $F$) — removing a systematic error in $F_\text{fit}$ right
-  at the echo (the "thin parabola" near $t=0$) and letting $\delta$ be wider. `None`
-  auto-selects $\delta$ at $F(\delta)\approx0.85$, then **clips it to a noise-adaptive
-  $[90, 120]$ ns window**: the clip floor/cap are **raised with the measured relative
-  noise** $\sigma_e/\lambda$ (unchanged on clean data, pushed to $\sim130/160$ ns at
-  $\sigma=0.04$, $\lambda=0.4$). A larger $\delta$ hands more of the steep, noisy
-  near-echo region to the clean analytic parabola and less to the numeric integral —
-  which is where the high-$|\tau|$ noise that forms the short-$r$ spike and the
-  too-narrow parabola enters — so both are suppressed **at source** without
-  over-smoothing sharp distributions at low noise. (See
-  [`mellin_signal_spectrum()`](#mellin_signal_spectrum) / [`mellin_delta()`](#mellin_delta)
-  and the info box above.)
+  dipolar decay and badly broadens $P(r)$.
+- **`delta`** — the Mellin split point $\delta$ (µs): $[0,\delta]$ is integrated
+  analytically, $[\delta, T_\max]$ numerically. The echo top is parabolic
+  ($F\approx F_0 + b\,T^2$), so the analytic term keeps that quadratic and removes a
+  systematic error in $F_\text{fit}$ at the echo (the "thin parabola" near $t=0$).
+  `None` auto-selects $\delta$ where $F(\delta)\approx0.85$, then clips it to a
+  noise-adaptive window (wider on noisier data). A larger $\delta$ moves the steep,
+  noisy near-echo region into the clean analytic term, suppressing the short-$r$
+  spike at its source. See [`mellin_signal_spectrum()`](#mellin_signal_spectrum) /
+  [`mellin_delta()`](#mellin_delta).
 - **`tau_max`, `n_tau`** — the Mellin variable runs over $[-\tau_\max, \tau_\max]$
   with `n_tau` samples. The high-$\tau$ cutoff is the regularizer. **`tau_max=None`
   auto-selects it** by `taumax_method` (see below).
-- **`taumax_method`** — `'penalty'` (default), `'discrepancy'` (noise-floor
-  anchored), or `'lcurve'`. **`'penalty'`** minimises the forward-fit RMS regularised
-  by a symmetric-noise penalty (the $|$negative area$|$ of the signed density): the
-  ratio term forces an adequate fit while the penalty halts the extension once the
-  cutoff would only add symmetric high-$\tau$ noise — self-adapting (clean data keeps
-  sharp features, noisy data stays smooth) and tracking the overlap-optimal oracle
-  more closely than the discrepancy floor. `'discrepancy'` picks the smallest cutoff
-  reaching the noise floor, then applies the `taumax_extend` resolution extension.
-  `'lcurve'` (corner of $\log\sigma_\text{fit}$ vs $\log\lVert L_2 P\rVert$) is for
-  comparison only — it under-regularizes on DEER (the residual is nearly flat in
-  $\tau_\max$, so the corner is ill-defined).
+- **`taumax_method`** — how the auto cutoff is chosen. `'penalty'` (default)
+  minimises the forward-fit RMS plus a penalty on the negative area of the signed
+  density: the first term demands a good fit, the second stops the cutoff once it
+  would only add high-$\tau$ noise. It self-adapts, keeping clean data sharp and
+  noisy data smooth. `'discrepancy'` picks the smallest cutoff that reaches the noise
+  floor, then applies the `taumax_extend` extension. `'lcurve'` is for comparison
+  only — it under-regularizes on DEER (the residual is nearly flat in $\tau_\max$, so
+  the corner is ill-defined).
 - **`noise_space`** — `'V'` (default) or `'F'`: the space the noise floor and
   per-cutoff residual are measured in for the discrepancy selection. `'V'` (the
   whole background-normalized curve) is stationary and robust; `'F'` (the
   background-corrected form factor) is noise-amplified toward the tail.
-- **`taumax_extend`** (default on) — **resolution-aware extension** of the auto
-  cutoff. The discrepancy stops once the data residual hits the noise floor, but
-  $P(r)$ can keep **sharpening** past that point; the cutoff is then pushed up
-  while the spurious **short-$r$ leakage** (bottom `extend_short_frac` of the $r$
-  grid) keeps dropping, and stopped at the first increase. Self-adapting:
-  clean/low-noise data extends (sharper echo top, bimodals resolved — a clean
-  narrow Gaussian goes 0.92 → 0.96 overlap), noisy data stays at the discrepancy
-  pick (leakage rises immediately). Only for `taumax_method='discrepancy'` with
-  auto `tau_max` — the default `'penalty'` method subsumes it and does not use it.
-- **`signed_fit`** (default `True`) — build the forward fit (and the penalty
-  selector's `rmsF`) from the honest **signed** density $K\,P$ rather than the
-  clipped, low-$r$-tapered non-negative one. See the *"short-$r$ noise spike"*
-  box above; set `False` for low-$\lambda$ data where the short-$r$ negative spike
-  would double-peak the echo top.
-- **`wiener`** (default `0` = off) — strength of a **Wiener-regularized inverse
-  filter** on the kernel-image division. The plain inverse $1/\Phi(\tau)$ amplifies
-  noise where $\Phi$ is small (high $|\tau|$), and the $r$-space Jacobian
-  ($\sim r^{-2.5}$) concentrates it into a spurious **short-$r$ spike** that can
-  steal the real peak on noisy bimodal traces. The filter
-  $\overline{\Phi}/(|\Phi|^2+\varepsilon)$ rolls that off, with $\varepsilon$ scaled
-  by the measured tail noise so it is a no-op on clean data and leaves genuine
-  short-$r$ peaks intact. A value $\approx 0.12$ helps at **moderate** noise
-  ($\sigma\approx0.02$: removes the spike, overlap +0.1–0.2). Off by default — at
-  extreme noise the result is dominated by zero-time/$\tau_\max$ auto-selection
-  instability, where the filter is a net wash; enable it when the data are
-  moderately noisy and show the tell-tale short-$r$ spike. (With the default
-  adaptive-$\delta$ + `taper_short`, the spike is already largely handled, so
-  `wiener` is rarely needed.)
-- **`taper_short`** (default `True`) — smoothly taper the **displayed** $P(r)$ to zero
+- **`taumax_extend`** (default on) — a resolution-aware extension of the discrepancy
+  cutoff. The discrepancy stops at the noise floor, but $P(r)$ can keep sharpening
+  past it, so the cutoff is pushed up as long as the short-$r$ leakage (bottom
+  `extend_short_frac` of the grid) keeps dropping, and stopped at the first increase.
+  Clean data extends; noisy data stays put. Used only with
+  `taumax_method='discrepancy'`; the default `'penalty'` method does not need it.
+- **`taper_short`** (default `True`) — smoothly taper the displayed $P(r)$ to zero
   at the unreliable short-$r$ edge with a geometric raised-cosine (`fit_rmin_frac`),
-  removing the residual short-$r$ noise spike (the "double peak") while leaving
-  mid/long-$r$ **bit-identical** to the honest Mellin result. The tapered density also
-  feeds `F_fit`. See the info box above. `False` returns the raw signed density.
-- **`signed_fit`** (default `True`) — when `taper_short=False`, build `F_fit` from the
-  raw signed density (faithful echo-top amplitude); `False` uses the clipped,
-  low-$r$-tapered non-negative density instead (guards a double-peaked echo top from a
-  large short-$r$ negative spike on low-$\lambda$ data). Ignored when `taper_short=True`.
+  removing the short-$r$ noise spike while leaving the mid- and long-$r$ density
+  unchanged. The tapered density also feeds `F_fit`. See the info box above. `False`
+  returns the raw signed density.
+- **`signed_fit`** (default `True`) — build `F_fit` (and the penalty selector's RMS)
+  from the honest signed density $K\,P$, keeping the echo-top amplitude faithful. Set
+  `False` for low-$\lambda$ data, where the short-$r$ negative spike can otherwise
+  double-peak the echo top; then `F_fit` uses the clipped, non-negative density
+  instead. (When `taper_short=True` the tapered density already feeds `F_fit`.)
+- **`wiener`** (default `0` = off) — strength of a Wiener-regularized inverse filter
+  on the kernel-image division. The plain inverse $1/\Phi(\tau)$ amplifies noise at
+  high $|\tau|$, which the $r$-space Jacobian concentrates into a short-$r$ spike.
+  The filter rolls that off, with its $\varepsilon$ scaled by the measured tail noise
+  so it does nothing on clean data. A value $\approx 0.12$ removes the spike at
+  moderate noise. Rarely needed, since the adaptive $\delta$ and `taper_short`
+  already handle the spike.
 - **`n_mc`** — number of Monte-Carlo noise realizations for the confidence band
   (0 = off). The band is built by **additive-noise propagation**: the white
   electrical-noise level is read from the **decayed tail of $V$** by smoothing
@@ -597,67 +546,6 @@ print(f"peak r = {peak:.2f} nm, sigma_fit/sigma_noise = "
 
 ---
 
-## deer_mellin_consensus() { #deer_mellin_consensus data-toc-label="deer_mellin_consensus" }
-
-!!! warning "Superseded — kept for explicit/diagnostic use only"
-    The noise-adaptive $\delta$ + short-r taper now default in
-    [`deer_invert_mellin()`](#deer_invert_mellin) make the **single pick more
-    accurate** than this marginalization on the benchmark (no-bg mean overlap 0.884
-    vs 0.861 — the ensemble median over $t_0$/$\tau_\max$-shifted curves
-    over-broadens), so the DEER GUI no longer exposes a consensus mode. Prefer the
-    plain single pick; use this only to inspect the $t_0\times\tau_\max$ ambiguity
-    explicitly.
-
-```python
-res = deer.deer_mellin_consensus(t, V, r=None, bg_start=None, bg_end=None,
-                                 dim=3.0, fit_dim=False, nu_dd=deer.NU_DD,
-                                 n_t0=9, n_mc=6, chi_tol=1.05,
-                                 taumax_window=(0.8, 0.9, 1.0, 1.1, 1.25),
-                                 n_bg=5, bg_span_frac=0.05,
-                                 gate_rel_noise=0.06, seed=0,
-                                 percentiles=(2.5, 97.5), **kwargs)
-```
-
-**Robust ("consensus") Mellin inversion for noisy traces.** At high *relative*
-noise ($\sigma/\lambda \gtrsim 0.06$) a DEER trace **does not determine** the
-zero-time $t_0$ *or* the cutoff $\tau_\max$ — the V-space forward residual is white
-(structureless) across a wide range of both, so they are **unidentifiable** and a
-single auto-pick swings wildly per noise realization (recovered overlap can move
-0.5→0.85 with $t_0$ changes the residual cannot even see). The honest answer is not
-a sharper point estimate but a **consensus** over everything the data cannot rule
-out, plus a **band** that shows the real uncertainty — the model-free analogue of
-[`deer_validate()`](#deer_validate).
-
-- **Identifiable** (rel noise `< gate_rel_noise`): the single pick is reliable, so
-  it is returned with an `n_mc` Monte-Carlo band (`consensus=False`). Genuinely
-  sharp clean distributions are left untouched.
-- **Unidentifiable** (rel noise `≥ gate_rel_noise`): build an ensemble over the
-  data-consistent zero-times (`n_t0` grid kept within `chi_tol` of the best
-  forward-fit χ) × a `taumax_window` of cutoffs *around* the auto-pick (fractions,
-  so it tracks the data), **plus an `n_bg`-point background-start sweep** (±
-  `bg_span_frac` of the trace — subsuming the [`deer_validate()`](#deer_validate)
-  axis) and `n_mc` measurement-noise realizations. The contributions are *additive*
-  (not a full multiplied grid) to keep the cost down and the per-distance median
-  smooth.
-  The reported $P(r)$ is the ensemble **median** with a `percentiles` band
-  (`consensus=True`).
-
-Same return dict as [`deer_invert_mellin()`](#deer_invert_mellin) (so the GUI and
-exporters are shared), plus `consensus` (bool), `rel_noise`, `n_trials`,
-`t0`, `t0_consistent`, `tau_maxs`, `ensemble`, and `base` (the central single-pick
-result, for the time-domain forward-fit display). `**kwargs` pass through to
-[`deer_invert_mellin()`](#deer_invert_mellin) (`delta`, `taumax_method`, `wiener`, …).
-
-!!! tip "When to use"
-    On a synthetic benchmark this lifts the mean true↔recovered overlap on the
-    hard, moderately-noisy cases by **+0.1 to +0.16** (e.g. a narrow + broad
-    bimodal at $\sigma=0.02$: 0.68 → 0.84) while leaving clean traces unchanged.
-    Prefer it whenever the data are noisy or the single-pick $P(r)$ shows the
-    tell-tale short-$r$ noise spike; for clean data it self-reduces to the single
-    pick, so it is always a safe default for noisy work.
-
----
-
 ## deer_invert_gauss() { #deer_invert_gauss data-toc-label="deer_invert_gauss" }
 
 ```python
@@ -673,10 +561,9 @@ res = deer.deer_invert_gauss(t, V, r=None, bg_start=None, bg_end=None,
 ```
 
 **Parametric** DEER inversion: model $P(r)$ as a **sum of $N$ Gaussians** and fit
-their centres, widths and amplitudes directly to the form factor (the DeerAnalysis
-"Gaussian" mode / DeerLab `dd_gaussN` approach). Also reachable as
-`deer.deer_invert(..., engine='gauss')`. Complements the regularized
-([`deer_invert()`](#deer_invert)) and model-free
+their centres, widths and amplitudes (the DeerAnalysis "Gaussian" mode / DeerLab
+`dd_gaussN` approach). Also reachable as `deer.deer_invert(..., engine='gauss')`.
+Complements the regularized ([`deer_invert()`](#deer_invert)) and model-free
 ([`deer_invert_mellin()`](#deer_invert_mellin)) engines: when the distribution
 really is a few discrete modes this is the most robust, and — unlike a regularized
 inversion — it gives genuine **parametric error bars** on each peak.
@@ -686,18 +573,49 @@ P(r) = \sum_{k=1}^{N} a_k\,\exp\!\Big(\!-\tfrac{(r-r_k)^2}{2\sigma_k^2}\Big),
 \qquad a_k,\ \sigma_k > 0 .
 $$
 
-The amplitudes are fit **un-normalized**: the data anchor the overall scale through
-$F(0)=\sum_k(\text{masses})=1$, which removes the scale degeneracy a pre-normalized
-model would have and keeps the fit covariance well-conditioned. Component centres
-are seeded from a quick Tikhonov pass so the non-linear fit converges.
+The `'lsq'` solver fits the Gaussians, the background, and the modulation depth
+$\lambda$ together, directly to $V(t)$ (DeerLab-style):
+
+$$
+V(t) = A\,\big[\,1 - S + (K\,\text{masses})(t)\,\big]\,B(t),
+\qquad S = \textstyle\sum_k(\text{masses}) = \lambda .
+$$
+
+This is more robust than fitting a background first and dividing it out. On a
+compact, multi-peak $P(r)$ the separate background step absorbs real signal, which
+distorts the form factor and leaves a residual the fit then covers with a spurious
+extra peak. Fitting everything at once avoids that, and an ideal $N$-Gaussian trace
+is recovered exactly. $\lambda$ comes out as the total Gaussian mass $S$, and the
+free amplitude $A$ absorbs the small echo-top scaling, so no extra scale parameter
+is needed.
+
+!!! note "Seeding and the long-distance width floor"
+    Two safeguards keep the fit reliable:
+
+    - **Multi-start.** The fit starts from two seeds — the peaks of a quick Tikhonov
+      pass, and an even spread across the distance range — and keeps the better
+      result. The Tikhonov peaks alone can land every component on the dominant peak,
+      from where the fit never finds a weak long-distance mode; missing that mode
+      leaves its slow oscillation in the residual.
+    - **Width floor.** At long distances the dipolar frequency is low, so a finite
+      trace length cannot resolve a narrow width. Left free, the fit collapses a
+      weak long mode into a near-delta spike — a tall thin peak in $P(r)$ that adds
+      an oscillation to the residual. Each component's width is therefore floored at
+      the resolution limit for its distance,
+      $\sigma_\text{res}(r)\approx r^4/(27\,\nu_{dd}\,T)$. Short, well-resolved peaks
+      are unaffected. Set `sigma_min` to override.
 
 - **`n_gauss`** — force a fixed number of components. `None` (default) selects $N$
   automatically (see `ic` / `prune_spurious`).
 - **`max_gauss`** — largest $N$ tried during automatic selection (default 4).
 - **`ic`** — information criterion for automatic $N$: `'aicc'` (default, corrected
   Akaike), `'aic'`, or `'bic'` (heavier penalty ⇒ fewer components).
-- **`bg_engine`** — `'joint'` (default), `'sequential'`, `'none'`, or `'general'`,
-  how the form factor is prepared (as in [`deer_invert_mellin()`](#deer_invert_mellin)).
+- **`bg_engine`** — which background is co-fit with the Gaussians: `'joint'`
+  (default, a stretched exponential $B(t)=e^{-(k|t|)^{d/3}}$, with $d$ floated only
+  when `fit_dim=True`), `'none'` (no background, $B=1$ — for pre-corrected or
+  full-modulation traces), or `'general'` (an empirical background shape held fixed
+  while $\lambda$ and $P(r)$ are still co-fit; see
+  [`background_general()`](#background_general)).
 - **`bg_params`** — coefficients for the `'general'` background (see
   [`background_general()`](#background_general)).
 - **`ci_mode`** — per-component error bars: `'linear'` (default) or `'support'`
@@ -711,77 +629,59 @@ are seeded from a quick Tikhonov pass so the non-linear fit converges.
 - **`method`** — `'lsq'` (default, gradient least-squares) or `'mc'` (Dzuba/Matveeva
   frequency-domain Monte-Carlo; see the box below). **`mc_trials`** sets the
   stochastic-multi-start budget and **`mc_tol`** the ensemble MSD tolerance.
-- **`sigma_min`, `sigma_max`** — component-width bounds. The lower bound
-  regularizes via the distance-discretization length (Dzuba, *JMR* **275** (2016) 1;
-  Matveeva *et al.*, *Z. Phys. Chem.* **231** (2017) 463): default
-  $\max(2.5\,dr,\,0.05\ \text{nm})$ — a component narrower than the resolvable
-  distance step is unphysical and just over-fits a noise wiggle as a near-delta
-  spike. Upper bound defaults to half the distance range.
+- **`sigma_min`, `sigma_max`** — component-width bounds. Setting `sigma_min`
+  overrides the automatic distance-resolution floor (above) with a flat lower bound
+  $\max(2.5\,dr,\,\text{`sigma_min`})$ for every component. The upper bound defaults
+  to half the distance range.
 
-!!! info "Confidence intervals — linearized vs. rigorous support-plane"
+!!! info "Confidence intervals: `'linear'` vs `'support'`"
     `ci_mode='linear'` (default) reports the 1σ diagonal of the linearized
-    covariance $(J^\top J)^{-1}\sigma^2$ — fast (no extra fits), symmetric, the
-    local-quadratic approximation. Good for live use.
+    covariance $(J^\top J)^{-1}\sigma^2$. It is fast, symmetric, and good for live
+    use.
 
-    `ci_mode='support'` computes **rigorous support-plane / profile-likelihood**
+    `ci_mode='support'` computes rigorous support-plane / profile-likelihood
     intervals (Stein, Beth & Hustedt, *Methods Enzymol.* **2015**,
-    [10.1016/bs.mie.2015.07.031](https://doi.org/10.1016/bs.mie.2015.07.031)): each
-    centre / $\sigma$ is fixed on a grid and **all other parameters are re-fit**,
-    and the interval is taken where the residual sum of squares rises above its
-    minimum by the F-test threshold
-    $\text{SSR}\le\text{SSR}_\min\,(1 + F_{1,N-q}(\text{ci\_level})/(N-q))$. This
-    accounts for parameter correlations and yields **asymmetric** intervals
-    (`center_ci_lo/hi`, `sigma_ci_lo/hi`) — the magnitudes the linearized bar
-    under-/over-states when the $\chi^2$ surface is not parabolic. It costs a fit
-    per grid step (~1–5 s); opt-in.
+    [10.1016/bs.mie.2015.07.031](https://doi.org/10.1016/bs.mie.2015.07.031)). Each
+    centre and $\sigma$ is fixed in turn while all other parameters are re-fit, and
+    the interval is taken where the residual sum of squares rises past an F-test
+    threshold. This accounts for parameter correlations and gives **asymmetric**
+    intervals (`center_ci_lo/hi`, `sigma_ci_lo/hi`), which the linearized bar can
+    misstate when the $\chi^2$ surface is not parabolic. It costs a fit per grid step
+    (~1–5 s); opt-in.
 
-!!! note "`method='mc'` — Dzuba/Matveeva frequency-domain Monte-Carlo"
+!!! note "`method='mc'` — frequency-domain Monte-Carlo"
     An alternative solver after Dzuba, *JMR* **275** (2016) 1 and Matveeva *et al.*,
-    *Z. Phys. Chem.* **231** (2017) 463: the Gaussian parameters are found by a
-    **random search in the dipolar frequency (Pake) domain** rather than by gradient
-    descent in the time domain. `mc_trials` random initial parameter sets are drawn,
-    each locally polished, and the one whose Pake spectrum best matches the data
-    (smallest frequency-domain MSD) is kept. Two benefits over `'lsq'`: (i) the
-    random restarts **cannot be trapped** in the floor-width-spike basin that the
-    gradient fit can fall into; (ii) the frequency-domain comparison is **intrinsically
-    immune to ESEEM** (peaks at fixed frequencies) and **background error** (zero
-    frequency) — the motivation for working in the Pake domain. The data-consistent
-    trials (MSD within $(1+$`mc_tol`$)$ of the best) form an **ensemble** whose per-$r$
-    2.5/97.5 percentiles give a **non-linearized** confidence band (`P_lower`/`P_upper`)
-    and whose per-component spread sets `center_err`/`sigma_err`.
+    *Z. Phys. Chem.* **231** (2017) 463. The Gaussian parameters are found by a random
+    search in the dipolar frequency (Pake) domain instead of gradient descent in time.
+    `mc_trials` random parameter sets are drawn, each locally polished, and the one
+    whose Pake spectrum best matches the data is kept. This has two advantages over
+    `'lsq'`: the random restarts cannot get stuck on a floor-width spike, and the
+    frequency-domain comparison is naturally immune to ESEEM peaks and background
+    error. The data-consistent trials form an ensemble; its per-$r$ percentiles give
+    a confidence band (`P_lower`/`P_upper`) and its spread sets `center_err`/`sigma_err`.
 
-    On **artifact-free synthetic** data `'mc'` **ties** `'lsq'` (at low noise the
-    gradient fit is already near-optimal; at high noise both are information-limited),
-    so it is **opt-in** (~seconds) — its payoff is robustness to the real-data
-    artifacts above and the honest ensemble error band, not a better synthetic
-    overlap. `n_mc` and `ci_mode` are ignored in this mode.
+    On clean synthetic data `'mc'` performs about the same as `'lsq'`, so it is
+    opt-in (~seconds). Its real value is robustness to ESEEM and background artifacts
+    on measured data, plus the honest ensemble error band. `n_mc` and `ci_mode` are
+    ignored in this mode.
 
-!!! tip "Why $N$ is pruned (`prune_spurious`)"
-    DEER traces are heavily oversampled, so at low noise the criterion's
-    per-parameter penalty is negligible and it "explains" the small **systematic**
-    residual left by background / $\lambda$ / echo-top preparation (which it wrongly
-    treats as i.i.d. noise) by adding a spurious Gaussian — recognizable as one
-    **pinned at the width-resolution floor** ($\sigma \sim s_\text{lo}$) **and**
-    carrying little weight ($<$ `spike_weight_max`), or carrying negligible weight
-    ($<$ `weight_min`) at any width. With pruning on (default), the chosen $N$ is
-    the criterion-best fit that contains **no** such component, so a simple bimodal
-    is not reported as 3–4 Gaussians. `n_gauss_ic` is the unpruned criterion pick
-    and `pruned` flags whether a reduction happened; forcing `n_gauss` bypasses it.
+!!! tip "How $N$ is chosen (`prune_spurious`)"
+    Every $N$ from 1 to `max_gauss` is fit, and the information criterion (`ic`)
+    picks the best. DEER traces are heavily oversampled, so at low noise the
+    criterion sometimes adds one extra Gaussian to absorb residual structure. Such a
+    component is recognizable: it sits at the width floor and carries little weight
+    ($<$ `spike_weight_max`), or it carries negligible weight ($<$ `weight_min`) at
+    any width. With `prune_spurious` on (default) the chosen $N$ is the best fit that
+    contains no such component, so a simple bimodal is not reported as 3–4 Gaussians.
+    `n_gauss_ic` is the unpruned pick and `pruned` flags whether a reduction
+    happened; forcing `n_gauss` bypasses it.
 
-    **The weight gate is essential.** Gating on width *alone* (the original rule)
-    collapsed genuine 3–4 Gaussian distributions all the way to $N=1$: a real
-    long-distance mode is rendered by least-squares as a floor-width **near-delta
-    spike** (the spike is the *global* LS optimum there — the kernel modulates
-    large $r$ only weakly, so a narrow component fits about as well as the true
-    broad one, and multi-start cannot escape it), which then tripped the
-    width test and cascaded the selection. A floor-width component that carries
-    **substantial** weight ($\gtrsim 0.18$) is a real peak, not an over-fit; only a
-    floor-width **and** low-weight ($\sim 0.05$) component is a genuine spurious
-    extra. On a 1–4 Gaussian synthetic benchmark the gate lifts $N=4$ recovery from
-    3 % to 28 % (under-fit $0.97\to0.72$) and overall correct-$N$ from 0.54 to 0.61,
-    while simple bimodals still correctly stay $N=2$. (A noise-floor discrepancy
-    rule and a fixed RMS-ratio were tried and rejected — the systematic residual
-    breaks any noise-floor comparison at low noise.)
+    Only weight, not width, condemns a component, because a real long-distance mode
+    also sits near the width floor (the kernel constrains large-$r$ widths weakly).
+    A floor-width peak with substantial weight is kept; only floor-width **and**
+    low-weight is removed. With the joint fit, multi-start seeding, and the width
+    floor doing the main work, pruning is now just a light backstop: a real 3–4
+    Gaussian distribution is resolved, while a simple bimodal stays $N=2$.
 
 Returns the same dict shape as [`deer_invert()`](#deer_invert) (shared GUI /
 exporters), with these Gaussian-specific keys:
@@ -929,9 +829,7 @@ echo-top anchor too narrow (the "thin parabola"), so the recovered $F_\text{fit}
 top comes out too steep and the short-$r$ density is unstable — widening $\delta$ to
 $\approx 90$ ns gives the parabolic term enough low-$T$ support. The **cap**
 ($\approx 120$ ns) stops a slow-decaying (long-$r$) trace from over-smoothing
-$P(r)$ by integrating too much of the modulation analytically. Both bounds were
-tuned overlap-optimally over the synthetic benchmark (13 distributions × 4 noise
-levels × 2 conditions; the floor lifts e.g. `gauss_narrow` easy from 0.90 to 0.92).
+$P(r)$ by integrating too much of the modulation analytically.
 
 ---
 
