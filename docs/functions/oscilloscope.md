@@ -227,6 +227,26 @@ For Rigol MSO8000 Series, it is not possible to control the number of averages i
 
 ---
 
+### oscilloscope_iq(arr_i, arr_q, freq, ph, ph1, ph2, integral=False) { #oscilloscope_iq data-toc-label="oscilloscope_iq" }
+
+```python
+# Software down-conversion of the quadrature data
+data_i, data_q = oscilloscope_iq(data_i, data_q, freq, ph, ph1, ph2)
+
+# With integration over the window
+res_i, res_q = oscilloscope_iq(
+    data_i, data_q, freq, ph, ph1, ph2, integral=True)
+```
+
+This function performs a software digital down-conversion (IQ demodulation) with phase correction of the quadrature data returned by the [`oscilloscope_get_curve()`](#oscilloscope_get_curve) function. The arguments `arr_i` and `arr_q` are the in-phase and quadrature arrays (both 1D and 2D arrays are accepted). The complex signal `arr_i + 1j*arr_q` is multiplied by `exp(-1j*(2*pi*freq*t + ph + ph1*t + ph2*t**2))`, where `t` is the time axis built from the current sampling step returned by [`oscilloscope_time_resolution()`](#oscilloscope_time_resolution). The argument `freq` (in MHz) is the down-conversion frequency offset, `ph` is the zero-order (constant) phase correction in radians, while `ph1` and `ph2` are the first- and second-order phase-correction coefficients. The first- and second-order terms are applied only if at least one of them is nonzero.
+
+If the keyword `integral` is `True` and the input arrays are 2D, the corrected data is integrated over the [window](#oscilloscope_window) and two 1D arrays (`res_i`, `res_q`) are returned (in volt-seconds, with the sampling step as the integration scale); otherwise the corrected in-phase and quadrature arrays are returned. If the input arrays contain `np.nan` (no new data) they are returned unchanged.
+
+!!! note
+    This function is available for Keysight 2000, 3000, 4000 X-Series oscilloscopes.
+
+---
+
 ### oscilloscope_area(channel) { #oscilloscope_area data-toc-label="oscilloscope_area" }
 
 ```python
