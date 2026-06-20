@@ -246,7 +246,7 @@ conservative linear approximation (as in DeerLab's moment-based CI).
 t0 = deer.fit_zero_time(t, V, bg_start=None, bg_end=None,
                         n_grid=16, search_frac=0.15, refine=True,
                         method='parabola', drop=0.15, smooth_w=5,
-                        xcheck=True, xcheck_tol_frac=0.004, **kwargs)
+                        xcheck=False, xcheck_tol_frac=0.004, **kwargs)
 ```
 
 Find the dipolar **zero-time** $t_0$ (the reference time). DEER is sensitive to
@@ -277,21 +277,12 @@ Two methods, selected by **`method`**:
   a capped distance grid; `**kwargs` pass through to [`deer_invert()`](#deer_invert)
   (`r`, `dim`, `fit_dim`, …). Robust when the echo maximum is ambiguous or absent.
 
-**`xcheck`** (default **off**, opt-in) targets the parabola's one failure mode: a
-**flat, shallow echo top at high noise**. There the maximum is ill-defined and an
-upward noise excursion late on the top can drag the vertex **late**. With `xcheck`
-the `'residual'` estimate is computed independently and, when the two disagree by
-more than `xcheck_tol_frac` of the trace span (~0.4 %), the more robust residual is
-used.
-
-!!! warning "Off by default — does not improve end-to-end accuracy"
-    The cross-check lowers the **mean** $t_0$ error but does **not** improve the
-    recovered $P(r)$, so it is left off: at extreme noise the residual fallback is
-    itself high-variance and can overshoot *early*, raising the worst-case error;
-    and the Mellin forward model carries a small bias that a slightly-late $t_0$
-    happens to compensate, so a *more accurate* $t_0$ can even lower the distance
-    overlap. Enable only when an accurate $t_0$ per se is the goal, not better
-    $P(r)$.
+**`xcheck`** is an opt-in cross-check, **off by default**: it computes the
+`'residual'` estimate independently and, when it disagrees with the parabola by
+more than `xcheck_tol_frac` of the trace span (~0.4 %), uses the residual instead.
+It guards the parabola's one failure mode — a flat, shallow echo top at high noise,
+where a late noise excursion can drag the vertex late — but does not improve the
+recovered $P(r)$, so leave it off unless an accurate $t_0$ per se is the goal.
 
 Returns $t_0$ in the same units as `t` (µs).
 
@@ -650,7 +641,7 @@ is needed.
     (~1–5 s); opt-in.
 
 !!! note "`method='mc'` — frequency-domain Monte-Carlo"
-    An alternative solver after Dzuba, *JMR* **275** (2016) 1 and Matveeva *et al.*,
+    An alternative solver after Dzuba, *JMR* **269** (2016) 1 and Matveeva *et al.*,
     *Z. Phys. Chem.* **231** (2017) 463. The Gaussian parameters are found by a random
     search in the dipolar frequency (Pake) domain instead of gradient descent in time.
     `mc_trials` random parameter sets are drawn, each locally polished, and the one
@@ -885,8 +876,7 @@ normalizing so these stay proper distribution moments. Returns a dict:
 | `m1`–`m4` | the raw non-central moments $M_1\ldots M_4$ |
 
 Unlike a shape-overlap coefficient, the moments expose the *direction* of an error — a
-shifted mean vs. a wrong width vs. a wrong skew. The standalone **DEER / PDS Analysis**
-tool shows `mean r`, `width δr` and `skew` in the info panel.
+shifted mean vs. a wrong width vs. a wrong skew.
 
 ---
 
@@ -1130,3 +1120,48 @@ Module constant — the perpendicular dipolar frequency constant
 $\nu_{dd} = 52.04\ \text{MHz·nm}^3$ (for $g = 2.0023$), so that
 $\nu_\perp(r) = \nu_{dd}/r^3$. Override it via the `nu_dd` argument of the
 kernel / simulate / invert functions for other $g$-values.
+
+---
+
+## References
+
+The methods implemented here draw on the following papers:
+
+1. A. G. Matveeva, V. M. Nekrasov, A. G. Maryasov, *Analytical solution of the
+   PELDOR inverse problem using the integral Mellin transform.* **Phys. Chem.
+   Chem. Phys.** *2017*, 19, 32381.
+   [10.1039/C7CP04059H](https://doi.org/10.1039/C7CP04059H) — the analytic
+   Mellin-transform inversion ([`deer_invert_mellin()`](#deer_invert_mellin)).
+2. M. M. Nekrasov, A. G. Matveeva, S. A. Syryamina, D. V. Agarkin, M. K. Bowman,
+   **Phys. Chem. Chem. Phys.** *2026*.
+   [10.1039/D5CP04144A](https://doi.org/10.1039/D5CP04144A) — distance-distribution
+   moments and a priori moment-error bars
+   ([`distribution_moments()`](#distribution_moments),
+   [`moment_error_apriori()`](#moment_error_apriori)).
+3. O. Schiemann *et al.*, *Benchmark Test and Guidelines for DEER/PELDOR
+   Experiments on Nitroxide-Labeled Biomolecules.* **J. Am. Chem. Soc.** *2021*,
+   143, 17875. [10.1021/jacs.1c07371](https://doi.org/10.1021/jacs.1c07371) —
+   distance-reliability ranges and validation guidelines.
+4. R. A. Stein, A. H. Beth, E. J. Hustedt, *A Straightforward Approach to the
+   Analysis of Double Electron–Electron Resonance Data.* **Methods Enzymol.**
+   *2015*, 563, 531.
+   [10.1016/bs.mie.2015.07.031](https://doi.org/10.1016/bs.mie.2015.07.031) —
+   parametric Gaussian model and confidence intervals.
+5. S. A. Dzuba, **J. Magn. Reson.** *2016*, 269, 1.
+   [10.1016/j.jmr.2016.06.001](https://doi.org/10.1016/j.jmr.2016.06.001) —
+   Monte-Carlo (Pake-doublet) solver for the Gaussian engine (`method='mc'`).
+6. A. G. Matveeva *et al.*, **Z. Phys. Chem.** *2017*, 231, 463.
+   [10.1515/zpch-2016-0830](https://doi.org/10.1515/zpch-2016-0830) — Monte-Carlo
+   Gaussian inversion.
+7. T. H. Edwards, S. Stoll, **J. Magn. Reson.** *2018*, 288, 58 — optimal Tikhonov
+   regularization and residual-whiteness diagnostics
+   ([`residual_whiteness()`](#residual_whiteness)).
+8. L. Fábregas Ibáñez, G. Jeschke, S. Stoll, *DeerLab: a comprehensive software
+   package for analyzing dipolar EPR spectroscopy data.* **Magn. Reson.** *2020*,
+   1, 209. [10.5194/mr-1-209-2020](https://doi.org/10.5194/mr-1-209-2020) —
+   reference implementation for cross-validation (covariance CI, GCV).
+9. G. Jeschke *et al.*, *DeerAnalysis2006 — a comprehensive software package for
+   analyzing pulsed ELDOR data.* **Appl. Magn. Reson.** *2006*, 30, 473.
+   [10.1007/BF03166213](https://doi.org/10.1007/BF03166213) — the zero-time
+   parabola fit, distance-reliability ranges and validation approach this module
+   follows.
