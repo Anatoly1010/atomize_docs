@@ -44,6 +44,7 @@ constant baseline term (`b` or `c`) that can be fixed at zero with the
 | `Exponential` | `a, k, b` | $a\,e^{-x/k} + b$ |
 | `Bi-exponential` | `a1, k1, a2, k2, b` | $a_1 e^{-x/k_1} + a_2 e^{-x/k_2} + b$ |
 | `Stretched exponential` | `a, k, beta, b` | $a\,e^{-(x/k)^{\beta}} + b$ |
+| `Stretched exponential + exponential` | `a1, k1, beta, a2, k2, b` | $a_1 e^{-(x/k_1)^{\beta}} + a_2 e^{-x/k_2} + b$ |
 | `Gaussian` | `a, x0, sigma, b` | $a\,e^{-(x-x_0)^2/2\sigma^2} + b$ |
 | `Lorentzian` | `a, x0, gamma, b` | $a/(1+((x-x_0)/\gamma)^2) + b$ |
 | `Damped sine` | `a, k, f, phi, b` | $a\,e^{-x/k}\sin(2\pi f x + \varphi) + b$ |

@@ -100,6 +100,37 @@ for i in range(10):
 
 ---
 
+## Colormap and levels (2D) { #colormap }
+
+The 2D image view offers a choice of colormap and levelling via the image right-click
+→ **Colormap** menu. The mode is **Default** unless you pick another; it is remembered
+for the rest of the run (per image dock).
+
+| Mode | Use for |
+| ---- | ------- |
+| **Default** | The standard auto-levelling (data min–max on a blue–white–red map) — the original behaviour, with no extra cost. This is the default |
+| **Auto** | Chooses automatically — a **sequential** (viridis) map for one-sided signals, a **bipolar** blue–white–red map for two-sided ones. The first (non-trivial) choice is *locked for the run*, so a live, dynamically re-pushed plot cannot flip colormaps mid-acquisition (it re-decides on a new dataset or when Auto is re-selected) |
+| **Bipolar** | Blue–white–red diverging map |
+| **Sequential** | Perceptually-uniform viridis map |
+
+Two toggles refine the levelling in the **Auto / Bipolar / Sequential** modes:
+
+- **Center bipolar on baseline** — pins the white of the bipolar map to the estimated
+  baseline (the data median) instead of the level midpoint, so a **non-zero baseline
+  reads as neutral** and the positive/negative excursions stay directly comparable even
+  when they are asymmetric. Recommended for baseline-subtracted or bimodal maps.
+- **Per-frame auto-levels (stacks)** — when a multi-frame stack is plotted, level and
+  colour **each frame on its own statistics**, so e.g. a raw (non-zero baseline) frame
+  and a baseline-subtracted frame in the same stack both display correctly. Turn it off
+  to share one fixed scaling across all frames when you want them directly comparable
+  (e.g. a relaxation series).
+
+The baseline used by these modes is estimated from a subsample of the data, so enabling
+them stays as fast as the default levelling even on large maps. The histogram to the
+right of the image can always be dragged to set levels manually.
+
+---
+
 ## 2D plotting in the test run { #2d-plotting-in-the-test-run }
 
 ```python

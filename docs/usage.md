@@ -214,6 +214,12 @@ The Liveplot tab has the following additional features in the Current Plots dock
 - open 1d data in csv multi-column format and plot it in a new graph dock;
 - open 2d data in csv format and plot it in a new graph dock.
 
+For 2D image plots, the graph right-click **Colormap** menu selects the colour map and
+levelling — **Default** (standard auto-levels) or the opt-in **Auto** / **Bipolar** /
+**Sequential** modes, with *Center bipolar on baseline* (neutral white on a non-zero
+baseline) and *Per-frame auto-levels* for multi-frame stacks. See
+[Colormap and levels](functions/plotting_functions/usage.md#colormap) for details.
+
 The graph docks have the following additional features:
 
 | Feature           | Action                                                                                                                                                                                                                                                                                                                                                                                                          |
