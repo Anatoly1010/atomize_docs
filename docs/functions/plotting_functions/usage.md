@@ -24,11 +24,11 @@ plot_1d('name', Xdata, Ydata, label='label', xname='NameXaxis',
 | `scatter`         | `['False', 'True']`. Enables scatter plot |
 | `timeaxis`        | `['False', 'True']`. Enables time axis |
 | `vline`           | `'False'` or a tuple `(vline1, vline2)`. Shows up to two vertical lines |
-| `pr`              | Name of process for plotting in another thread |
+| `pr`              | Handle for non-blocking (background) plotting — pass back the value the previous call returned (see below) |
 
 Other arguments are optional and used for automatic scaling (i.e. V to mV, etc.). Please, note that it is impossible to redraw a line with scatters if they have the same name.
 
-There is a possibility to draw data in parallel with the main script. To do this, a keyargument `pr` should be used. In this mode, the function returns the thread that starts the drawing, and check on the next call whether the process has completed or not. A minimal working example for parallel drawing with dynamic label is the following:
+There is a possibility to draw data in the background so plotting never paces the measurement loop. Initialise a handle to `'None'`, then pass it back through the `pr` keyword on every call. The call is then **non-blocking**: the frame is handed to a persistent background worker that draws the freshest state of each plot and **coalesces per plot name** — if a frame for that name is still pending, it is replaced by the newer one, so superseded intermediate frames are skipped. The final frame is always drawn. A minimal working example for background drawing with a dynamic label is the following:
 
 ```python
 import atomize.general_modules.general_functions as general
@@ -46,7 +46,20 @@ for i in range(10):
         vline=(i, ), text=str(i))
 ```
 
-A tuple `(data_1, data_2)` can be used as `Ydata`. In this case two curves will be plot simultaneously (see example above). A dynamic label based on the `text` keyword argument works only for parallel drawing. For a standard drawing mode a function [`general.text_label()`](#dynamic-labeling) should be used.
+A tuple `(data_1, data_2)` can be used as `Ydata`. In this case two curves will be plot simultaneously (see example above). A dynamic label based on the `text` keyword argument works only for background (`pr`) drawing. For a standard drawing mode a function [`general.text_label()`](#dynamic-labeling) should be used.
+
+### Background plotting for a whole script { #async-plotting }
+
+Instead of threading a `pr` handle through every call, you can switch the **whole process** to non-blocking plotting once, near the top of the script:
+
+```python
+general.set_plotting_async(True)
+```
+
+After this, every `plot_1d()` / `plot_2d()` that does not pass an explicit `pr` is handed to the background worker automatically, with the same per-name coalescing. This is what the control-center acquisition tools use so a scan runs at full speed regardless of how fast the GUI can redraw. `append_1d()` stays synchronous either way — it is incremental, so a dropped frame would drop points. A live `digitizer_get_curve()` that returns `None` (no new buffer this call) is still skipped, not queued.
+
+!!! note "Why this matters"
+    Because the plot window is one Qt process, a scan that plots faster than the GUI can paint is otherwise paced by the redraw (which is why minimising the plot window used to speed up an acquisition). Background plotting decouples the two: the measurement loop only enqueues the latest frame and moves on.
 
 ---
 
@@ -81,12 +94,12 @@ plot_2d('name', data, start_step=((Xstart, Xstep), (Ystart, Ystep)),
 | `name`       | String of the plot name |
 | `label`      | String of the curve name |
 | `text`       | Label of the plot (for multithreading only) |
-| `pr`         | Name of process for plotting in another thread |
+| `pr`         | Handle for non-blocking (background) plotting — pass back the value the previous call returned (see below) |
 | `start_step` | List of starting points and steps for the X and Y axis |
 
 Other arguments are optional and used for automatic scaling (i.e. V to mV, etc.).
 
-There is a possibility to draw data in parallel with the main script. To do this, a key argument `pr` should be used. In this mode, the function returns the thread that starts the drawing, and check on the next call whether the process has completed or not. A minimal working example for parallel drawing with dynamic label is the following:
+`plot_2d()` supports the same non-blocking background drawing as [`plot_1d()`](#1d-plotting): initialise a handle to `'None'` and pass it back through `pr` on every call. Frames coalesce per plot name (only the freshest is drawn), so a slow GUI never paces the acquisition. A minimal working example with a dynamic label is the following:
 
 ```python
 import atomize.general_modules.general_functions as general
@@ -142,6 +155,12 @@ plot_2d_test('name', data, start_step=((Xstart, Xstep), (Ystart, Ystep)),
 ```
 
 Same arguments and parallel-drawing semantics as [`plot_2d()`](#2d-plotting), but the surface is drawn **only when the script is launched in test mode**. In a normal experimental run `plot_2d_test()` is a no-op and returns `None`. Use it for diagnostic 2D inspection during the pre-flight check without polluting plots during real acquisition.
+
+---
+
+## Large traces and maps { #large-data }
+
+Big datasets stay responsive automatically. A 1D curve with more points than the view is wide is drawn with a peak-preserving decimation (and only the on-screen part is rasterised); a 2D image larger than the view is decimated to display resolution before the colour pass. This is **display-only** — the crosshair readout, the ruler, *Send to Data Treatment* and every saved file always see the full-resolution data. Very large payloads are additionally capped for display (2 M points for 1D, 4 M cells for 2D); a log line notes when a plot was strided, and the arrays held by the script and written to disk are never modified.
 
 ---
 
