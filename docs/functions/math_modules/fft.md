@@ -36,20 +36,29 @@ phi0 = fft_module.Fast_Fourier.auto_phase_zero(spectrum, threshold=0.1)
 ```
 
 Zero-order auto-phase. Returns the phase **in degrees** (`[0, 360)`) that
-maximises the magnitude-weighted real part of a complex `spectrum`.
+rotates a complex `spectrum` onto the real axis.
 
 Each bin is `S_k = |S_k|·e^{iθ_k}`; we want a single `φ₀` with `θ_k + φ₀ ≈ 0`
-over the significant bins. Maximising `Σ |S_k|·Re(S_k·e^{iφ₀})` has the closed
-form
+over the significant bins. The estimator is the **principal-axis**
+("square-the-signal") form
 
 ```text
-φ₀ = -angle( Σ |S_k|·S_k )
+φ₀ = -½·angle( Σ S_k² )
 ```
 
-The `|S_k|` weighting, plus a magnitude `threshold` (default 10 % of the peak),
-keep noise and baseline bins from biasing the result. The value is meant to be
-fed back as the zero-order term of [`ph_correction`](#ph_correction)
-(`cor1 = φ₀·π/180`).
+`S_k²` has phase `2θ_k` weighted by `|S_k|²`, so halving its angle recovers the
+common axis the significant bins lie on. Because it is **sign-blind**, it phases
+**bipolar** data correctly — e.g. an inversion-recovery T₁ curve whose echo is
+negative at short delay and positive after recovery, or any trace that crosses
+zero. The older magnitude-weighted vector sum `Σ |S_k|·S_k` fails there:
+opposite-sign bins cancel and bias `φ₀`. For unipolar data (an FFT peak, a plain
+FID, a T₂ decay) the two agree exactly. The ±180° ambiguity of the axis is
+resolved by flipping to the orientation that makes the magnitude-weighted real
+part positive.
+
+A magnitude `threshold` (default 10 % of the peak) keeps noise and baseline bins
+out. The value is meant to be fed back as the zero-order term of
+[`ph_correction`](#ph_correction) (`cor1 = φ₀·π/180`).
 
 This handles **only** the zero-order (constant) phase. A linear phase ramp from
 the receiver dead time is removed separately by starting the FFT at the echo

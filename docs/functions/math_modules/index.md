@@ -55,7 +55,7 @@ with [`plot_1d()`](../plotting_functions/usage.md) or saved with
 | Function | Description |
 | -------- | ----------- |
 | [`Fast_Fourier()`](fft.md#class) | Create the FFT / phase-correction helper |
-| [`auto_phase_zero(spectrum, threshold=0.1)`](fft.md#auto_phase_zero) | Zero-order auto-phase (degrees) maximising the magnitude-weighted real part |
+| [`auto_phase_zero(spectrum, threshold=0.1)`](fft.md#auto_phase_zero) | Zero-order auto-phase (degrees); principal-axis estimator, handles bipolar (T₁ inversion-recovery) data |
 | [`ph_correction(freq, data_i, data_q, cor1, cor2, cor3)`](fft.md#ph_correction) | Apply a zero/first/second-order phase polynomial to I+iQ |
 | [`fft(x_axis, data_i, data_q, sample_spacing, re='False')`](fft.md#fft) | FFT of I+iQ; magnitude or real/imag parts (ns → MHz) |
 
