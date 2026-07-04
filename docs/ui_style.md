@@ -104,6 +104,15 @@ btn.setStyleSheet(BUTTON_STYLE)
 combo.setStyleSheet(COMBO_STYLE)
 ```
 
+!!! note "`CHECKBOX_STYLE` ships an asset"
+    A checked box draws a `check.svg` tick that lives next to `gui_style.py`;
+    the sheet points at it with an absolute `url(...)` resolved from `__file__`
+    (so it survives the `os.chdir(libs)` the main window does at startup). This
+    is the one shared sheet that is **not** self-contained: if you copy
+    `gui_style.py` elsewhere, copy `check.svg` alongside it, and note that Qt
+    needs its SVG plugin (`qsvg`) to render the glyph — without it the box still
+    fills with the accent colour, just without the tick.
+
 ## Re-skinning (themes)
 
 The whole look is described by one dataclass of RGB tuples, `Theme`, with
