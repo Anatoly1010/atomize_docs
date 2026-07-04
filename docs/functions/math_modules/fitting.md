@@ -105,6 +105,7 @@ Returns a dict:
 | `perr` | 1-σ parameter errors (sqrt of the covariance diagonal) |
 | `r_squared` | Coefficient of determination |
 | `param_names` | Names matching the `popt` order (with `b`/`c` removed when `no_offset=True`) |
+| `stats` | Goodness-of-fit / model-selection diagnostics (see [below](#goodness)) |
 
 ```python
 import numpy as np
@@ -118,7 +119,37 @@ res = fitter.fit('Exponential', x, y)
 for name, val, err in zip(res['param_names'], res['popt'], res['perr']):
     print(f'{name} = {val:.4g} +/- {err:.2g}')
 print('R^2 =', res['r_squared'])
+print('adj R^2 =', res['stats']['adj_r_squared'])
+print('AICc =', res['stats']['aicc'], ' Durbin-Watson =', res['stats']['durbin_watson'])
 ```
+
+### Goodness of fit { #goodness data-toc-label="Goodness of fit" }
+
+The `stats` entry holds diagnostics beyond `r_squared`, for judging whether a
+model is adequate and for comparing models on the same data. No per-point
+measurement errors are available, so the noise variance is estimated from the
+residuals themselves ($\sigma^2 = \mathrm{SS_{res}}/\nu$, with $\nu = n - p$
+degrees of freedom).
+
+| Key | Meaning |
+| --- | ------- |
+| `n_points`, `n_params`, `dof` | Number of points $n$, free parameters $p$, and degrees of freedom $\nu = n - p$ |
+| `rmse` | Root-mean-square residual $\sqrt{\mathrm{SS_{res}}/n}$, in signal units |
+| `red_chi2` | Reduced chi-square $\mathrm{SS_{res}}/\nu$ (≈ 1 by construction, since $\sigma$ is taken from the residuals) |
+| `adj_r_squared` | $R^2$ penalized for parameter count: $1-(1-R^2)\frac{n-1}{\nu}$. Only rises when an added term genuinely helps |
+| `aic`, `aicc`, `bic` | Information criteria (Gaussian-likelihood form). **Lower is better.** Absolute values are meaningless; the *difference* between two fits of the same data is what counts. `aicc` is the small-sample-corrected AIC; `bic` penalizes extra parameters more strongly |
+| `durbin_watson` | Residual-autocorrelation statistic. **≈ 2** ⇒ random (white) residuals; well below 2 (positive correlation) or well above 2 ⇒ residuals drift systematically — the model is the wrong *shape* even if $R^2$ looks excellent |
+
+!!! tip "Choosing a model"
+    `durbin_watson` catches an inadequate model that $R^2$ alone misses: a fit
+    can reach $R^2 = 0.999$ yet leave residuals that snake across zero. To pick
+    between models (e.g. `Stretched exponential` vs
+    `Stretched exponential + exponential`), compare `aicc`/`bic` — a drop
+    greater than ≈ 10 is decisive evidence for the lower model — and check that
+    `durbin_watson` moves toward 2.
+
+    Entries that need $\nu > 0$ (`red_chi2`, `adj_r_squared`, `aicc`) are `NaN`
+    for datasets too small to support the model's parameter count.
 
 ---
 
@@ -148,10 +179,20 @@ Returns the parameter-name list of `model` (in `popt` order).
 guess = fitter.default_guess(model, x, y)
 ```
 
-Builds a heuristic initial-guess list for `model` from the data — endpoints for
-the decays, the largest peak for Gaussian/Lorentzian, and FFT-seeded
-frequencies for the ESEEM models. Pass it (optionally edited) to
+Builds a heuristic initial-guess list for `model` from the data — the largest
+peak for Gaussian/Lorentzian, FFT-seeded frequencies for the ESEEM models, and
+for the decay/recovery models (`Exponential`, `Bi-exponential`, `Stretched
+exponential`, `Stretched exponential + exponential`) a **characteristic decay
+time** measured directly from the data. Pass it (optionally edited) to
 [`fit()`](#fit) as `guess`.
+
+The characteristic time is the x-distance from `x[0]` to where the signal first
+covers half of its total (`y[0]` → `y[-1]`) change, and the plateau/amplitude
+come from endpoint medians (noise-robust). Unlike a fixed fraction of the
+x-span, this stays correct on **log-spaced, multi-decade axes** — e.g. a
+saturation/inversion-recovery $T_1$ curve sampled from 10⁻⁷ to 10⁻² s — where a
+span-based seed would land orders of magnitude too slow and push `curve_fit`
+into a degenerate local minimum (a collapsed term, or `beta` going negative).
 
 ---
 
