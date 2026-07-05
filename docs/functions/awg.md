@@ -280,7 +280,7 @@ This function should be called with two keyword arguments, namely `name` and `am
 awg_redefine_frequency(name='P0', freq='10 MHz')
 ```
 
-This function should be called with two keyword arguments, namely `name` and `frequency`. The first argument specifies the name of the pulse as a string. The second argument defines a new value of frequency as a string, i.e. `'100 MHz'` or a list of string `('0 MHz', '100' MHz)` for WURST and SECH/TANH pulses, see [`awg_pulse()`](#awg_pulse) for more details. Arguments can be either single strings or lists, for example: `name = ['P0', 'P1']`, `freq = ['10 MHz', ('0 MHz', '50 MHz')]`. Please note, that the function does not update the AWG card. The [`awg_update()`](#awg_update) function should be called to apply changes. The function has no meaning for the `'Sequence'` card mode. One should redefine all the sequence instead.
+This function should be called with two keyword arguments, namely `name` and `freq`. The first argument specifies the name of the pulse as a string. The second argument defines a new value of frequency as a string, i.e. `'100 MHz'`, or a list/tuple of two strings `('0 MHz', '100 MHz')` for WURST and SECH/TANH pulses (the frequency sweep range), see [`awg_pulse()`](#awg_pulse) for more details. Arguments can be either single values or parallel lists, for example: `name = ['P0', 'P1']`, `freq = ['10 MHz', ('0 MHz', '50 MHz')]`. Please note, that the function does not update the AWG card. The [`awg_update()`](#awg_update) function should be called to apply changes. The function has no meaning for the `'Sequence'` card mode. One should redefine all the sequence instead.
 
 ---
 
