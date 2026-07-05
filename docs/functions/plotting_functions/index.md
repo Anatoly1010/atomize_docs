@@ -40,8 +40,9 @@ Right-click in the Current Plots dock area to access:
 | Middle-click                       | Lock the cross-hair or cross-section widget in its current position |
 | `Shift` + left-drag                | Ruler — measure distance between two points (snapped) |
 | `Shift` + `Ctrl` + left-drag       | Ruler with free coordinates (no snapping) |
+| `Shift` (press again)              | Hide the current ruler |
 
-**Ruler details:** For 1D plots the endpoints snap to the nearest data point of the curve under the press position, and the ruler adopts that curve's color; the label shows ΔX, ΔY, and the (X, Y) of both endpoints. For 2D plots the endpoints snap to the nearest pixel center, and the label shows ΔX, ΔY, ΔZ, and the (X, Y, Z) of both endpoints. The ruler is removed automatically when the cross-hair or cross-section widget is hidden.
+**Ruler details:** For 1D plots the endpoints snap to the nearest data point of the curve under the press position, and the ruler adopts that curve's color; the label shows ΔX, ΔY, and the (X, Y) of both endpoints. For 2D plots the endpoints snap to the nearest pixel center, and the label shows ΔX, ΔY, ΔZ, and the (X, Y, Z) of both endpoints. The ruler stays on screen independently of the cross-hair / cross-section widget: toggling that widget off leaves the ruler in place. To remove it, press `Shift` once more (without dragging) or use *Clear Ruler*. It is dropped automatically only when the axes are transformed (FFT / log / derivative) or a new dataset is plotted.
 
 ### Graph dock right-click menu
 
