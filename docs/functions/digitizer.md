@@ -474,7 +474,7 @@ This function sets or queries enabled flows of data. If there is no argument the
 digitizer_read_settings()    # read settings from digitizer.param
 ```
 
-This function reads all the settings from a special text file [`digitizer.param`](https://github.com/Anatoly1010/Atomize_ITC/tree/master/atomize/control_center) and writes them to the digitizer using the [`digitizer_setup()`](#digitizer_setup) function.
+This function reads all the settings from a special text file [`digitizer.param`](https://github.com/Anatoly1010/Atomize_ITC/tree/master/atomize/control_center) and writes them to the digitizer using the [`digitizer_setup()`](#digitizer_setup) function. It also reads the zero-, first-, and second-order phase-correction coefficients stored in the file (set in the phasing control center); these become the default phase corrections used by the [`digitizer_iq()`](#digitizer_iq) function when its corresponding arguments are omitted.
 
 !!! note
     This function is not available for L card L-502.
@@ -518,18 +518,21 @@ This function is available only for Insys FM214x3GDA and is similar to the [`dig
 
 ---
 
-### digitizer_iq(arr_i, arr_q, freq, ph, ph1, ph2, integral=False) { #digitizer_iq data-toc-label="digitizer_iq" }
+### digitizer_iq(arr_i, arr_q, freq, ph=None, ph1=None, ph2=None, integral=False) { #digitizer_iq data-toc-label="digitizer_iq" }
 
 ```python
 # Software down-conversion of the quadrature data
 data_i, data_q = digitizer_iq(data_i, data_q, freq, ph, ph1, ph2)
+
+# Phase corrections taken from digitizer_read_settings()
+data_i, data_q = digitizer_iq(data_i, data_q, freq)
 
 # With integration over the window
 res_i, res_q = digitizer_iq(
     data_i, data_q, freq, ph, ph1, ph2, integral=True)
 ```
 
-This function performs a software digital down-conversion (IQ demodulation) with phase correction of the quadrature data returned by the [`digitizer_get_curve()`](#digitizer_get_curve-points) function. The arguments `arr_i` and `arr_q` are the in-phase and quadrature arrays (both 1D and 2D arrays are accepted). The complex signal `arr_i + 1j*arr_q` is multiplied by `exp(-1j*(2*pi*freq*t + ph + ph1*t + ph2*t**2))`, where `t` is the time axis built from the current sampling frequency. For Insys FM214x3GDA this frequency is `2.5 GHz` divided by the [decimation](#digitizer_decimation) coefficient; for the Spectrum M4I.4450-X8 and M4I.2211-X8 digitizers it is the configured [sample rate](#digitizer_sample_rate). The argument `freq` (in MHz) is the down-conversion frequency offset, `ph` is the zero-order (constant) phase correction in radians, while `ph1` and `ph2` are the first- and second-order phase-correction coefficients. The first- and second-order terms are applied only if at least one of them is nonzero.
+This function performs a software digital down-conversion (IQ demodulation) with phase correction of the quadrature data returned by the [`digitizer_get_curve()`](#digitizer_get_curve-points) function. The arguments `arr_i` and `arr_q` are the in-phase and quadrature arrays (both 1D and 2D arrays are accepted). The complex signal `arr_i + 1j*arr_q` is multiplied by `exp(-1j*(2*pi*freq*t + ph + ph1*t + ph2*t**2))`, where `t` is the time axis built from the current sampling frequency. For Insys FM214x3GDA this frequency is `2.5 GHz` divided by the [decimation](#digitizer_decimation) coefficient; for the Spectrum M4I.4450-X8 and M4I.2211-X8 digitizers it is the configured [sample rate](#digitizer_sample_rate). The argument `freq` (in MHz) is the down-conversion frequency offset, `ph` is the zero-order (constant) phase correction in radians, while `ph1` and `ph2` are the first- and second-order phase-correction coefficients. The first- and second-order terms are applied only if at least one of them is nonzero. If `ph`, `ph1`, or `ph2` is omitted (or `None`), the corresponding coefficient falls back to the value read from `digitizer.param` by [`digitizer_read_settings()`](#digitizer_read_settings) (or `0.0` if it was never called), so the phase corrections dialed in the phasing control center are applied automatically.
 
 If the keyword `integral` is `True` and the input arrays are 2D, the corrected data is integrated over the [window](#digitizer_window) and two 1D arrays (`res_i`, `res_q`) are returned; otherwise the corrected in-phase and quadrature arrays are returned. If the input arrays contain `np.nan` (no new data) they are returned unchanged.
 

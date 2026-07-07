@@ -400,7 +400,7 @@ This function queries (if called with one argument) or sets (if called with two 
 oscilloscope_read_settings()    # read all settings from digitizer.param
 ```
 
-This function reads all the settings from a special text file [digitizer.param](https://github.com/Anatoly1010/Atomize_ITC/tree/master/atomize/control_center).
+This function reads all the settings from a special text file [digitizer.param](https://github.com/Anatoly1010/Atomize_ITC/tree/master/atomize/control_center). It also reads the zero-, first-, and second-order phase-correction coefficients stored in the file (set in the phasing control center); these become the default phase corrections used by the [`oscilloscope_iq()`](#oscilloscope_iq) function when its corresponding arguments are omitted.
 
 !!! note
     This function is only available for Keysight 2000, 3000, 4000 X-Series and Rigol MSO8000 Series oscilloscopes.
