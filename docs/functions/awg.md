@@ -432,6 +432,24 @@ This function queries or sets the AWG card reference clock in MHz for `'External
 
 ---
 
+### awg_clock_output(*mode) { #awg_clock_output data-toc-label="awg_clock_output" }
+
+```python
+awg_clock_output()         # -> str (query)
+awg_clock_output('On')     # enable the Clock Out connector
+awg_clock_output('Off')    # default
+```
+
+This function queries or sets the state of the sampling-clock output (Clock Out connector). If there is no argument the function will return the current setting. If there is an argument the specified state will be set. When enabled, the card outputs its sampling clock divided by 4 (i.e. 250 MHz at a sampling rate of 1 GS/s) on the Clock Out connector. This signal can be used as the external reference clock of the digitizer (see [`digitizer_reference_clock()`](digitizer.md#digitizer_reference_clock)), so that both cards derive their sampling clocks from one source and keep a reproducible clock phase between restarts. Default setting is `'Off'`.
+
+!!! note
+    This function is not available for Insys FM214x3GDA.
+
+**Allowed:** `'On'`, `'Off'`
+{: .enum }
+
+---
+
 ### awg_card_mode(*mode) { #awg_card_mode data-toc-label="awg_card_mode" }
 
 ```python

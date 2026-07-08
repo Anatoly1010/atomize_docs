@@ -245,9 +245,9 @@ digitizer_reference_clock()       # -> int, MHz (query)
 digitizer_reference_clock(100)    # default: 100 MHz
 ```
 
-This function queries or sets the digitizer reference clock (in MHz) for `External` mode of the [`digitizer_clock_mode()`](#digitizer_clock_mode) function. If there is no argument the function will return the current reference clock. If there is an argument the specified reference clock will be set. Default value is 100 MHz.
+This function queries or sets the digitizer reference clock (in MHz) for `External` mode of the [`digitizer_clock_mode()`](#digitizer_clock_mode) function. If there is no argument the function will return the current reference clock. If there is an argument the specified reference clock will be set. The reference clock can also be taken from the Clock Out connector of the AWG card (see [`awg_clock_output()`](awg.md#awg_clock_output)), so that the digitizer and the AWG derive their sampling clocks from one source. Default value is 100 MHz.
 
-**Range:** `10 MHz` – `100 MHz`
+**Range:** `10 MHz` – `1000 MHz`
 {: .enum }
 
 !!! note
