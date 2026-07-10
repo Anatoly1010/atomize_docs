@@ -12,6 +12,7 @@ The [Liveplot](https://github.com/PhilReinhold/liveplot) provides several possib
 | [`plot_1d_test(*args, **kargs)`](usage.md#1d-plotting-in-the-test-run)             | 1D plot in the test run |
 | [`plot_2d(*args, **kargs)`](usage.md#2d-plotting)             | 2D plot |
 | [`plot_2d_test(*args, **kargs)`](usage.md#2d-plotting-in-the-test-run)             | 2D plot in the test run |
+| [`update_2d(*args, **kargs)`](usage.md#2d-partial-updates)    | Partial (column-range) update of a 2D plot |
 | [`text_label('label', DynamicValue)`](usage.md#dynamic-labeling) | Dynamic plot label |
 | [`plot_remove('name_of_plot')`](usage.md#clearing)            | Clear a plot |
 

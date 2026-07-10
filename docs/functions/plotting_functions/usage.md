@@ -113,6 +113,50 @@ for i in range(10):
 
 ---
 
+## Partial 2D updates { #2d-partial-updates }
+
+```python
+update_2d('name', data, lo, hi, start_step=((Xstart, Xstep), (Ystart, Ystep)),
+        xname='NameXaxis', xscale='XaxisDimension',
+        yname='NameYaxis', yscale='YaxisDimension',
+        zname='NameZaxis', zscale='ZaxisDimension',
+        pr='None', text='')
+```
+
+| Argument     | Description |
+| ------------ | ----------- |
+| `data`       | The script's **live full-frame** numpy array, updated in place before each call |
+| `lo`, `hi`   | Column range `[lo:hi)` along the **last axis** of `data` that changed since the previous call |
+| other        | Same as [`plot_2d()`](#2d-plotting) |
+
+`update_2d()` is the incremental counterpart of [`plot_2d()`](#2d-plotting) for acquisitions where each readout only changes a small column range of a large 2D result — most notably the [partial-range readout](../digitizer.md#digitizer_get_curve-points) of the Insys FM214x3GDA. Instead of serialising and redrawing the whole frame on every call, only the changed columns cross to the plot window; the plotter keeps the full image and patches the range in place. The per-readout plotting cost is therefore proportional to the size of the *update*, not the size of the *array*.
+
+`data` must be the persistent array the script keeps up to date (`data[..., lo:hi] = new_columns`) — the columns are sliced out of it **at send time**. This is what makes the background (`pr`) mode safe: when several updates of one plot are pending, they coalesce into a single frame covering the **union** of their ranges, read fresh from the array, so a slow GUI drops no columns and never paces the measurement loop. On the very first call (or after the plot is closed) the plotter allocates a zero image of the full size and fills it in as updates arrive; passing `lo=0, hi=data.shape[-1]` forces a full redraw. If the full frame exceeds the [display cap](#large-data) (4 M cells), the call transparently falls back to a full `plot_2d()` so the display decimation stays correct.
+
+A typical acquisition loop:
+
+```python
+import atomize.general_modules.general_functions as general
+
+data = np.zeros((2, points_window, POINTS))
+process = 'None'
+
+a, b, rng = pb.digitizer_get_curve(POINTS, PHASES, current_scan=k,
+                                   total_scan=SCANS, partial=True)
+if a is not None:
+    i0, i1 = rng
+    data[0][:, i0:i1] = a
+    data[1][:, i0:i1] = b
+    process = general.update_2d('NAME', data, i0, i1,
+        start_step=((0, 0.4), (0, STEP)), xname='Time', xscale='s',
+        yname='Delay', yscale='s', zname='Intensity', zscale='mV',
+        pr=process, text=f'Scan: {k}')
+```
+
+`update_2d()` honours [`set_plotting_async(True)`](#async-plotting) the same way `plot_1d()` / `plot_2d()` do. In test mode it is a no-op and returns `None`.
+
+---
+
 ## Colormap and levels (2D) { #colormap }
 
 The 2D image view offers a choice of colormap and levelling via the image right-click
