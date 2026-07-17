@@ -227,17 +227,17 @@ For Rigol MSO8000 Series, it is not possible to control the number of averages i
 
 ---
 
-### oscilloscope_iq(arr_i, arr_q, freq, ph=None, ph1=None, ph2=None, integral=False) { #oscilloscope_iq data-toc-label="oscilloscope_iq" }
+### oscilloscope_demodulate(arr_i, arr_q, freq, ph=None, ph1=None, ph2=None, integral=False) { #oscilloscope_demodulate data-toc-label="oscilloscope_demodulate" }
 
 ```python
 # Software down-conversion of the quadrature data
-data_i, data_q = oscilloscope_iq(data_i, data_q, freq, ph, ph1, ph2)
+data_i, data_q = oscilloscope_demodulate(data_i, data_q, freq, ph, ph1, ph2)
 
 # Phase corrections taken from oscilloscope_read_settings()
-data_i, data_q = oscilloscope_iq(data_i, data_q, freq)
+data_i, data_q = oscilloscope_demodulate(data_i, data_q, freq)
 
 # With integration over the window
-res_i, res_q = oscilloscope_iq(
+res_i, res_q = oscilloscope_demodulate(
     data_i, data_q, freq, ph, ph1, ph2, integral=True)
 ```
 
@@ -403,7 +403,7 @@ This function queries (if called with one argument) or sets (if called with two 
 oscilloscope_read_settings()    # read all settings from digitizer.param
 ```
 
-This function reads all the settings from a special text file [digitizer.param](https://github.com/Anatoly1010/Atomize_ITC/tree/master/atomize/control_center). It also reads the zero-, first-, and second-order phase-correction coefficients stored in the file (set in the phasing control center); these become the default phase corrections used by the [`oscilloscope_iq()`](#oscilloscope_iq) function when its corresponding arguments are omitted.
+This function reads all the settings from a special text file [digitizer.param](https://github.com/Anatoly1010/Atomize_ITC/tree/master/atomize/control_center). It also reads the zero-, first-, and second-order phase-correction coefficients stored in the file (set in the phasing control center); these become the default phase corrections used by the [`oscilloscope_demodulate()`](#oscilloscope_demodulate) function when its corresponding arguments are omitted.
 
 !!! note
     This function is only available for Keysight 2000, 3000, 4000 X-Series and Rigol MSO8000 Series oscilloscopes.
