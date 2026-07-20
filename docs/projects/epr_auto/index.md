@@ -1,4 +1,4 @@
-# EPR automation (epr_auto)
+# EPR automation
 
 `epr_auto` is a YAML protocol runner for unattended pulsed-EPR tune-up and
 measurement on the endstation's X-band pulsed machine. Instead of clicking
