@@ -118,6 +118,12 @@ nav:
           - Q-band pulsed EPR: projects/qband.md
           - EPR endstation: projects/endstation.md
           - Cryomech control center: projects/cryomech.md
+      - EPR automation (epr_auto):
+          - Overview: projects/epr_auto/index.md
+          - Quickstart: projects/epr_auto/quickstart.md
+          - Writing protocols: projects/epr_auto/protocols.md
+          - Step reference: projects/epr_auto/steps.md
+          - The tune-up chain: projects/epr_auto/tuning.md
       - Examples:
           - CW EPR: script_examples/cw_epr.md
           - Pulsed EPR: script_examples/pulsed_epr.md

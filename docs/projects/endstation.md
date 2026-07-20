@@ -38,6 +38,17 @@ EPR spectroscopy endstation is a multi-functional setup located at [the Novosibi
 | -------------- | -------- |
 | NMR gaussmeter | Sibir 1  |
 
+## Automated tune-up and measurement
+
+The pulsed machine can be driven unattended by
+[epr_auto](epr_auto/index.md), a YAML protocol runner that ships with the
+endstation's [Atomize_ITC](https://github.com/Anatoly1010/Atomize_ITC)
+build: it tunes the spectrometer (vane power, working field, integration
+window, phase, pulse calibration, repetition rate), runs T2 / T1
+measurements with SNR- and time-budget-driven scan counts, judges every
+result and records a full run manifest. See the
+[epr_auto overview](epr_auto/index.md) for the manual.
+
 ## Per-tool working directories
 
 The endstation runs as several independent Qt processes — the main window plus
