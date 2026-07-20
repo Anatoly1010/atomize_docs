@@ -118,7 +118,7 @@ nav:
           - Q-band pulsed EPR: projects/qband.md
           - EPR endstation: projects/endstation.md
           - Cryomech control center: projects/cryomech.md
-      - EPR automation (epr_auto):
+      - EPR automation:
           - Overview: projects/epr_auto/index.md
           - Quickstart: projects/epr_auto/quickstart.md
           - Writing protocols: projects/epr_auto/protocols.md
