@@ -83,7 +83,7 @@ Repetition-rate saturation scan: quick echo per rate on a log grid, fit A = A0*(
 
 ### field.edfs
 
-Echo-detected field sweep; pick the working field and set the magnet. range: auto centers on h*nu/(g*mu_B) from the synthesizer readout.
+Echo-detected field sweep; pick the working field and set the magnet. range: auto centers on h·ν/(g·μ_B) at ν = ν_LO − ν_IF (the LO readout minus the preset's AWG intermediate frequency).
 
 | Parameter | Type | Default | Description |
 | --------- | ---- | ------- | ----------- |
@@ -139,7 +139,7 @@ Inversion recovery (T1), log-time sweep, with fit.
 
 | Parameter | Type | Default | Description |
 | --------- | ---- | ------- | ----------- |
-| `preset` | preset file | `inversion_recovery_echo_4s_log.phase_awg` | Log Time inversion-recovery preset (saved with 'IQ Correction: 2') |
+| `preset` | preset file | <code>inversion_recovery_echo_4s_log<wbr>.phase_awg</code> | Log Time inversion-recovery preset (saved with 'IQ Correction: 2') |
 | `t_start` | time ("300 ns") | `500 ns` | shortest recovery delay; also sets the log-spacing density |
 | `t_end` | time ("300 ns") | `5 ms` | longest recovery delay — physically several times the expected T1 |
 | `points` | integer (>= 2) | *required* | log-grid points; the worker deduplicates the grid-rounded axis, so the saved curve may hold fewer |
