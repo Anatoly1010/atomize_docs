@@ -48,4 +48,34 @@ CI (`.github/workflows/ci.yml`) runs `mkdocs build --strict` on every push to `m
 - The theme is pinned (`mkdocs-material==9.7.6`); bumping it can shift layout/CSS.
 - Some migrated `docs/` pages still carry leftover Jekyll/Kramdown attributes such as `{: .enum }` (e.g. in `functions/temp_controller.md`); these do **not** render under MkDocs — replace them with `attr_list`/admonition equivalents when you touch those pages.
 
+## EPR automation (`epr_auto`) pages
+
+`docs/projects/epr_auto/` documents the Atomize_ITC protocol runner
+(`atomize/epr_auto/`, which lives in the separate Atomize_ITC repo, not here).
+Two maintenance rules apply when that code changes:
+
+- **`steps.md` is auto-generated — never hand-edit it.** It is emitted from the
+  runner's own step registry by a generator in the Atomize_ITC repo. Whenever a
+  step or parameter registration changes in `steps.py` (a new step, a changed
+  default/range/choice, edited help text), regenerate the page from the
+  Atomize_ITC checkout:
+
+  ```bash
+  # run from the Atomize_ITC repo root
+  python3 -m atomize.epr_auto.docgen /home/anatoly/atomize_docs/docs/projects/epr_auto/steps.md
+  ```
+
+  The page carries a do-not-edit banner and this command at its top.
+  Regeneration is **manual** — it is not run at site-build time — so it must be
+  redone by hand whenever the `steps.py` registrations change.
+
+- **Protocol-schema changes must touch `protocols.md` in the same session.**
+  The YAML dialect (top-level keys, per-step `retries`/`on_fail`/`checkpoint`,
+  the `foreach` block, value syntax, autonomy levels) is documented by hand in
+  `projects/epr_auto/protocols.md`; a schema change in the runner that the
+  generated `steps.md` does not capture must be reflected there in the same
+  change. Prose about preset expectations, judges, and failure messages lives
+  in `presets.md` / `tuning.md` / `troubleshooting.md` — keep those in step with
+  the code (verbatim error strings especially) when it changes.
+
 [Material for MkDocs]: https://squidfunk.github.io/mkdocs-material/

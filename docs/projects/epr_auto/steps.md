@@ -23,7 +23,7 @@ Acquire an echo and zero the signal phase (principal-axis auto_phase_zero).
 
 | Parameter | Type | Default | Description |
 | --------- | ---- | ------- | ----------- |
-| `preset` | preset file | `hahn_echo_4s.phase_awg` | echo preset the phase is measured on (saved with 'IQ Correction: 2') |
+| `preset` | preset file | `hahn_echo_4s.phase_awg` | echo preset the phase is measured on |
 | `points` | integer (>= 2) | `4` | sweep points for the quick phase acquisition |
 | `scans` | integer (>= 1) | `1` | scans for the quick acquisition |
 
@@ -33,7 +33,7 @@ Set the integration window from an averaged echo trace (center = smoothed |V| ma
 
 | Parameter | Type | Default | Description |
 | --------- | ---- | ------- | ----------- |
-| `preset` | preset file | `hahn_echo_4s.phase_awg` | echo preset the trace is taken with (saved with 'IQ Correction: 2') |
+| `preset` | preset file | `hahn_echo_4s.phase_awg` | echo preset the trace is taken with |
 | `factor` | number (1..10) | `2.0` | window width as a multiple of the echo FWHM |
 | `sweeps` | integer (>= 1) | `3` | full phase cycles to average for the trace |
 
@@ -70,7 +70,7 @@ Repetition-rate saturation scan: quick echo per rate on a log grid, fit A = A0*(
 
 | Parameter | Type | Default | Description |
 | --------- | ---- | ------- | ----------- |
-| `preset` | preset file | `hahn_echo_4s.phase_awg` | echo preset for the per-rate quick acquisitions (saved with 'IQ Correction: 2') |
+| `preset` | preset file | `hahn_echo_4s.phase_awg` | echo preset for the per-rate quick acquisitions |
 | `rate_min` | number (0.1..100000) | `20.0` | slowest rate (Hz) — must reach the unsaturated plateau |
 | `rate_max` | number (0.1..100000) | `2000.0` | fastest rate (Hz); recommendations are never extrapolated above it |
 | `steps` | integer (3..20) | `6` | log-grid rates between rate_min and rate_max |
@@ -87,7 +87,7 @@ Echo-detected field sweep; pick the working field and set the magnet. range: aut
 
 | Parameter | Type | Default | Description |
 | --------- | ---- | ------- | ----------- |
-| `preset` | preset file | `ed_4s.phase_awg` | field-sweep echo-detection preset (saved with 'IQ Correction: 2') |
+| `preset` | preset file | `ed_4s.phase_awg` | field-sweep echo-detection preset |
 | `range` | 'auto' \| [field ("3478 G"), field ("3478 G")] | *required* | [start, end] field, or 'auto' |
 | `points` | integer (>= 2) | `200` | field points across the sweep range |
 | `scans` | integer (>= 1) | `1` | scan count (the ceiling when target_snr stops the sweep early) |
@@ -139,7 +139,7 @@ Inversion recovery (T1), log-time sweep, with fit.
 
 | Parameter | Type | Default | Description |
 | --------- | ---- | ------- | ----------- |
-| `preset` | preset file | <code>inversion_recovery_echo_4s_log<wbr>.phase_awg</code> | Log Time inversion-recovery preset (saved with 'IQ Correction: 2') |
+| `preset` | preset file | <code>inversion_recovery_echo_4s_log<wbr>.phase_awg</code> | Log Time inversion-recovery preset |
 | `t_start` | time ("300 ns") | `500 ns` | shortest recovery delay; also sets the log-spacing density |
 | `t_end` | time ("300 ns") | `5 ms` | longest recovery delay — physically several times the expected T1 |
 | `points` | integer (>= 2) | *required* | log-grid points; the worker deduplicates the grid-rounded axis, so the saved curve may hold fewer |
@@ -156,7 +156,7 @@ Hahn echo decay (T2/Tm), linear tau sweep, with fit.
 
 | Parameter | Type | Default | Description |
 | --------- | ---- | ------- | ----------- |
-| `preset` | preset file | `hahn_echo_4s.phase_awg` | Linear Time moving-echo (Hahn) preset (saved with 'IQ Correction: 2') |
+| `preset` | preset file | `hahn_echo_4s.phase_awg` | Linear Time moving-echo (Hahn) preset |
 | `tau_start` | time ("300 ns") | `300 ns` | first tau; the saved axis is the evolution time 2*tau |
 | `tau_step` | time ("300 ns") | `12 ns` | tau increment per point |
 | `points` | integer (>= 2) | *required* | sweep points |

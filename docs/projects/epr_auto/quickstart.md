@@ -52,7 +52,7 @@ parameter with its type, default (in brackets) and help text:
 ```text
 exp.t2
     Hahn echo decay (T2/Tm), linear tau sweep, with fit
-    preset: preset file [hahn_echo_4s.phase_awg] — Linear Time moving-echo (Hahn) preset (saved with 'IQ Correction: 2')
+    preset: preset file [hahn_echo_4s.phase_awg] — Linear Time moving-echo (Hahn) preset
     tau_start: time ("300 ns") [300 ns] — first tau; the saved axis is the evolution time 2*tau
     tau_step: time ("300 ns") [12 ns] — tau increment per point
     points: integer, required — sweep points
@@ -200,3 +200,6 @@ The directory holds three kinds of file:
   substitution.
 - [The tune-up chain](tuning.md) — how the `tune.*` steps compose into a
   calibration sequence and when each calibration is invalidated.
+- [Examples](examples.md) — two annotated protocols walked through end to end.
+- [Troubleshooting](troubleshooting.md) — common failures, quoted verbatim,
+  and what they mean.

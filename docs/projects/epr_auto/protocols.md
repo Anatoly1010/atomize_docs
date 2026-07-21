@@ -6,7 +6,9 @@ page is the reference for that YAML dialect: the top-level keys, how a step
 is written, the value syntax every parameter shares, the per-step failure
 and checkpoint controls, and the `foreach` series block. For the parameters
 of each individual step see the [Step reference](steps.md); for the tuning
-chain the steps compose into, see [The tune-up chain](tuning.md).
+chain the steps compose into, see [The tune-up chain](tuning.md); for what a
+step expects of the preset it names, see [Presets](presets.md). Two complete
+protocols are annotated on the [Examples](examples.md) page.
 
 Validate a file at any time without running it:
 
@@ -221,7 +223,8 @@ stopping.
 A `foreach` block runs its sub-steps once for each value of a loop variable,
 substituting the value into the sub-steps. It is how a field series or a
 temperature series is written: tune once, then repeat a measurement group
-across a list of positions.
+across a list of positions. A worked field series is annotated on the
+[Examples](examples.md) page.
 
 ```yaml
   - foreach:

@@ -79,3 +79,6 @@ commissioning is in progress.
 | [Writing protocols](protocols.md) | The YAML schema, autonomy, `foreach` series, value substitution |
 | [Step reference](steps.md) | Every step, its parameters, defaults, and constraints |
 | [The tune-up chain](tuning.md) | How the calibration steps compose and invalidate each other |
+| [Presets](presets.md) | What a step expects of a `.phase_awg` preset, and what the runner overrides |
+| [Examples](examples.md) | Two annotated protocols: a single T2 and a field series |
+| [Troubleshooting](troubleshooting.md) | Common failures, verbatim, and what they mean |

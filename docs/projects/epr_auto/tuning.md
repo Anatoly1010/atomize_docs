@@ -92,17 +92,21 @@ always describe the state the vane is actually left in.
 ```
 
 With power set, the run finds the resonance line by an echo-detected field
-sweep. `range: auto` turns the step into a blind signal search: it reads the
-microwave frequency back from the synthesizer and predicts the centre field from
-the resonance condition,
+sweep. `range: auto` turns the step into a blind signal search: it predicts the
+centre field from the resonance condition at the **true observation frequency**
+— the synthesizer/LO readout minus the preset's DETECTION-pulse intermediate
+frequency (this bridge upconverts lower-sideband, so the spins see
+`ν = ν_LO − ν_IF`):
 
 ```text
-B[G] = 0.714477 * nu[MHz] / g   (+ offset)
+B[G] = 0.714477 * (nu_LO - nu_IF)[MHz] / g   (+ offset)
 ```
 
-then sweeps ± a span (250 G by default) around it. The magnet on this
-endstation is not absolutely calibrated, so a known setup shift is passed as
-`offset` and folded into the predicted centre; the step reports back the
+then sweeps ± a span (250 G by default) around it; the log shows the arithmetic
+(`LO 9750 MHz - IF 50 MHz = ...`). The magnet on this endstation is not
+absolutely calibrated, so a known setup shift is passed as `offset` and folded
+into the predicted centre — `offset` is the *magnet-calibration* shift only,
+the IF contribution is already accounted for. The step reports back the
 measured line-minus-centre distance as `shift_g`, which is exactly the value to
 feed in as `offset` next time. `pick: max` takes the working field at the
 magnitude maximum of the sweep and sets the magnet there.
@@ -265,7 +269,8 @@ sees one, naming the mistake before the coherence gate rejects the run.
 ## Calibration flow and invalidation
 
 Every tuning step writes its result into the session state, and every later
-build reads it back. This is how a value measured once propagates without being
+build reads it back ([Presets](presets.md) lists which preset fields each
+override replaces). This is how a value measured once propagates without being
 repeated:
 
 | Stored by | Flows into |

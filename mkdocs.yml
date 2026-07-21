@@ -124,6 +124,9 @@ nav:
           - Writing protocols: projects/epr_auto/protocols.md
           - Step reference: projects/epr_auto/steps.md
           - The tune-up chain: projects/epr_auto/tuning.md
+          - Presets: projects/epr_auto/presets.md
+          - Examples: projects/epr_auto/examples.md
+          - Troubleshooting: projects/epr_auto/troubleshooting.md
       - Examples:
           - CW EPR: script_examples/cw_epr.md
           - Pulsed EPR: script_examples/pulsed_epr.md
