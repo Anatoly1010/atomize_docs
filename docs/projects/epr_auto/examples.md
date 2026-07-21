@@ -31,12 +31,12 @@ sample: test_sample
 autonomy: checkpointed        # supervised | checkpointed | autonomous
 
 steps:
-  - tune.auto_phase
-
   - field.edfs:
       range: [338 mT, 352 mT]
       pick: max
       checkpoint: true        # confirm the chosen field before continuing
+
+  - tune.auto_phase           # phase on the echo at the working field
 
   - tune.pi_calibration:
       mode: amplitude         # fine stage; amplitude sweep at fixed length
@@ -48,16 +48,6 @@ steps:
       scans: 16
 ```
 
-**`tune.auto_phase`** acquires a short echo on the default
-`hahn_echo_4s.phase_awg` preset and zeroes the receiver phase, storing the
-corrected zero-order in the session. This protocol carries no
-`tune.echo_window` before it, so the phase is measured over the preset's own
-stored integration window — the simplest case; a fuller tune-up measures the
-window first (see [The tune-up chain](tuning.md)). Note the ordering: the
-phase is measured *before* the field is set. That is deliberate and safe —
-the phase is field-independent (measured on the 2026-07 oTP campaign), so the
-field move in the next step does not invalidate it.
-
 **`field.edfs`** sweeps the magnet across 338–352 mT, picks the working field
 at the magnitude maximum of the echo-detected sweep, and parks the magnet
 there — storing the field for every later step. It is marked
@@ -66,8 +56,16 @@ operator to confirm the chosen field before the magnet moves (in a dry-run the
 checkpoint is logged and auto-continued). The stored field flows into the
 build of every acquisition after it.
 
+**`tune.auto_phase`** runs after `field.edfs` so there is an echo at the
+working field to phase on. It acquires a short echo on the default
+`hahn_echo_4s.phase_awg` preset and zeroes the receiver phase, storing the
+corrected zero-order in the session. This protocol carries no
+`tune.echo_window` before it, so the phase is measured over the preset's own
+stored integration window — the simplest case; a fuller tune-up measures the
+window first (see [The tune-up chain](tuning.md)).
+
 **`tune.pi_calibration`** runs the fine amplitude calibration on the default
-`ampl_4s.phase_awg` Amplitude preset, fitting the π and π₂ AWG amplitudes
+`ampl_4s.phase_awg` Amplitude preset, fitting the π and π/2 AWG amplitudes
 independently and storing them. Because the protocol declares no
 `tune.power_for_length` coarse stage before it, there is no rail fallback to
 fall back on: if the fit runs into the amplitude rails the step fails as-is
@@ -77,7 +75,7 @@ fall back on: if the fit runs into the amplitude rails the step fails as-is
 three tuning steps flows into its build automatically: the zeroed phase from
 `tune.auto_phase`, the working field from `field.edfs`, and — through
 `apply_cal`, inferred from the preset's own two amplitude levels — the
-calibrated π / π₂ amplitudes from `tune.pi_calibration`. The `tau_start` /
+calibrated π and π/2 amplitudes from `tune.pi_calibration`. The `tau_start` /
 `tau_step` re-anchor the tau sweep, and the saved axis is the physical
 evolution time `2·tau`. `scans: 16` is a **fixed** budget here: this protocol
 sets no `target_snr` and no `max_duration`, so all 16 scans always run. That
@@ -97,7 +95,7 @@ Run live (not `--test`), this protocol writes into
   `relaxation_fit` judge scores.
 - **`protocol_overnight_t2.yaml`** — a verbatim copy of the protocol, so the
   exact YAML that produced the data always sits next to it.
-- **the acquisition CSVs** — `001_auto_phase.csv`, `002_edfs.csv`,
+- **the acquisition CSVs** — `001_edfs.csv`, `002_auto_phase.csv`,
   `003_pi_cal_amplitude.csv`, `004_t2.csv`, each three columns
   (axis, I, Q). A dry-run writes none of this; it logs the same information
   to the terminal.
@@ -109,8 +107,8 @@ sample: field_series
 autonomy: checkpointed
 
 steps:
-  # Tune once at the line maximum; field moves do NOT invalidate the phase
-  # (measured on the 2026-07 oTP campaign) so the loop reuses this tune.
+  # Tune once at the line maximum; field moves do NOT invalidate the phase,
+  #  so the loop reuses this tune.
   - field.edfs:
       range: [338 mT, 352 mT]
       pick: max
@@ -157,10 +155,10 @@ The key design fact is in the comment: **the series does not re-phase on
 field moves.** Moving the magnet changes neither the resonator tuning nor B₁,
 and its effect on T₁ is minor, so a field move drops no calibration — the
 phase, window, field-independent calibration, and rep-rate recommendation all
-survive it. This was measured directly on the 2026-07 oTP campaign (phase
-drifted only ±1–3.5° across the whole line; a few degrees of demod drift costs
-nothing, because every relaxation curve is re-rotated onto its principal axis
-before fitting). Temperature moves are the opposite — they *do* force a
+survive it. Measured on real hardware, the phase drifted only ±1–3.5° across
+the whole line; a few degrees of demod drift costs nothing, because every
+relaxation curve is re-rotated onto its principal axis before fitting.
+Temperature moves are the opposite — they *do* force a
 re-phase — which is why a *temperature* series, unlike this field series,
 follows each move with a fresh `tune.auto_phase`. See
 [The tune-up chain](tuning.md#calibration-flow-and-invalidation) for the full
@@ -203,9 +201,9 @@ curve's SNR with the same `echo_snr` judge that gates the finished step, and
 stops as soon as the curve reaches SNR 10 — projecting via √N scaling whether
 the target is even reachable inside the ceiling. At the line maximum (3318 /
 3376 G) a curve clears SNR 10 in a handful of scans; on the weak 3000 G
-shoulder it runs the full 48. This is exactly the adaptation the campaign
-operator did by hand — 6 scans at the line max versus 32–46 at the shoulder —
-now automatic.
+shoulder it runs the full 48. This is exactly the adaptation an operator
+does by hand — a few scans at the line maximum versus dozens on a weak
+shoulder — now automatic.
 
 `target_snr` only ever *lowers* the scan count; it never adds scans to chase
 the target. That is why it is paired with a real ceiling: with `scans` at its

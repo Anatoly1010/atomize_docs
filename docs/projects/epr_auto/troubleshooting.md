@@ -74,12 +74,14 @@ Note the last two: a **bare number where a unit string is expected** is
 rejected — times and fields are always `"<value> <unit>"` strings
 (`300 ns`, `3318 G`).
 
-**A preset that resolves nowhere** — the message lists both directories it
-searched (the protocol's own directory and the shipped experiments
-directory):
+**A preset that resolves nowhere** — the message lists every directory it
+searched. For an explicitly named preset that is the protocol's own directory,
+the user preset directory (`atomize/epr_auto/presets/`), and the shipped
+experiments directory (a step *default* is searched in the shipped directory
+only):
 
 ```text
-INVALID: my.yaml:5: [exp.t2] preset: preset file 'my_echo.phase_awg' not found (looked in: /home/you/protocols/my_echo.phase_awg , /home/.../control_center/experiments/my_echo.phase_awg)
+INVALID: my.yaml:5: [exp.t2] preset: preset file 'my_echo.phase_awg' not found (looked in: /home/you/protocols/my_echo.phase_awg , /home/.../epr_auto/presets/my_echo.phase_awg , /home/.../control_center/experiments/my_echo.phase_awg)
 ```
 
 **Cross-parameter checks** fire after the individual parameters validate:
@@ -331,6 +333,40 @@ calibration in the session, is announced so it is never a silent no-op:
 ```text
       apply_cal: none — pi_calibration deliberately not applied, preset-stored values in force
 ```
+
+The next two are **load-time** advisories: they are computed while the protocol
+parses, so they print once at the top of the run (right after the `=== … ===`
+header, before the first step) and in the `epr-auto validate` output as well as
+the `--test` dry-run.
+
+**A shipped default preset was edited.** The AWG phasing GUI saves into the same
+`experiments/` folder that holds the shipped defaults, so a GUI save can
+overwrite a preset automation falls back to. When a default's bytes no longer
+match the recorded fingerprint, the runner warns but still runs the modified
+file:
+
+```text
+      warning: default preset 'hahn_echo_4s.phase_awg' differs from the shipped version (edited in the GUI?) — the run will use the modified file; restore it with git, or save custom presets into atomize/epr_auto/presets/ under a new name
+```
+
+Restore the original with `git checkout -- <preset>`, or move your edit into the
+user preset directory (`atomize/epr_auto/presets/`) under a new name and
+reference that name from the protocol (see [Presets](presets.md)). If you
+changed a default on purpose, re-record the fingerprints with
+`python3 -m atomize.epr_auto.preset_hash --update`.
+
+**Tuning before the field is set.** A `tune.auto_phase` or `tune.pi_calibration`
+that runs before any `field.*` step has appeared is flagged, because on a cold
+start there may be no echo to tune on until the magnet is parked on the line:
+
+```text
+      warning: tune.auto_phase (line 13) runs before any field.* step — on a cold start there may be no echo to phase on; make sure the magnet is already parked on the line
+```
+
+This is legitimate when the magnet is already sitting on the resonance (a
+warm-start re-tune, or a manually pre-set field), which is why it is only a
+warning. If it is not intentional, put a `field.edfs` or `field.set` step ahead
+of the tuning.
 
 ## Next steps
 

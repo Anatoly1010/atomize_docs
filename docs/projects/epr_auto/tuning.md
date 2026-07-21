@@ -99,7 +99,7 @@ frequency (this bridge upconverts lower-sideband, so the spins see
 `ν = ν_LO − ν_IF`):
 
 ```text
-B[G] = 0.714477 * (nu_LO - nu_IF)[MHz] / g   (+ offset)
+B[G] = 0.714477 * ν[MHz] / g   (+ offset)
 ```
 
 then sweeps ± a span (250 G by default) around it; the log shows the arithmetic

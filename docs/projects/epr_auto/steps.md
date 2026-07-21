@@ -116,7 +116,7 @@ Set the Lakeshore 335 setpoint (and heater range); returns immediately — pair 
 | --------- | ---- | ------- | ----------- |
 | `setpoint` | number (0.1..400) | *required* | kelvin |
 | `heater_range` | Off \| 0.5 W \| 5 W \| 50 W | — | unchanged when omitted |
-| `rephase_delta` | number (>= 0) | `1.0` | invalidate auto_phase and the tune.rep_rate recommendation once the setpoint moves this many K from where each was measured (0 = any change; the oTP series showed ~1 deg of zero-order swing per K, and T1 itself is strongly temperature-dependent) |
+| `rephase_delta` | number (>= 0) | `1.0` | invalidate auto_phase and the tune.rep_rate recommendation once the setpoint moves this many K from where each was measured (0 = any change; a measured temperature series showed ~1 deg of zero-order swing per K, and T1 itself is strongly temperature-dependent) |
 
 ### temp.wait
 
@@ -129,7 +129,7 @@ Wait until the temperature holds inside the band (temp_control setter-waiter sem
 | `hold` | integer (>= 1) | `3` | consecutive in-band polls (1 s cadence) required |
 | `timeout` | time ("300 ns") | `1800 s` | wall-clock limit; exceeding it fails the step |
 | `setpoint` | number (0.1..400) | — | default: the setpoint already on the device |
-| `rephase_delta` | number (>= 0) | `1.0` | invalidate auto_phase and the tune.rep_rate recommendation once the setpoint moves this many K from where each was measured (0 = any change; the oTP series showed ~1 deg of zero-order swing per K, and T1 itself is strongly temperature-dependent) |
+| `rephase_delta` | number (>= 0) | `1.0` | invalidate auto_phase and the tune.rep_rate recommendation once the setpoint moves this many K from where each was measured (0 = any change; a measured temperature series showed ~1 deg of zero-order swing per K, and T1 itself is strongly temperature-dependent) |
 
 ## Experiment steps
 

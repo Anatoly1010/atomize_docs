@@ -26,12 +26,55 @@ The shipped presets live in `atomize/control_center/experiments/`
 (`hahn_echo_4s.phase_awg`, `ed_4s.phase_awg`, `ampl_4s.phase_awg`,
 `rabi_echo_4s.phase_awg`, `inversion_recovery_echo_4s_log.phase_awg`, …) and
 are the defaults the steps fall back to. A step's `preset:` parameter takes
-either a bare filename or a path: a **bare name resolves against the
-protocol's own directory first, then the shipped experiments directory**, so
-a protocol can carry a sample-specific preset next to itself and have it
-shadow the shipped one. A name that resolves nowhere is a load-time error
-that lists both places it looked, so `epr-auto validate` catches a missing
-preset at your desk.
+either a bare filename or a path. A name that resolves nowhere is a load-time
+error that lists every place it looked, so `epr-auto validate` catches a
+missing preset at your desk.
+
+### Where a preset name resolves
+
+There are two lookup rules, and which one applies depends on whether *you*
+named the preset or the step fell back to its default:
+
+- an **explicitly named** preset (a `preset:` you wrote) resolves against, in
+  order, **the protocol's own directory → the user preset directory
+  (`atomize/epr_auto/presets/`) → the shipped experiments directory**. So a
+  protocol can carry a sample-specific preset next to itself, or you can keep
+  one in the user directory, and either shadows the shipped one;
+- a step **default** (the `preset:` you left out) resolves from the **shipped
+  experiments directory only**. A file dropped in the user or protocol
+  directory can never silently shadow the default automation relies on.
+
+### The user preset directory
+
+`atomize/epr_auto/presets/` is a space for presets *you* save. It is where the
+resolver looks for an explicitly named bare preset after the protocol's own
+directory and before the shipped set, and its contents are git-ignored (only
+its `README.md` is tracked), so sample-specific presets never clutter the
+repository.
+
+The reason it exists: the AWG phasing GUI saves presets **into the shipped
+`experiments/` folder** — the very folder that holds the defaults. Saving a GUI
+edit of, say, `hahn_echo_4s.phase_awg` there overwrites the original the
+`tune.auto_phase` / `exp.t2` defaults fall back to. So the rule is: **save GUI
+edits of a shipped preset under a new name in `atomize/epr_auto/presets/`**, and
+reference that new name from your protocol.
+
+To back that rule with a check, the runner keeps a fingerprint of each shipped
+default (`atomize/epr_auto/default_preset_hashes.json`). When a protocol falls
+back to a default whose bytes no longer match the fingerprint — the tell-tale
+of a GUI save that overwrote it — the runner queues a load-time warning:
+
+```text
+      warning: default preset 'hahn_echo_4s.phase_awg' differs from the shipped version (edited in the GUI?) — the run will use the modified file; restore it with git, or save custom presets into atomize/epr_auto/presets/ under a new name
+```
+
+The run still proceeds with the modified file — the warning is advisory, and it
+appears in the `epr-auto validate` output and the `--test` pre-flight too. Fix
+it either by restoring the original (`git checkout -- <preset>`) or by moving
+your edit into the user directory under a new name. If you *deliberately*
+change a shipped default, re-record the fingerprint with
+`python3 -m atomize.epr_auto.preset_hash --update` (run with no arguments it
+verifies the five defaults and reports OK / MISMATCH).
 
 !!! note
     The engine reads the preset with the **same parser the phasing GUI uses**
@@ -139,7 +182,7 @@ The runner overrides:
 - **the repetition rate** — a step's `rep_rate:` (a number, or `auto` pulling
   in the `tune.rep_rate` recommendation) replaces the preset's Rep rate;
 - **the pulse amplitudes (or lengths)** — `apply_cal` patches the calibrated
-  π / π₂ value into the mapped pulse slots (and re-scales the soft detection
+  π and π/2 value into the mapped pulse slots (and re-scales the soft detection
   pair), transferring the fine calibration into the experiment preset. This
   is the one override that reaches *inside* the pulse table; it is described
   in full under

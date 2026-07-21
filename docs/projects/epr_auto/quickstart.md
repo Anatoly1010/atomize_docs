@@ -84,16 +84,20 @@ epr-auto run protocols/overnight_t2.yaml --test
 
 ```text
 === overnight_t2.yaml | sample: test_sample | autonomy: checkpointed | 4 steps | DRY-RUN (test mode) ===
-[1/4] tune.auto_phase  (line 8)
-      preset = /home/.../experiments/hahn_echo_4s.phase_awg
-      points = 4
+[1/4] field.edfs  (line 8)
+      preset = /home/.../experiments/ed_4s.phase_awg
+      range = ['338 mT', '352 mT']
+      points = 200
       scans = 1
+      pick = max
+      [checkpoint] would pause here (checkpointed mode) — auto-continuing in dry-run
+      [PASS] echo_snr: score=inf (note=dry-run, not judged)
+      -> field=3450.0 G, pick=max, canned=True
+[2/4] tune.auto_phase  (line 13)
+      preset = /home/.../experiments/hahn_echo_4s.phase_awg
+      ...
       [PASS] phase_coherence: score=inf (note=dry-run, not judged)
       -> phase_deg=0.0, zero_order_deg=0.0, temperature_k=200.0, canned=True
-[2/4] field.edfs  (line 10)
-      ...
-      [checkpoint] would pause here (checkpointed mode) — auto-continuing in dry-run
-      -> field=3450.0 G, pick=max, canned=True
 ...
 === finished: 4/4 steps ran ===
 ```

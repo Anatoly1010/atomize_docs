@@ -48,10 +48,10 @@ sample: test_sample
 autonomy: checkpointed
 
 steps:
-  - tune.auto_phase
   - field.edfs:
       range: [338 mT, 352 mT]
       pick: max
+  - tune.auto_phase
   - exp.t2:
       tau_start: 300 ns
       tau_step: 12 ns
@@ -121,6 +121,15 @@ reads them as sibling list entries; the runner reports that as
 of the parameters)`. An unknown step name, or an unknown parameter for a
 known step, is likewise a load-time error that names the valid
 alternatives.
+
+Order matters physically, and one ordering slip is caught for you: a
+`tune.auto_phase` or `tune.pi_calibration` placed before any `field.*` step
+raises a load-time **warning** (not an error — tuning at a manually pre-set
+field is legitimate), because on a cold start there is no echo to tune on until
+the magnet is on the line. The canonical tune-up therefore sets the field
+(`field.edfs`, or `field.set`) before it phases and calibrates; see
+[The tune-up chain](tuning.md). The warning is described under
+[Warnings that are not errors](troubleshooting.md#d-warnings-that-are-not-errors).
 
 ## Parameter value syntax
 
