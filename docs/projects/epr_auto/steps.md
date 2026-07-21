@@ -96,7 +96,7 @@ Echo-detected field sweep; pick the working field and set the magnet. range: aut
 | `g` | number (0.1..20) | `2.0023` | g-factor for the range: auto center |
 | `span` | field ("3478 G") | `250 G` | half-width of the range: auto sweep |
 | `offset` | field offset ("-15 G") | `0 G` | known magnet-calibration shift added to the range: auto center |
-| `target_snr` | number (>= 1) | — | SNR-driven scan count: scans becomes the ceiling; stop early once the accumulated sweep reaches this echo_snr score |
+| `target_snr` | number (>= 3) | — | SNR-driven scan count: scans becomes the ceiling; stop early once the accumulated sweep reaches this echo_snr score (min = the judge pass floor: a lower target would stop on a sweep the hard judge then rejects) |
 
 ### field.set
 
@@ -116,7 +116,7 @@ Set the Lakeshore 335 setpoint (and heater range); returns immediately — pair 
 | --------- | ---- | ------- | ----------- |
 | `setpoint` | number (0.1..400) | *required* | kelvin |
 | `heater_range` | Off \| 0.5 W \| 5 W \| 50 W | — | unchanged when omitted |
-| `rephase_delta` | number (>= 0) | `1.0` | invalidate auto_phase once the setpoint moves this many K from where the phase was measured (0 = any change; the oTP series showed ~1 deg of zero-order swing per K) |
+| `rephase_delta` | number (>= 0) | `1.0` | invalidate auto_phase and the tune.rep_rate recommendation once the setpoint moves this many K from where each was measured (0 = any change; the oTP series showed ~1 deg of zero-order swing per K, and T1 itself is strongly temperature-dependent) |
 
 ### temp.wait
 
@@ -129,7 +129,7 @@ Wait until the temperature holds inside the band (temp_control setter-waiter sem
 | `hold` | integer (>= 1) | `3` | consecutive in-band polls (1 s cadence) required |
 | `timeout` | time ("300 ns") | `1800 s` | wall-clock limit; exceeding it fails the step |
 | `setpoint` | number (0.1..400) | — | default: the setpoint already on the device |
-| `rephase_delta` | number (>= 0) | `1.0` | invalidate auto_phase once the setpoint moves this many K from where the phase was measured (0 = any change; the oTP series showed ~1 deg of zero-order swing per K) |
+| `rephase_delta` | number (>= 0) | `1.0` | invalidate auto_phase and the tune.rep_rate recommendation once the setpoint moves this many K from where each was measured (0 = any change; the oTP series showed ~1 deg of zero-order swing per K, and T1 itself is strongly temperature-dependent) |
 
 ## Experiment steps
 

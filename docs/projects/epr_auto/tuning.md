@@ -251,6 +251,13 @@ the fit is an extrapolation beyond the grid and no recommendation is stored —
 the advice is to extend `rate_min` lower. The stored recommendation is what
 `exp.t1` / `exp.t2` pick up with `rep_rate: auto`.
 
+The step refuses to recommend a rate off something that is not an echo: all
+acquisitions concatenated must share one phase (the same resultant-length
+gate auto-phase uses), and on a strongly saturating curve the amplitude
+deviations must additionally lie on that phase axis — a constant
+instrumental phasor (LO leakage surviving the phase cycle) can fake the
+shared phase but not the structure, and is rejected with a note naming it.
+
 ## Calibration flow and invalidation
 
 Every tuning step writes its result into the session state, and every later
@@ -281,17 +288,21 @@ are grounded in measured behaviour of this endstation:
 
 | Change | Dropped | Kept | Why |
 | ------ | ------- | ---- | --- |
-| Rotary-vane move | `auto_phase` **and** `pi_calibration` | — | The vane changes B₁ for everything: both the phase and the amplitude calibration are stale. |
-| Temperature setpoint move (beyond `rephase_delta`) | `auto_phase` only | `pi_calibration` | Temperature detunes the resonator, so the demod zero-order drifts, but B₁ is untouched — the amplitude calibration still holds. A measured temperature series showed a monotonic zero-order swing of roughly a degree of phase per kelvin, which sets the small default `rephase_delta`. |
-| Field move | nothing | both | A field move changes neither the resonator tuning nor B₁, so no calibration is affected. |
+| Rotary-vane move | `auto_phase` **and** `pi_calibration` | `rep_rate` | The vane changes B₁ for everything: both the phase and the amplitude calibration are stale. T₁ does not depend on B₁, so the rep-rate recommendation holds. |
+| Temperature setpoint move (beyond `rephase_delta`) | `auto_phase` **and** `rep_rate` | `pi_calibration` | Temperature detunes the resonator, so the demod zero-order drifts — a measured temperature series showed a monotonic swing of roughly a degree of phase per kelvin, which sets the small default `rephase_delta`. And T₁ — the whole basis of the `tune.rep_rate` recommendation — changes strongly with temperature, often by orders of magnitude across a cryostat range. B₁ is untouched, so the amplitude calibration still holds. |
+| Field move | nothing | all three | A field move changes neither the resonator tuning nor B₁, and its effect on T₁ is minor (it appears only in systems with two different spins), so no calibration is affected. |
 
-The temperature rule compares the new setpoint against the temperature the phase
-was actually measured at (auto-phase records it); only a move larger than
-`rephase_delta` drops the phase, so small excursions do not force a needless
-re-phase. Dropping is not re-measuring: once the stored phase is gone, later
-acquisitions fall back to the preset's own zero-order, so a protocol that
-changes temperature should follow its `temp.wait` with a fresh
-`tune.auto_phase` — the invalidation guarantees a stale zero-order is never
+The temperature rule compares the new setpoint against the temperature each
+value was actually measured at (auto-phase and rep-rate both record it, and
+they are checked independently — in a series they may have been tuned at
+different points); only a move larger than `rephase_delta` drops a value, so
+small excursions do not force a needless re-tune. Dropping is not
+re-measuring: once the stored phase is gone, later acquisitions fall back to
+the preset's own zero-order — and once the stored rate is gone, a later
+`rep_rate: auto` step fails loudly instead of running saturated. A protocol
+that changes temperature should therefore follow its `temp.wait` with a fresh
+`tune.auto_phase` (and a fresh `tune.rep_rate` if the experiments use
+`rep_rate: auto`) — the invalidation guarantees a stale value is never
 silently carried, and the fresh step measures the new one.
 
 ## Running the chain
