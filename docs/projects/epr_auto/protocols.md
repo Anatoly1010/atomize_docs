@@ -337,6 +337,13 @@ the full budget:
 `field.edfs` takes `target_snr` the same way, with `scans` as the ceiling on
 the sweep's accumulation.
 
+Because the control only ever *lowers* the scan count — it never adds scans
+to chase the target — `target_snr` has no effect when `scans` is left at its
+default of 1: there is nothing to shrink. The step announces this as a
+warning (visible already in the `--test` pre-flight) so an inert setting is
+never carried silently; set `scans` to the largest count you are willing to
+spend, and let `target_snr` cut it short.
+
 **`max_duration`** is a wall-clock budget on the experiment steps. If the
 projected time for the full `scans` exceeds the budget, the scan count is
 reduced mid-run so the run finishes inside it; the data acquired so far is

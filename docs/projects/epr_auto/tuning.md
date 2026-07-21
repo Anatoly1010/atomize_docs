@@ -257,6 +257,10 @@ gate auto-phase uses), and on a strongly saturating curve the amplitude
 deviations must additionally lie on that phase axis — a constant
 instrumental phasor (LO leakage surviving the phase cycle) can fake the
 shared phase but not the structure, and is rejected with a note naming it.
+The preset should be a plain echo sweep: a Log Time (inversion-recovery) or
+Amplitude (nutation) preset flips the echo sign across its own sweep points,
+which cancels the step's amplitude metric — the step warns up front when it
+sees one, naming the mistake before the coherence gate rejects the run.
 
 ## Calibration flow and invalidation
 
