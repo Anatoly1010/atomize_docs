@@ -163,6 +163,20 @@ Prepare a live session as follows:
 
 Always dry-run a protocol with `--test` before its first live run.
 
+### Stopping a live run
+
+**`Ctrl-C` in the terminal is the clean stop.** The acquisition worker child
+ignores the interrupt; the parent reads the worker out and **saves** the trace
+in flight, then aborts the protocol as an *operator interrupt* — recorded in the
+manifest as `aborted: operator interrupt`, never as a retryable step failure, so
+the run does not try to re-run the interrupted step. A second `Ctrl-C` bounds the
+wait (a 60 s wind-down that still lets the worker close the pulser), and a third
+terminates immediately.
+
+Do **not** close the terminal to stop a run. Killing the terminal sends `SIGHUP`,
+which skips the worker's `pulser_close` and can strand the FPGA card; use
+`Ctrl-C` so the card is released cleanly.
+
 ## The run directory
 
 A live run writes everything for that session into one directory. By default it
@@ -175,7 +189,11 @@ is:
 where `<date>` is today's date (`YYYY-MM-DD`) and `<sample>` is the protocol's
 `sample:` field with unsafe characters replaced by underscores. A protocol can
 override the location with an `output:` template in which `{date}` and
-`{sample}` expand (for example `output: ~/epr_data/{date}_{sample}`).
+`{sample}` expand (for example `output: ~/epr_data/{date}_{sample}`); a relative
+template resolves against the directory you launched `epr-auto` from. If that
+directory already holds a `manifest.json` — a same-day re-run of the same
+sample — a `_run2` / `_run3` … suffix is appended so the earlier run is never
+overwritten.
 
 The directory holds three kinds of file:
 

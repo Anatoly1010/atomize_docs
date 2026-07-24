@@ -24,7 +24,7 @@ Acquire an echo and zero the signal phase (principal-axis auto_phase_zero).
 | Parameter | Type | Default | Description |
 | --------- | ---- | ------- | ----------- |
 | `preset` | preset file | `hahn_echo_4s.phase_awg` | echo preset the phase is measured on |
-| `points` | integer (>= 2) | `4` | sweep points for the quick phase acquisition |
+| `points` | integer (>= 2) | `16` | sweep points for the quick phase acquisition (the phase_coherence judge needs >= ~10 to be informative — its noise floor is 3/sqrt(n)) |
 | `scans` | integer (>= 1) | `1` | scans for the quick acquisition |
 
 ### tune.echo_window

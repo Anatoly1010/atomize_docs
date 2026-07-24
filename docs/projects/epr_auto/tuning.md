@@ -78,9 +78,18 @@ This is why the coarse stage runs once, near the top of a protocol, and why the
 example marks it `checkpoint: true`: a vane move is the kind of action worth
 confirming before it proceeds.
 
-If the step runs out of iterations without hitting the target it does **not**
-move the vane past the last measurement — the reported attenuation and π length
-always describe the state the vane is actually left in.
+Each iteration is hard-gated on its own nutation's `echo_snr`: if the length
+nutation is in the noise the step aborts rather than commanding a vane move from
+an argmin of noise, and the final iteration's calibration judges ride along into
+the step's judge list and the manifest. If the step runs out of iterations
+without hitting the target it does **not** move the vane past the last
+measurement — the reported attenuation and π length always describe the state the
+vane is actually left in.
+
+Because a cold start has no echo to nutate on until the magnet is on the line,
+`epr-auto validate` warns when a `tune.power_for_length` (like `tune.auto_phase`
+and `tune.pi_calibration`) appears before any `field.*` step; the warning is
+informational — tuning at a manually pre-set field is legitimate.
 
 ## Signal search — `field.edfs` with `range: auto`
 
@@ -137,7 +146,9 @@ single complex point. `tune.echo_window` sets it from an averaged echo trace: it
 finds the centre at the maximum of the smoothed magnitude `|V(t)|`, measures the
 echo's full width at half maximum, and opens a window of `FWHM × factor` (factor
 2 by default) around the centre, rounding the edges outward onto the ADC grid and
-clamping them to the acquisition window.
+clamping them to the acquisition window. The magnitude is smoothed with a fixed
+physical box (~3 ns), not a fraction of the trace length, so measuring the FWHM
+does not inflate the width of a short, sharp echo.
 
 The window is stored **relative to the DETECTION pulse start**, not as an
 absolute time. That is the same frame the preset's own "Window left/right" live
@@ -170,6 +181,11 @@ demodulator rotates by `exp(-i·zero_order)`, so the correction is a direction:
 ```text
 zero_order_new = zero_order_used - phi_residual
 ```
+
+The step acquires 16 sweep points by default. The `phase_coherence` judge that
+gates it has an N-aware pass floor, `max(0.7, 3/√n)`, so a trace of fewer than
+about ten points can never clear the noise floor — 16 gives the gate something
+to work with while staying a quick acquisition.
 
 The updated zero-order is stored and flows into every later acquisition's build.
 Auto-phase also records the temperature it was measured at, which is what lets a
@@ -209,15 +225,22 @@ minimum, and π/2 is then re-fitted with the angle map anchored at that measured
 fine calibration; `mode: length` runs a linear-time length nutation and is what
 the coarse stage uses internally. After an amplitude calibration the soft
 detection pair (the selective refocusing/detection pulses, recognised as the
-active pulses at ≥ 2.5× the swept pulse's length) is re-scaled by the standard
-inverse-length rule `amp_det = amp_cal · L_cal / L_det`, since the AWG amplitude
-is nearly linear and the same rotation at a longer pulse needs proportionally
-less amplitude. `refine: true` re-runs the nutation once with that re-scaled pair
-patched in, as insurance on a new sample.
+active pulses at ≥ 2.5× the swept pulse's length) is re-scaled onto the
+calibrated value by the flip-angle relation — the on-resonance rotation goes as
+`amp · L · ⟨envelope⟩`, so the amplitude scales by the calibrated `L·⟨envelope⟩`
+over the target slot's, the AWG amplitude being nearly linear. The envelope area
+factor `⟨envelope⟩` is 1 for a SINE pulse and the mean of the peak-referenced
+envelope for a shaped one (0.543 for the shipped GAUSS); a transfer *across*
+envelope shapes for which no area factor exists — the adiabatic WURST/SECH — is
+refused rather than mis-scaled. `refine: true` re-runs the nutation once with the
+re-scaled pair patched in, as insurance on a new sample.
 
 If the fitted π amplitude runs into the rails — π unreachable within the sweep,
-or above the amplitude ceiling — the step fails on the `amplitude_rails` judge.
-The `retries: 1` in the example grants one plain re-attempt; on a **rail**
+or above the amplitude ceiling — the step fails on the `amplitude_rails` judge;
+an out-of-sweep π/2 rails the step the same way, so a π/2 outside the swept range
+is never shipped. A `mode: length` calibration is rail-checked identically by a
+`length_rails` judge. The `retries: 1` in the example grants one plain
+re-attempt; on a **rail**
 failure specifically, the runner additionally re-runs the coarse power stage
 declared earlier in the protocol (and the auto-phase steps tuned after it, which
 the vane move invalidates) once and retries the calibration, so a sample that
@@ -266,6 +289,10 @@ Amplitude (nutation) preset flips the echo sign across its own sweep points,
 which cancels the step's amplitude metric — the step warns up front when it
 sees one, naming the mistake before the coherence gate rejects the run.
 
+The `--test` dry-run pre-flights **every** rate of the grid, so a `rate_max`
+whose period is shorter than the sequence fits in fails the dry-run rather than
+aborting a live run.
+
 ## Calibration flow and invalidation
 
 Every tuning step writes its result into the session state, and every later
@@ -289,8 +316,12 @@ lower to π/2 (or, for an equal-amplitude preset, the 2×-longer pulse to π). W
 that is ambiguous you give an explicit map, e.g. `apply_cal: {P2: pi2, P3: pi}`;
 `apply_cal: none` opts a step out of patching entirely and runs the
 preset-stored amplitudes. Patched amplitudes are transferred to pulses of a
-different length by the same inverse-length rule the detection pair uses, so a
-calibration measured at one pulse length applies correctly at another.
+different length — or a different envelope shape — by the same flip-angle
+relation the detection pair uses (the amplitude scales as the calibrated
+`L·⟨envelope⟩` over the target slot's), so a calibration measured at one pulse
+length applies correctly at another; a transfer across envelope shapes with no
+area factor (adiabatic WURST/SECH) is refused. A calibration that itself railed
+is rejected here rather than shipped.
 
 Calibrations do not survive changes that physically invalidate them. The rules
 are grounded in measured behaviour of this endstation:

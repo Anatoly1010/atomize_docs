@@ -72,6 +72,17 @@ characters replaced). A leading `~` expands to your home directory.
 output: ~/epr_data/{date}_{sample}
 ```
 
+A leading `~` expands to your home directory; an absolute path is used as
+given. A **relative** template resolves against the directory you launched
+`epr-auto` from — not `libs/`, which the CLI has already `chdir`'d into by the
+time the first save happens — so `output: runs/{sample}` lands under your
+working directory as you would expect.
+
+If the target directory already holds a `manifest.json` — a same-day re-run
+of the same sample — the runner appends a `_run2` / `_run3` … suffix and logs
+the choice, so a repeat run never overwrites an earlier one's manifest and
+low-numbered CSVs.
+
 The template is checked at load time, not at run start, so a typo such as an
 unsupported placeholder fails `epr-auto validate` immediately rather than
 only when a real run reaches its first save:
@@ -123,10 +134,10 @@ known step, is likewise a load-time error that names the valid
 alternatives.
 
 Order matters physically, and one ordering slip is caught for you: a
-`tune.auto_phase` or `tune.pi_calibration` placed before any `field.*` step
-raises a load-time **warning** (not an error — tuning at a manually pre-set
-field is legitimate), because on a cold start there is no echo to tune on until
-the magnet is on the line. The canonical tune-up therefore sets the field
+`tune.auto_phase`, `tune.pi_calibration` or `tune.power_for_length` placed
+before any `field.*` step raises a load-time **warning** (not an error — tuning
+at a manually pre-set field is legitimate), because on a cold start there is no
+echo to tune on until the magnet is on the line. The canonical tune-up therefore sets the field
 (`field.edfs`, or `field.set`) before it phases and calibrates; see
 [The tune-up chain](tuning.md). The warning is described under
 [Warnings that are not errors](troubleshooting.md#d-warnings-that-are-not-errors).
@@ -286,10 +297,13 @@ the series.
   define is a load-time error, not a literal string passed through to
   validation — a typo'd variable cannot silently reach the hardware.
 - **Numeric values are stringified.** A number in `values` becomes its
-  string form before substitution. Because unit-bearing parameters require a
-  `"<value> <unit>"` string, give those values as quoted strings —
-  `values: ['3318 G', '3376 G']`, not bare numbers — so that `value: $B`
-  substitutes a valid field string.
+  string form before substitution. For unit-bearing parameters — a field, a
+  time — give the values as quoted strings, `values: ['3318 G', '3376 G']`,
+  so that `value: $B` substitutes a valid `"<value> <unit>"` string. Plain
+  numeric parameters (a count, an AWG percent, a rate) accept the substituted
+  string directly — the `Int` / `Float` parameters coerce a cleanly-parsing
+  string and keep their range checks — so `foreach N in [200, 400]` over
+  `points: $N` works as written.
 
 ### Loop tagging
 
@@ -335,7 +349,10 @@ accumulated data reaches the requested signal-to-noise score. After each
 completed scan the runner measures the current curve's SNR with the same
 `echo_snr` judge that gates the finished step, and projects — via
 √N scaling — how many scans are needed; it stops once the target is met or
-the projection stays within the ceiling. This is what lets one field
+the projection stays within the ceiling. The projection aims at 1.15× the
+requested SNR, a small margin that guards against `echo_snr` reading
+optimistically on the first few scans, so the finished curve reliably clears
+the target rather than landing just under it. This is what lets one field
 position at the line maximum finish in a few scans while a weak shoulder runs
 the full budget:
 
@@ -377,7 +394,10 @@ The experiment steps accept `rep_rate` as a number in Hz (defaulting to the
 preset's own value) or the literal `auto`. `rep_rate: auto` uses the
 recommendation stored by an earlier `tune.rep_rate` step; if no
 `tune.rep_rate` result is in the session it is an error, so `auto` requires
-`tune.rep_rate` to have run first. The runner still checks that the sweep fits
+`tune.rep_rate` to have run first. `epr-auto validate` catches the statically
+dead case — a `rep_rate: auto` with no earlier `tune.rep_rate` in the step
+order — as a load-time **warning**, so you see it at your desk rather than at
+the abort. The runner still checks that the sweep fits
 one repetition period — a T1 sweep, for instance, needs `1/rep_rate` beyond
 `t_end` plus the sequence tail.
 

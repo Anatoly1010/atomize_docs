@@ -89,8 +89,13 @@ INVALID: my.yaml:5: [exp.t2] preset: preset file 'my_echo.phase_awg' not found (
 ```text
 INVALID: my.yaml:9: [exp.t1] t_start must be < t_end, got 500 ns .. 300 ns
 INVALID: my.yaml:5: [field.edfs] pick: value requires the 'value' parameter
+INVALID: my.yaml:5: [field.edfs] pick value 4000.0 G is outside the range (3380.0..3520.0 G)
 INVALID: my.yaml:5: [tune.rep_rate] rate_min must be < rate_max, got 2000 .. 20 Hz
 ```
+
+The `field.edfs` one fires when `pick: value` names a field outside the
+explicit `range` — a static contradiction, so it is a hard load-time error,
+not a runtime failure.
 
 **`foreach` and substitution** errors:
 
@@ -134,10 +139,13 @@ is their hard gate — but on the tuning and field steps it is a hard gate.
 **`phase_coherence` — no echo, or a fake one.** This gate (used by
 `tune.auto_phase` and `tune.rep_rate`, whose short flat traces defeat the
 MAD-of-diff SNR estimate) checks that the trace shares one well-defined
-phase. Its notes:
+phase. Its pass floor is N-aware — `max(0.7, 3/√n)` — so a very short trace
+cannot clear the noise floor at all, which is why `tune.auto_phase` now
+acquires 16 points by default (fewer than about ten can never pass). Its
+notes:
 
 ```text
-[FAIL] phase_coherence: score=0.31 (min_r=0.7, n=4, structure_r=0.12, note=zero signal — no echo acquired)
+[FAIL] phase_coherence: score=0.31 (min_r=0.75, n=16, structure_r=0.12, note=zero signal — no echo acquired)
 ```
 
 The important one is the LO-leak note. A constant instrumental phasor (LO
@@ -230,8 +238,17 @@ sample position, not at the scan count.
 <preset>: mode 'amplitude' needs a 'Amplitude' preset, got 'Linear Time'
 rep_rate: auto — no tune.rep_rate result in the session (run tune.rep_rate first)
 apply_cal: no pi_calibration result in the session (run tune.pi_calibration first)
+apply_cal: the pi_calibration result railed (high) — not a valid calibration; re-run the coarse power stage
+apply_cal: cannot transfer the calibration from a GAUSS pulse to P3 (WURST) — no envelope area factor for this shape; calibrate with a matching preset
 apply_cal: P3 would need 104.2% (> 100%) at 44.8 ns — re-run the coarse power stage (more power) or lengthen the pulse
 ```
+
+The last three are all the same lesson from different angles: a calibration is
+only transferable to a pulse of a shape the amplitude/area rule can model. A
+calibration that itself railed is refused rather than shipped; a transfer *across*
+envelope shapes with no area factor (the adiabatic WURST/SECH) is refused rather
+than mis-scaled — calibrate with a preset whose pulse matches the one you mean to
+patch.
 
 ## (c) Environment issues
 
@@ -355,9 +372,10 @@ reference that name from the protocol (see [Presets](presets.md)). If you
 changed a default on purpose, re-record the fingerprints with
 `python3 -m atomize.epr_auto.preset_hash --update`.
 
-**Tuning before the field is set.** A `tune.auto_phase` or `tune.pi_calibration`
-that runs before any `field.*` step has appeared is flagged, because on a cold
-start there may be no echo to tune on until the magnet is parked on the line:
+**Tuning before the field is set.** A `tune.auto_phase`, `tune.pi_calibration`
+or `tune.power_for_length` that runs before any `field.*` step has appeared is
+flagged, because on a cold start there may be no echo to tune on until the magnet
+is parked on the line:
 
 ```text
       warning: tune.auto_phase (line 13) runs before any field.* step — on a cold start there may be no echo to phase on; make sure the magnet is already parked on the line
@@ -367,6 +385,18 @@ This is legitimate when the magnet is already sitting on the resonance (a
 warm-start re-tune, or a manually pre-set field), which is why it is only a
 warning. If it is not intentional, put a `field.edfs` or `field.set` step ahead
 of the tuning.
+
+**`rep_rate: auto` with no `tune.rep_rate` before it.** An experiment step that
+asks for `rep_rate: auto` needs an earlier `tune.rep_rate` to have measured a
+recommendation. When the step order has none, the runner flags it at load rather
+than letting the run reach the abort:
+
+```text
+      warning: exp.t2 (line 20) uses rep_rate: auto with no earlier tune.rep_rate step — the run will abort resolving it; add a tune.rep_rate first or set an explicit rate
+```
+
+Add a `tune.rep_rate` step before the experiment, or give the step an explicit
+rate in Hz.
 
 ## Next steps
 
