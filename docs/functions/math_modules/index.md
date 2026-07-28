@@ -77,7 +77,7 @@ Times in µs, distances in nm.
 | [`deer_validate(t, V, …)`](deer.md#deer_validate) | Ensemble validation: background-sweep → median P(r) + uncertainty band |
 | [`residual_whiteness(resid, …)`](deer.md#residual_whiteness) | Residual goodness-of-fit (Durbin–Watson, lag-1 autocorrelation, ACF) |
 | [`fit_zero_time(t, V, …)`](deer.md#fit_zero_time) | Fit the dipolar zero-time t₀ (reference time) |
-| [`tikhonov_ci(K, F, alpha, P, …)`](deer.md#tikhonov_ci) | Covariance 95% confidence band on the Tikhonov P(r) |
+| [`tikhonov_ci(K, F, alpha, P, …)`](deer.md#tikhonov_ci) | Pointwise 95% noise-propagation band on the Tikhonov P(r) (not a calibrated CI) |
 | [`dipolar_kernel(t, r, …)`](deer.md#dipolar_kernel) | Orientation-averaged kernel K(t, r) (Fresnel closed form) |
 | [`dipolar_frequency(r, …)`](deer.md#dipolar_frequency) | Perpendicular dipolar frequency ν⊥(r) = ν_dd/r³ |
 | [`background_fit(t, V, bg_start, bg_end=None, …)`](deer.md#background_fit) | Fit intermolecular background on a tail window (sequential) |

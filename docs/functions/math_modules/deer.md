@@ -48,13 +48,17 @@ but a flexible empirical form $a\,e^{\,b(t + c\,d^{\,t})}$ is also available
 
 !!! tip "Why GCV is the default"
     A DEER L-curve is nearly *vertical* — the residual stays at the noise floor
-    across decades of $\alpha$ — so the Menger-curvature "corner" is ill-defined
-    and tends to latch onto a tiny $\alpha$, producing a spiky comb-like $P(r)$.
-    GCV has a genuine minimum and picks a stable $\alpha$, so it is used by
-    default. Switch to the L-corner with `method='curvature'` if you want it.
-    GCV still tends to *under*-regularize on real noisy traces; nudge it heavier
-    with `alpha_factor=2..4`, or use [`deer_validate()`](#deer_validate) to average
-    over background choices for a smooth consensus $P(r)$ with an uncertainty band.
+    across decades of $\alpha$ — so the Menger-curvature "corner" is ill-defined.
+    Measured on the ring-test traces, `method='curvature'` lands at **either end**
+    of the grid depending only on where the background window starts: on one trace
+    $\alpha$ swings from $1.6\times10^{-4}$ to $158$ (six decades, 17 modes ↔ 1)
+    with `bg_start` alone moved, and DeerLab's own L-corner picks differently again
+    on the identical grid. Over-smoothing (merged peaks) is the more common
+    outcome, not the spiky $P(r)$ earlier versions of this page warned about.
+    GCV has a single — if shallow — minimum, matches DeerLab's `gcv` selection
+    exactly on a shared grid, and is used by default; treat `'curvature'` as a
+    cross-check only. For a $P(r)$ with a trustworthy uncertainty band use
+    [`deer_validate()`](#deer_validate), which averages over background choices.
 
 !!! note "scipy is required"
     DEER analysis needs `scipy` (the `math` extra: `pip install -e .[math]`).
@@ -97,11 +101,15 @@ invert to $P(r)$ by Tikhonov + NNLS. This is what most users want.
   `fit_dim=True` to float it.
 - **`alpha`** — regularization weight. `None` selects it automatically by `method`.
 - **`alpha_factor`** — multiplier applied to the *auto-selected* $\alpha$ (ignored
-  when an explicit `alpha` is given). GCV (and AIC) tend to under-regularize the
-  near-vertical DEER L-curve, leaving noise spikes in $P(r)$; a factor of 2–4
-  reproduces the heavier hand-picked L-corner regularization used to obtain smooth
-  distributions in inter-laboratory ring tests
+  when an explicit `alpha` is given). A factor of 2–4 reproduces the heavier
+  hand-picked L-corner regularization used to obtain smooth distributions in
+  inter-laboratory ring tests
   ([Schiemann et al., *JACS* **2021**, 143, 17875](https://doi.org/10.1021/jacs.1c07371)).
+  It buys that smoothness with **bias**: $P(r)$ is pulled measurably off the truth
+  while the [`tikhonov_ci()`](#tikhonov_ci) band, which propagates noise only, gets
+  *narrower*. Measured coverage of the nominal-95% band at the mode falls from
+  ≈ 0.84 at 1× to ≈ 0.08 at 2× and ≈ 0 at 3×. Above 1×, read the band as a noise
+  scale rather than a confidence interval.
 - **`alphas`** — the regularization scan grid (default `np.logspace(-4, 3, 36)`).
 - **`reg_order`** — derivative order of the smoothing operator $L$ (default 2).
 - **`scan_lcurve`** — when `True` (default) the regularization scan is always
@@ -139,7 +147,8 @@ Returns a dict:
 | `P` | Raw distance masses ($\ge 0$) |
 | `P_norm` | Masses normalized to sum $= 1$ |
 | `P_density` | Density $P(r) = $ `P_norm`$/dr$ (integral $= 1$) — plot this |
-| `P_lower`, `P_upper` | 95% covariance confidence band on the density (see [`tikhonov_ci()`](#tikhonov_ci)) |
+| `P_lower`, `P_upper` | 95% **noise-only** band on the density — not a calibrated CI, see [`tikhonov_ci()`](#tikhonov_ci) |
+| `ci_kind` | `'noise'`, or `'noise_fixed_bg'` for `engine='joint'` (background and $\lambda$ held fixed) |
 | `kernel` | The dipolar kernel matrix $K$ |
 | `alpha` | The regularization weight used |
 | `l_curve` | The [`l_curve()`](#l_curve) result dict (or `None`) |
@@ -222,8 +231,8 @@ Returns the same dict as [`deer_invert()`](#deer_invert), with `engine='joint'`.
 lower, upper = deer.tikhonov_ci(K, F, alpha, P, L=None, dr=1.0, z=1.96)
 ```
 
-Covariance-based confidence band on the regularized $P(r)$ — the asymptotic
-(curvature) CI DeerLab shows by default, returned with every Tikhonov inversion.
+Pointwise **noise-propagation band** on the regularized $P(r)$, returned with every
+Tikhonov inversion.
 For the linear Tikhonov estimator $P = (K^\top K + \alpha^2 L^\top L)^{-1} K^\top F$
 the form-factor noise propagates as
 
@@ -234,9 +243,27 @@ $$
 
 with $\sigma^2$ estimated from the fit residuals (effective dof
 $= N - \operatorname{tr}(K M)$). Returns `(lower, upper)` at confidence `z`
-(default 1.96 ≈ 95%) on the same density scale as `P/sum(P)/dr`, clipped at 0. The
-non-negativity constraint is **not** propagated, so the band is a slightly
-conservative linear approximation (as in DeerLab's moment-based CI).
+(default 1.96 ≈ 95%) on the same density scale as `P/sum(P)/dr`, clipped at 0.
+
+!!! warning "This is not a calibrated confidence interval"
+    The band propagates **noise only**. It excludes the regularization bias, which
+    is the dominant error at the peaks, and it is not DeerLab's band:
+
+    - Measured coverage of a nominal-95% band **at the mode**: ≈ 0.84 at the GCV
+      $\alpha$, ≈ 0.08 at $\alpha\times2$, ≈ 0 at $\alpha\times3$. Coverage gets
+      *worse* as the data get cleaner, because the bias stops being masked by noise.
+    - It is conservative only where NNLS pins $P = 0$ (3–12× too wide there) and
+      anti-conservative at the modes.
+    - It is ≈ 1.6–2.4× narrower than DeerLab's covariance band on synthetic data
+      (3.6× on the real ring-test traces) and has the opposite $\alpha$ dependence:
+      this band narrows as $\alpha$ grows, DeerLab's is flat.
+    - With `engine='joint'` it is narrower again by up to ≈ 7×, because it holds the
+      background and $\lambda$ fixed at their fitted values while the joint fit's own
+      $\lambda$/$k$ scatter is the dominant uncertainty there.
+
+    Treat it as a display aid for the noise level. For a coverage-honest interval use
+    [`deer_validate()`](#deer_validate) or the Mellin / multi-Gaussian Monte-Carlo
+    bands.
 
 ---
 
@@ -1072,16 +1099,34 @@ and records the residual norm `rho`, the roughness norm `eta`, the Menger L-curv
 `curvature`, and the `gcv` score. The optimum is chosen by `method`:
 
 - **`'gcv'`** (default) — minimum of the generalized cross-validation score.
-  Robust for DEER, whose L-curve is nearly *vertical* (the residual stays at the
-  noise floor across decades of $\alpha$), so the classic corner is ill-defined
-  and tends to pick a tiny $\alpha$ ⇒ spiky $P(r)$. GCV uses the (unconstrained)
-  Tikhonov influence-matrix trace as the effective degrees of freedom paired with
-  the NNLS residual.
-- **`'curvature'`** — classic maximum-Menger-curvature L-corner.
+  Matches DeerLab's `gcv` selection exactly on the same grid. GCV uses the
+  (unconstrained) Tikhonov influence-matrix trace as the effective degrees of
+  freedom paired with the NNLS residual; that approximation biases $\alpha$
+  *upward* relative to a constrained-dof GCV, never downward.
+- **`'curvature'`** — classic maximum-Menger-curvature L-corner. Unreliable on
+  DEER: the L-curve is nearly *vertical*, so there is no well-defined corner and
+  the pick lands at either end of the grid depending on the background window
+  (see the tip at the top of this page). The search covers the interior points
+  only — the first and last curvature entries are undefined — and falls back to
+  GCV, with `corner_ok=False`, when no interior corner exists.
 
 Returns a dict with `alphas`, `rho` (residual norms), `eta` (solution norms),
-`curvature`, `gcv`, `alpha_opt`, `index`, `method`, and `P` (the solution at the
-chosen $\alpha$).
+`curvature`, `gcv`, `alpha_opt`, `index`, `method`, `P` (the solution at the
+chosen $\alpha$), `at_bound` and `corner_ok`.
+
+`at_bound` is `True` when the pick sits on the first or last grid point — a
+**clipped** value, not an interior optimum, meaning the true optimum lies outside
+`alphas`; a `RuntimeWarning` is raised and the DEER window flags it next to the
+background line. This is reachable at default settings on broad distributions,
+where GCV wants $\alpha \approx 4\times10^3$ against the grid ceiling of $10^3$.
+
+!!! note "$\alpha$ is in grid-dependent units"
+    [`regularization_matrix()`](#regularization_matrix) returns the raw $[1,-2,1]$
+    stencil, i.e. $\Delta r^2$ times the true second derivative, so a given numeric
+    $\alpha$ means *more* smoothing on a coarser distance grid, and changing
+    **Distance points** changes what $\alpha$ means. It is also not directly
+    comparable to DeerLab's ($\alpha_{\text{here}}\,\Delta r^2 \approx
+    \alpha_{\text{DL}}$).
 
 ---
 
