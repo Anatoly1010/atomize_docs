@@ -49,12 +49,8 @@ but a flexible empirical form $a\,e^{\,b(t + c\,d^{\,t})}$ is also available
 !!! tip "Why GCV is the default"
     A DEER L-curve is nearly *vertical* — the residual stays at the noise floor
     across decades of $\alpha$ — so the Menger-curvature "corner" is ill-defined.
-    Measured on the ring-test traces, `method='curvature'` lands at **either end**
-    of the grid depending only on where the background window starts: on one trace
-    $\alpha$ swings from $1.6\times10^{-4}$ to $158$ (six decades, 17 modes ↔ 1)
-    with `bg_start` alone moved, and DeerLab's own L-corner picks differently again
-    on the identical grid. Over-smoothing (merged peaks) is the more common
-    outcome, not the spiky $P(r)$ earlier versions of this page warned about.
+    Measured on the test traces, `method='curvature'` lands at **either end**
+    of the grid depending only on where the background window starts.
     GCV has a single — if shallow — minimum, matches DeerLab's `gcv` selection
     exactly on a shared grid, and is used by default; treat `'curvature'` as a
     cross-check only. For a $P(r)$ with a trustworthy uncertainty band use
@@ -247,20 +243,7 @@ $= N - \operatorname{tr}(K M)$). Returns `(lower, upper)` at confidence `z`
 
 !!! warning "This is not a calibrated confidence interval"
     The band propagates **noise only**. It excludes the regularization bias, which
-    is the dominant error at the peaks, and it is not DeerLab's band:
-
-    - Measured coverage of a nominal-95% band **at the mode**: ≈ 0.84 at the GCV
-      $\alpha$, ≈ 0.08 at $\alpha\times2$, ≈ 0 at $\alpha\times3$. Coverage gets
-      *worse* as the data get cleaner, because the bias stops being masked by noise.
-    - It is conservative only where NNLS pins $P = 0$ (3–12× too wide there) and
-      anti-conservative at the modes.
-    - It is ≈ 1.6–2.4× narrower than DeerLab's covariance band on synthetic data
-      (3.6× on the real ring-test traces) and has the opposite $\alpha$ dependence:
-      this band narrows as $\alpha$ grows, DeerLab's is flat.
-    - With `engine='joint'` it is narrower again by up to ≈ 7×, because it holds the
-      background and $\lambda$ fixed at their fitted values while the joint fit's own
-      $\lambda$/$k$ scatter is the dominant uncertainty there.
-
+    is the dominant error at the peaks, and it is not DeerLab's band.
     Treat it as a display aid for the noise level. For a coverage-honest interval use
     [`deer_validate()`](#deer_validate) or the Mellin / multi-Gaussian Monte-Carlo
     bands.
