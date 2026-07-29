@@ -88,7 +88,7 @@ Times in µs, distances in nm.
 | [`mellin_kernel_spectrum(tau, …)`](deer.md#mellin_kernel_spectrum) | Mellin image Φ(½+iτ) of the dipolar kernel (closed form) |
 | [`mellin_signal_spectrum(t, F, tau, delta, …)`](deer.md#mellin_signal_spectrum) | Mellin image Ṽ(½+iτ) of the form factor (δ-split) |
 | [`mellin_inverse(P_tau, tau, w)`](deer.md#mellin_inverse) | Inverse Mellin transform → p(w) |
-| [`mellin_delta(t, F, level=0.95)`](deer.md#mellin_delta) | Auto Mellin split point δ (F(δ) ≈ 0.95) |
+| [`mellin_delta(t, F, level=0.95, …)`](deer.md#mellin_delta) | Auto Mellin split point δ (F(δ) ≈ 0.95), clipped to the floor/cap window |
 | [`default_r_axis(rmin=1.5, rmax=8.0, n=200)`](deer.md#default_r_axis) | Default distance grid (nm) |
 | [`simulate(t, r, P, …)`](deer.md#simulate) | Forward-simulate a DEER trace from P(r) |
 
