@@ -792,8 +792,9 @@ $$
 $$
 
 The curvature $b$ is least-squares fit over a widened low-$T$ window (out to where
-$F$ has fallen to `fit_level`·$F_0$), so a few $\delta$-wide samples cannot make it
-noisy. This removes a systematic error in the recovered $F_\text{fit}$ at the echo
+$F$ has fallen to `fit_level`·$F_0$, and never narrower than **three** positive
+samples, so a coarse step cannot silently drop the term back to the constant-$F$
+split). This removes a systematic error in the recovered $F_\text{fit}$ at the echo
 (the "thin parabola" near $t=0$) and lets $\delta$ be widened. Set
 `parabolic=False` for the original constant-$F$ split.
 
@@ -815,7 +816,7 @@ i\tau)$ sampled on `tau`. Returns the real $p(w)$ for each `w`.
 ## mellin_delta() { #mellin_delta data-toc-label="mellin_delta" }
 
 ```python
-delta = deer.mellin_delta(t, F, level=0.95, floor=0.09, cap=0.12)
+delta = deer.mellin_delta(t, F, level=0.95, floor=0.09, cap=0.12, floor_ratio=2.0)
 ```
 
 Practical Mellin split point $\delta$: the first $T>0$ where the form factor has
@@ -823,14 +824,21 @@ fallen to `level` of $F(0)$ ($F(\delta)\approx0.95$). Falls
 back to the first positive sample if $F$ never drops that far.
 
 The raw level estimate is then **clipped to `[floor, cap]`** (µs; set either to
-`None` to disable, and both are clamped to the last sample). The **floor** is the
-key correction for *sharp* distributions: a fast-decaying form factor crosses
-`level` within a couple of samples, leaving the analytic parabolic $[0,\delta]$
-echo-top anchor too narrow (the "thin parabola"), so the recovered $F_\text{fit}$
-top comes out too steep and the short-$r$ density is unstable — widening $\delta$ to
-$\approx 90$ ns gives the parabolic term enough low-$T$ support. The **cap**
-($\approx 120$ ns) stops a slow-decaying (long-$r$) trace from over-smoothing
-$P(r)$ by integrating too much of the modulation analytically.
+`None` to disable, and both are clamped to the last sample). The **floor** widens a
+too-narrow analytic parabolic $[0,\delta]$ echo-top anchor (the "thin parabola"),
+which otherwise leaves the recovered $F_\text{fit}$ top too steep and the short-$r$
+density unstable. The **cap** ($\approx 120$ ns) stops a slow-decaying (long-$r$)
+trace from over-smoothing $P(r)$ by integrating too much of the modulation
+analytically.
+
+**`floor_ratio`** bounds how far the floor may stretch $\delta$ beyond the trace's
+*own* decay scale: $\delta$ is raised to at most `floor_ratio` × the raw crossing.
+Without it the floor is an absolute time, so for $r_0\lesssim2.5$ nm — where the raw
+crossing is several times smaller than 90 ns — it hands most of the first dipolar
+oscillation to a single parabola and the reconstruction collapses: at $r_0=1.6$ nm
+the $P(r)$ overlap falls to **0.17**, against **0.68** with `floor_ratio=2`. Above
+$\approx3$ nm the raw crossing already exceeds `floor/floor_ratio`, so the clamp
+binds exactly as before.
 
 ---
 
@@ -855,13 +863,15 @@ Stoll, *JMR* **288** (2018) 58; Fábregas Ibáñez *et al.*, *Magn. Reson.* **1*
 | `durbin_watson` | $\mathrm{DW}=\sum(e_i-e_{i-1})^2/\sum e_i^2\in[0,4]$; $\approx 2$ white, $<2$ positive autocorrelation (the oscillating-residual case), $>2$ anti-correlation |
 | `acf1` | lag-1 autocorrelation $r_1=\sum e_i e_{i-1}/\sum e_i^2$ ($\approx 1-\mathrm{DW}/2$); 0 = white — the headline number |
 | `acf`, `lags` | the autocorrelation function vs lag (for an autocorrelogram) |
-| `ci95` | $\pm 1.96/\sqrt N$, the 95 % white-noise band for the ACF |
+| `ci95` | $\pm 1.96/\sqrt N$, the 95 % white-noise band for the ACF. This is the band for **raw** white noise; a fitted, regularized residual has a different null distribution and sits slightly anti-correlated, so `white` over-flags on that side |
+| `offset` | $\mathrm{mean}(e)/\mathrm{std}(e)$, computed **before** the mean subtraction. DW and the ACF are taken on the demeaned residual, which is blind to a constant pedestal from a mis-fitted $\lambda$ or background — exactly the systematic this diagnostic is meant to catch. An $\lvert$`offset`$\rvert$ of order 1 is a bad fit however white it looks |
 | `white` | bool, $\lvert r_1\rvert \le$ `ci95` (residual consistent with white noise) |
 
 [`deer_invert_mellin()`](#deer_invert_mellin) runs it on the V-space fit residual and
 returns it under `whiteness`. The standalone **DEER / PDS Analysis** tool surfaces it
 as the *Residual* and *Residual ACF* top-plot views (autocorrelogram + white-noise
-band) and the `DW`/$r_1$ verdict in the info panel.
+band) and the `DW`/$r_1$ verdict in the info panel, with `offset` shown alongside
+when it exceeds $0.25\sigma$.
 
 ---
 
@@ -903,8 +913,9 @@ acquisition):
 
 $$ME_n=\frac{\varepsilon\,\Delta t^{\,s}}{I(s)}\sqrt{\tfrac14+\sum_{i=2}^{N_T-1} i^{\,2(s-1)}},\qquad s=\frac{n}{3}$$
 
-with $I(s)$ the analytic dipolar-kernel integral for $g=2$ (their Eqns. 5–6:
-$I(1/3)=4.35466$, $I(2/3)=3.06158$, $I(1)=2.77339$, $I(4/3)=2.56993$). Because the
+with $I(s)=\Phi(s)/(2\pi\nu_\text{dd})^{s}$ the analytic dipolar-kernel integral
+(their Eqns. 5–6: $I(1/3)=4.31512$, $I(2/3)=3.06158$, $I(1)=2.77339$,
+$I(4/3)=2.56993$, matching $g_e=2.0023193$). Because the
 Mellin transform is **additive**, the noise decouples from the (unknown) distribution,
 so the precision of a moment is a property of the **acquisition** — it needs no
 inversion and no ground truth.
@@ -912,20 +923,26 @@ inversion and no ground truth.
 - **`eps`** — per-point rms noise on the **normalized form factor** $F(t)$ ($F(0)=1$);
   for a background-corrected trace of modulation depth $\lambda$ this is the raw trace
   noise amplified by $1/(\lambda B)$, i.e. $\varepsilon\approx\sigma_\text{trace}/\lambda$.
-- **`dt`** — time step **in nanoseconds** (the constants $I(s)$ are fixed for $g=2$ with
-  the dipolar frequency in GHz, i.e. time in ns); pass `dt_us*1e3`.
+- **`dt`** — time step **in nanoseconds** (the constants $I(s)$ are fixed with the
+  dipolar frequency in GHz, i.e. time in ns); pass `dt_us*1e3`.
 - **`n_points`** — number of dipolar-trace points ($t\ge0$).
 - **`n`** — moment order (1–4). $n=1$ is the **mean distance**, the robust one: its
   $i^{-4/3}$ weight is dominated by the *early* points, so $ME_1$ is nearly flat in
   `n_points` — extending the trace does **not** improve the mean distance; lowering the
   early-point noise does (the paper's NUA$_1$ result).
 
-Returns $ME_n$ in nm$^n$ (nm for the mean distance). Reproduces the paper's reported
+Returns $ME_n$ in nm$^n$ (nm for the mean distance). Against the paper's reported
 uniform-acquisition $\mathrm{std}(M_1)=0.0400$ nm for `eps=0.04, dt=24, n_points=231`
-($\to 0.0407$). The empirical scatter of $M_1$ from a full Tikhonov / Mellin inversion
-sits **at or below** this bound (regularization can only reduce noise-driven scatter),
-so $ME_1$ is a conservative a priori error bar — surfaced in the **DEER / PDS Analysis**
-tool as `mean r ± ME₁`.
+this gives $0.0411$ nm.
+
+!!! warning "$ME_n$ is a noise floor, not a bound"
+    It is the propagated **noise** error of the linear Mellin moment integral and
+    nothing else — it carries no resolution and no regularization-bias term, so it
+    is not a bound on the scatter of a recovered distance. In Monte-Carlo tests
+    $\mathrm{std}(M_1)/ME_1$ reaches **2.6×**, and $\mathrm{RMSE}/ME_1$ — which also
+    carries the bias — reaches $\approx40\times$, both on a trace too short to
+    resolve the distance: $ME_1$ is smallest exactly where the answer is worst.
+    Surfaced in the **DEER / PDS Analysis** tool as `mean r ± ME₁`.
 
 ---
 
