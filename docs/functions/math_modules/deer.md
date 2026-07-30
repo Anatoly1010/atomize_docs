@@ -328,6 +328,13 @@ Fig. 4). Holding $\alpha$ fixed is both physically correct — validation probes
 *background/noise sensitivity*, not the regularization choice — and what keeps it
 fast (no per-trial L-curve scan).
 
+!!! note "Mellin engine"
+    $\alpha$ is not the Mellin regularizer, so for `engine='mellin'` the cutoff
+    `tau_max` is pinned to the central trial instead (together with its `n_tau`
+    grid and the split point `delta`). Without that, every trial would re-run the
+    cutoff selection and the band would report the jump between cutoffs rather
+    than the background sensitivity it claims to measure.
+
 - **`bg_start`** — centre of the default background-start sweep (µs). `None` uses
   the trace midpoint.
 - **`bg_starts`** — explicit sweep of background-start times. `None` builds a
@@ -357,6 +364,23 @@ Returns a dict:
 | `alpha` | The fixed regularization weight |
 | `peak`, `r_mean` | Peak position and first moment of the consensus curve |
 | `base` | The single central inversion (its `form_factor` / `F_fit` / `background` / `l_curve`, for display) |
+| `trials` | Per-trial `bg_start`, `r_mean`, `lambda`, `k` and `flagged` (whether that trial raised a background reliability flag) |
+| `trial_spread` | `r_mean_spread`, `lambda_spread`, `n_flagged` / `n`, and `disagree` |
+
+`disagree` is the one to act on: the reliability flags of a validated result
+describe `base`, the central trial only, so a sweep in which the other trials land
+on a different background solution would otherwise pass unnoticed. It is set when a
+**majority** of trials raise a flag, or when the trial mean distances span more
+than max(0.15 nm, 5%). A single flagged trial is not enough — on healthy data that
+fires often while the answer is unaffected.
+
+!!! warning "One row, one curve"
+    `peak` / `r_mean` describe the **median** curve, while `base` carries the
+    $\lambda$, $k$, $\alpha$, $R^2$ and reliability flags of the **central trial**.
+    Do not mix them into one reported row: a pointwise median of several densities
+    is not itself a density, and its width and skew can fall outside the range of
+    every individual trial. Quote shape descriptors from one or the other, and say
+    which.
 
 ```python
 val = deer.deer_validate(t, V, r=r, bg_start=1.0, alpha_factor=2.0)
@@ -379,8 +403,9 @@ res = deer.deer_invert_mellin(t, V, r=None, bg_start=None, bg_end=None,
                               bg_engine='joint', n_mc=0, ci_z=1.96, seed=0,
                               taumax_method='penalty', noise_space='V',
                               wiener=0.0, taumax_extend=True,
-                              extend_short_frac=0.18, fit_rmin_frac=0.18,
-                              signed_fit=True, taper_short=True)
+                              extend_short_frac=0.18, fit_rmin_abs=2.0,
+                              fit_rmin_width=0.5, signed_fit=True,
+                              taper_short=True)
 ```
 
 **Model-free** DEER inversion by the analytic integral **Mellin transform**
@@ -425,12 +450,25 @@ $\tilde V$ by the $\delta$-split of the paper
       measured relative noise, so on noisy data more of the early signal goes to the
       clean analytic term. This fixes the spike at its source and does not touch the
       displayed density.
-    - **`taper_short`** (default on). A geometric raised-cosine taper
-      (`fit_rmin_frac`) sends the displayed $P(r)$ smoothly to zero at the unreliable
-      short-$r$ edge. Because it depends only on distance, the mid- and long-$r$
-      density is unchanged and a genuine short-$r$ peak is attenuated rather than
-      deleted. The tapered density also feeds `F_fit`. Set `taper_short=False` for
-      the raw signed density.
+    - **`taper_short`** (default on). A geometric raised-cosine taper sends the
+      reported $P(r)$ smoothly to zero at the unreliable short-$r$ edge. Its window
+      is **absolute**: it ramps from the bottom of the grid up to at most
+      `fit_rmin_abs` nm — the distance below which a DEER measurement is not
+      meaningful anyway — over at most `fit_rmin_width` nm, and it switches off
+      entirely on a grid that already starts above `fit_rmin_abs`. Because the
+      window is fixed in nanometres rather than as a fraction of the grid, the
+      reported distribution does not change when you widen or narrow the distance
+      axis. A genuine short-$r$ peak is attenuated rather than deleted; the tapered
+      density also feeds `F_fit`. Set `taper_short=False` for the raw signed
+      density.
+
+    !!! warning
+        The taper multiplies the **reported** density, not only the fit curve, and
+        the area is renormalized afterwards. On a distribution with real
+        population below `fit_rmin_abs` it therefore shifts the reported mean
+        distance and the relative peak areas: keep the distance grid starting at
+        or above the shortest distance you intend to quote, or set
+        `taper_short=False`.
 
     Together they remove the short-$r$ spurious mass and restore the echo-top width
     while $P(r)$ stays natural.
@@ -454,6 +492,17 @@ $\tilde V$ by the $\delta$-split of the paper
   noisy near-echo region into the clean analytic term, suppressing the short-$r$
   spike at its source. See [`mellin_signal_spectrum()`](#mellin_signal_spectrum) /
   [`mellin_delta()`](#mellin_delta).
+
+    !!! warning "Shallow modulation + high noise"
+        The form factor carries the electrical noise amplified by $1/\lambda$. Once
+        that noise approaches the level drop the automatic $\delta$ tests for
+        (roughly $\sigma/\lambda \gtrsim 0.09$), the split point and the echo-top
+        curvature are both estimated on noise: they are therefore read off a lightly
+        smoothed form factor in that regime, and the curvature is fitted over a wider
+        window. Below that threshold nothing changes. Note the repair fixes the
+        *forward fit*, which is otherwise held above the data across the whole echo
+        top — it does not make $P(r)$ more accurate there, and at that noise level a
+        Mellin distance distribution should not be quoted without a cross-check.
 - **`tau_max`, `n_tau`** — the Mellin variable runs over $[-\tau_\max, \tau_\max]$
   with `n_tau` samples. The high-$\tau$ cutoff is the regularizer. **`tau_max=None`
   auto-selects it** by `taumax_method` (see below).
@@ -475,16 +524,22 @@ $\tilde V$ by the $\delta$-split of the paper
   `extend_short_frac` of the grid) keeps dropping, and stopped at the first increase.
   Clean data extends; noisy data stays put. Used only with
   `taumax_method='discrepancy'`; the default `'penalty'` method does not need it.
-- **`taper_short`** (default `True`) — smoothly taper the displayed $P(r)$ to zero
-  at the unreliable short-$r$ edge with a geometric raised-cosine (`fit_rmin_frac`),
-  removing the short-$r$ noise spike while leaving the mid- and long-$r$ density
-  unchanged. The tapered density also feeds `F_fit`. See the info box above. `False`
-  returns the raw signed density.
-- **`signed_fit`** (default `True`) — build `F_fit` (and the penalty selector's RMS)
-  from the honest signed density $K\,P$, keeping the echo-top amplitude faithful. Set
-  `False` for low-$\lambda$ data, where the short-$r$ negative spike can otherwise
-  double-peak the echo top; then `F_fit` uses the clipped, non-negative density
-  instead. (When `taper_short=True` the tapered density already feeds `F_fit`.)
+- **`taper_short`** (default `True`) — smoothly taper the reported $P(r)$ to zero at
+  the unreliable short-$r$ edge with a geometric raised-cosine, removing the short-$r$
+  noise spike while leaving the mid- and long-$r$ density unchanged. The tapered
+  density also feeds `F_fit`. See the info box above. `False` returns the raw signed
+  density.
+- **`fit_rmin_abs`, `fit_rmin_width`** (nm) — the taper window: it ramps from the
+  bottom of the distance grid up to at most `fit_rmin_abs`, over at most
+  `fit_rmin_width`, and is switched off entirely when the grid starts above
+  `fit_rmin_abs`. Absolute distances, so editing the distance axis does not change
+  the reported distribution.
+- **`signed_fit`** (default `True`) — score the automatic `tau_max` selection against
+  the honest signed density rather than the clipped, tapered one. Set `False` for
+  low-$\lambda$ data, where a short-$r$ negative spike can otherwise pull the
+  selection. **With `taper_short=True` (the default) it does not change `F_fit`**,
+  which is always built from the tapered density; it changes only which cutoff the
+  automatic selection lands on, and so the result at the next run.
 - **`wiener`** (default `0` = off) — strength of a Wiener-regularized inverse filter
   on the kernel-image division. The plain inverse $1/\Phi(\tau)$ amplifies noise at
   high $|\tau|$, which the $r$-space Jacobian concentrates into a short-$r$ spike.
@@ -513,10 +568,19 @@ $\tilde V$ by the $\delta$-split of the paper
     ratio term ($\ge 1$, large while the echo top is under-resolved) forces an
     adequate fit, the `neg` term halts the extension the moment the cutoff would
     only add symmetric noise. Self-adapting: clean data plateaus late (sharp $P(r)$
-    kept), noisy data accrues `neg` early (stays smooth). `sigma_fit` and the tail
-    `sigma_noise` are reported so the regime stays visible ($\approx$ matched,
-    $\gg$ underfit, $\ll$ overfit), and `whiteness` flags a residual that is still
-    structured (see [`residual_whiteness()`](#residual_whiteness)).
+    kept), noisy data accrues `neg` early (stays smooth). `whiteness` flags a residual
+    that is still structured (see [`residual_whiteness()`](#residual_whiteness)).
+
+!!! warning "Reading `sigma_fit` and `sigma_noise`"
+    `sigma_noise` is the last 30% of the **same** residual `sigma_fit` is computed
+    from, so the two are not independent and their ratio cannot separate over- from
+    under-fitting: a ratio below 1 says only that the tail is fit *worse* than
+    average, which usually points at the background. Compare `sigma_fit` with
+    `noise_level` — the model-free noise level of $V$ — for a fit-quality verdict.
+    Over-fitting in this engine is invisible to any residual statistic, because the
+    injected structure is paired $\pm$ excursions in $P(r)$ that the forward kernel
+    averages out; read `neg_area` instead, which grows monotonically with
+    `tau_max`.
 
 Returns the same dict shape as [`deer_invert()`](#deer_invert) (so the GUI and
 exporters are shared), with these Mellin-specific keys:
@@ -528,10 +592,13 @@ exporters are shared), with these Mellin-specific keys:
 | `P_signed_density` | Alias of `P_density` (kept for back-compat) |
 | `P_lower`, `P_upper` | Monte-Carlo band $= $ `P_density` $\mp$ `ci_z`·`P_std` (when `n_mc > 0`; else `None`) |
 | `P_std` | Per-distance STD across the MC realizations (when `n_mc > 0`) |
-| `noise_level` | White electrical-noise σ read from the decayed tail of $V$ |
+| `noise_level` | White electrical-noise σ read from the decayed tail of $V$; `NaN` when the trace is too short to measure it, `0.0` when the tail is exactly constant |
+| `ci_kind` | `'mc_fixed_bg'` — the band conditions on the fitted background, λ, `tau_max` and `delta` |
+| `ci_unavailable` | Why no band was produced although one was requested (empty otherwise) |
 | `delta`, `tau_max` | The split point and cutoff used |
 | `auto_taumax` | Whether `tau_max` was auto-selected |
-| `sigma_fit`, `sigma_noise` | Forward-fit residual vs tail noise floor (the discrepancy diagnostic) |
+| `sigma_fit`, `sigma_noise` | Forward-fit residual over $t>0$, and the last 30% of **that same residual** |
+| `neg_area` | Negative area of the signed density — the over-fit indicator (grows with `tau_max`) |
 | `whiteness` | Residual-whiteness goodness-of-fit dict (Durbin–Watson, lag-1 autocorrelation, ACF + white-noise band) — see [`residual_whiteness()`](#residual_whiteness) |
 | `tau`, `V_image`, `kernel_image` | The $\tau$ grid and the Mellin spectra $\tilde V(\tau)$, $\Phi(\tau)$ |
 
@@ -742,13 +809,25 @@ the Mellin kernel $\varphi\to0$ cannot represent):
   residual tail droop the Mellin engine cannot represent. The later window is more
   decayed, so $k$ returns near-true. (The rate-fit residual still spans the whole
   trace; `bg_end` only seeds the initial guess.)
-- **Adaptive rate-fit distance cap.** $k$ is fit on both the trace-supported tight
-  cap $r_\max \approx 5\,(T_\max/2)^{1/3}$ nm *and* a wider one, preferring the
-  wider result **unless** widening collapses the background toward flat ($k\to0$,
-  the long-$r$/background degeneracy the tight cap guards against). This stops a
-  genuine broad/long-$r$ component being forced into the background (which would
-  leave a Mellin-unrepresentable pedestal) while still keeping $k$ determined on
-  short single-peak traces.
+- **Rate fit on the trace-supported distance cap** $r_\max \approx
+  5\,(T_\max/2)^{1/3}$ nm, which keeps $k$ determined on short single-peak traces
+  and stops a gentle background being absorbed as spurious long-$r$ mass. A second,
+  wider cap used to be fitted alongside it and preferred unless it collapsed toward
+  a flat background; that discrete choice was removed, because the objective is
+  multi-modal in $\log k$ and the two branches could differ by 19× in $k$ while
+  differing by 0.03% in the objective — so a background-start cursor moved by a
+  single sampling step could flip the reported mean distance by ~1 nm.
+
+Reliability keys in the returned dict — each also raises a `RuntimeWarning`, and the
+Data Treatment / DEER windows render them as an orange flag line:
+
+| Key | Meaning |
+| --- | ------- |
+| `lambda_raw`, `lambda_clamped` | The raw pinned modulation depth, and whether it hit the [0.02, 0.95] clamp |
+| `tail_abs_F` | $\langle|F|\rangle$ over the pin window; above ~0.05 the tail has **not** decayed and $\lambda$ is a guess |
+| `k_ref`, `k_ratio`, `k_disagrees` | The sequential tail-fit rate, and how far the joint rate sits from it |
+| `k_at_bound` | $k$ landed on an edge of its search bracket — it carries no information there (this happens when the sequential seed itself collapses) |
+| `rmax_cap` | The distance cap the rate fit used |
 
 ---
 
