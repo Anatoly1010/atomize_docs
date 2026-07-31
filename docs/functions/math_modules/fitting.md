@@ -36,9 +36,9 @@ Creates the fitter object. All functions below are methods on it.
 | --------- | ---------- | -------- |
 | `Linear` | `a, b` | $a x + b$ |
 | `Exponential` | `a, k, b` | $a\,e^{-x/k} + b$ |
-| `Bi-exponential` | <code>a1, k1, a2, k2,<br>b</code> | $a_1 e^{-x/k_1} + a_2 e^{-x/k_2} + b$ |
+| `Bi-exponential` | `a1, k1, a2, k2, b` | $a_1 e^{-x/k_1} + a_2 e^{-x/k_2} + b$ |
 | `Stretched exponential` | `a, k, beta, b` | $a\,e^{-(x/k)^{\beta}} + b$ |
-| <code>Stretched exponential +<br>exponential</code> | <code>a1, k1, beta,<br>a2, k2, b</code> | $a_1 e^{-(x/k_1)^{\beta}} + a_2 e^{-x/k_2} + b$ |
+| <code>Stretched exponential <br>+ exponential</code> | <code>a1, k1, beta,<br>a2, k2, b</code> | $a_1 e^{-(x/k_1)^{\beta}} + a_2 e^{-x/k_2} + b$ |
 | `Gaussian` | `a, x0, sigma, b` | $a\,e^{-(x-x_0)^2/2\sigma^2} + b$ |
 | `Lorentzian` | `a, x0, gamma, b` | $a/(1+((x-x_0)/\gamma)^2) + b$ |
 | `Damped sine` | `a, k, f, phi, b` | $a\,e^{-x/k}\sin(2\pi f x + \varphi) + b$ |
