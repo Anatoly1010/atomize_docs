@@ -38,7 +38,9 @@ CI (`.github/workflows/ci.yml`) runs `mkdocs build --strict` on every push to `m
 - To add a page: create the `.md` under `docs/`, add it to the `nav:` tree in `mkdocs.yml`, and — for a new instrument category — add it to the table in `docs/instruments.md`. Mirror the structure of a sibling page (e.g. `docs/functions/digitizer.md`).
 - Internal links are **relative to the `docs/` tree**, e.g. `protocol_settings.md`, `functions/general_functions/general_functions.md`, `images/figure_2.png`. Do **not** use the old Jekyll absolute `/atomize_docs/...` paths.
 - Callouts use MkDocs admonitions: `!!! note`, `!!! warning`, `!!! important` (`admonition` + `pymdownx.details`), **not** Jekyll's `{: .note }`.
-- Custom heading anchors / TOC labels use `attr_list`, e.g. `### tc_name() { #tc_name data-toc-label="tc_name" }`.
+- Custom heading anchors / TOC labels use `attr_list`, e.g. `### tc_name() { #tc_name data-toc-label="tc_name" }`. Always set `data-toc-label` to the bare function name — without it the sidebar carries the whole argument list.
+- **The instrument pages under `docs/functions/` are the style reference for every page, including the `math_modules/` ones.** Prose is **not hard-wrapped**: one paragraph, list item or admonition body per source line, however long. A function section opens with a `python` block giving the call forms with inline `# -> type` comments, then flowing "This function …" prose; bullet lists are for calls with many parameters (e.g. `math_modules/deer.md`), not for ordinary description. Prefer untitled `!!! note` / `!!! warning`.
+- Reflowing an existing page can be verified mechanically: render it before and after with `python -m markdown` using the `mkdocs.yml` extension set, collapse whitespace, and diff — joining wrapped lines must leave the HTML identical.
 - Enabled extensions (see `mkdocs.yml`): `admonition`, `footnotes`, `attr_list`, `md_in_html`, `pymdownx.details/superfences/highlight/inlinehilite/snippets/tabbed`, and `toc` (permalinks).
 
 ## Notes for editing
