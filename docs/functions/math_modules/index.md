@@ -1,24 +1,15 @@
 # Math Modules
 
-Helper modules for offline data analysis: least-squares curve fitting, 1D
-signal processing (apodization, zero filling, smoothing, baseline subtraction,
-echo-centre detection), FFT and phase correction, and DEER/PDS
-distance-distribution analysis. They take
-and return plain NumPy arrays, so a result can be pushed straight to LivePlot
-with [`plot_1d()`](../plotting_functions/usage.md) or saved with
-[`save_data()`](../general_functions/data_managment.md#save_data).
+Helper modules for offline data analysis: least-squares curve fitting, 1D signal processing (apodization, zero filling, smoothing, baseline subtraction, echo-centre detection), FFT and phase correction, and DEER/PDS distance-distribution analysis. They take and return plain NumPy arrays, so a result can be pushed straight to LivePlot with [`plot_1d()`](../plotting_functions/usage.md) or saved with [`save_data()`](../general_functions/data_managment.md#save_data).
 
 !!! note "scipy is an optional dependency"
-    The fitting routines, Savitzky–Golay smoothing, and the whole DEER engine
-    require `scipy`, which is part of the `math` extra:
+    The fitting routines, Savitzky–Golay smoothing, and the whole DEER engine require `scipy`, which is part of the `math` extra:
 
     ```bash
     pip install -e .[math]
     ```
 
-    The modules import `scipy` lazily, so importing them never fails on a
-    minimal install — only the functions that need `scipy` raise a
-    `RuntimeError` when it is missing.
+    The modules import `scipy` lazily, so importing them never fails on a minimal install — only the functions that need `scipy` raise a `RuntimeError` when it is missing.
 
 ## [Least-squares fitting](fitting.md)
 
@@ -65,11 +56,7 @@ with [`plot_1d()`](../plotting_functions/usage.md) or saved with
 
 `import atomize.math_modules.deer as deer`
 
-Distance-distribution analysis for pulsed-dipolar spectroscopy (DEER/PELDOR,
-RIDME, DQC, SIFTER): background correction + inversion of the orientation-averaged
-dipolar kernel by **Tikhonov/NNLS** (GCV or L-curve regularization, sequential or
-joint DeerLab-style background) **or** a model-free **analytic Mellin transform**.
-Times in µs, distances in nm.
+Distance-distribution analysis for pulsed-dipolar spectroscopy (DEER/PELDOR, RIDME, DQC, SIFTER): background correction + inversion of the orientation-averaged dipolar kernel by **Tikhonov/NNLS** (GCV or L-curve regularization, sequential or joint DeerLab-style background) **or** a model-free **analytic Mellin transform**. Times in µs, distances in nm.
 
 | Function | Description |
 | -------- | ----------- |
@@ -98,10 +85,7 @@ Times in µs, distances in nm.
 
 `import atomize.math_modules.coherence_pathways as coh`
 
-Pure-Python (no scipy) bookkeeping for pulse-EPR phase cycles: expand short
-phase-cycle notation, then enumerate every coherence transfer pathway and see
-which the cycle **keeps** vs **phases out**, where each surviving echo lands, and
-which FIDs survive. Selection rule, not amplitudes (Stoll 2008; Prisner 2016).
+Pure-Python (no scipy) bookkeeping for pulse-EPR phase cycles: expand short phase-cycle notation, then enumerate every coherence transfer pathway and see which the cycle **keeps** vs **phases out**, where each surviving echo lands, and which FIDs survive. Selection rule, not amplitudes (Stoll 2008; Prisner 2016).
 
 | Function | Description |
 | -------- | ----------- |
@@ -114,11 +98,7 @@ which FIDs survive. Selection rule, not amplitudes (Stoll 2008; Prisner 2016).
 
 `import atomize.math_modules.pulse_excitation as pe`
 
-Excitation/inversion profiles of shaped pulses (rectangular, gaussian, sinc,
-sine, WURST, sech/tanh) across resonance offset, by full Bloch/propagator spin
-dynamics of a single S=1/2 — the EasySpin `exciteprofile` approach, correct for
-adiabatic pulses, not just the FFT approximation. Pure NumPy (no scipy).
-Frequencies/offsets in GHz, times in ns; shape params in MHz.
+Excitation/inversion profiles of shaped pulses (rectangular, gaussian, sinc, sine, WURST, sech/tanh) across resonance offset, by full Bloch/propagator spin dynamics of a single S=1/2 — the EasySpin `exciteprofile` approach, correct for adiabatic pulses, not just the FFT approximation. Pure NumPy (no scipy). Frequencies/offsets in GHz, times in ns; shape params in MHz.
 
 | Function | Description |
 | -------- | ----------- |
