@@ -46,6 +46,17 @@ background is normally a stretched exponential ([`background_fit()`](#background
 but a flexible empirical form $a\,e^{\,b(t + c\,d^{\,t})}$ is also available
 ([`background_general()`](#background_general)).
 
+!!! warning "Samples before the zero-time are dropped"
+    Every engine discards $t < 0$ on entry. The kernel evaluates $|\omega t|$, so a
+    negative-time sample would be modelled as ordinary evolution at $+|t|$ and the
+    non-negative inversion piles $P(r)$ mass at short $r$ to reproduce the echo's
+    *rising edge* — a true 5 nm pair reads as ~2.7 nm, with no warning. Pass the
+    whole trace: the shift by `fit_zero_time()` and the crop are handled for you,
+    and the returned `t`, `form_factor`, `F_fit` and background arrays are all
+    defined on $t \ge 0$ only. Those samples are not wasted — they are what fixes
+    the zero time — and the DEER tool still *draws* them, since $B(t)$ and
+    $F(t) = K(|t|)P$ are exactly even and can be evaluated there without refitting.
+
 !!! tip "Why GCV is the default"
     A DEER L-curve is nearly *vertical* — the residual stays at the noise floor
     across decades of $\alpha$ — so the Menger-curvature "corner" is ill-defined.
@@ -279,6 +290,32 @@ Two methods, selected by **`method`**:
   search at high noise on traces with a clear echo maximum. Falls back to
   `'residual'` when no concave echo peak is found (e.g. the trace already starts
   at the zero-time).
+
+    On a **noisy** echo the vertex is the wrong statistic altogether, so above a
+    measured noise-to-amplitude ratio of ~0.055 the estimator switches to the
+    **centroid of the echo top**. Two things break the parabola together, and both
+    get worse the broader $P(r)$ is: the echo top goes flat — for a broad, long
+    distribution $V$ falls only ~0.4 % over the samples ahead of $t_0$, an order of
+    magnitude under a 4 % noise level — so the curvature, and with it the vertex
+    $-b/2a$, is a ratio of two numbers that are both noise; and the argmax that
+    anchors the fit window is a winner-take-all pick among dozens of near-equal
+    noisy samples, carrying up to 120 ns of error on its own that no local
+    refinement can undo.
+
+    The centroid needs no curvature: $V$ is even about $t_0$, so the centroid of any
+    weight symmetric about $t_0$ **is** $t_0$. Being *linear* in $V$, it averages
+    those samples instead of choosing between them, and it cannot diverge or fail to
+    find a peak. Below the ratio nothing changes and the result is identical to the
+    plain parabola — which covers every real trace measured (ratio 0.004–0.025),
+    though a weak-modulation short-distance shape can cross the gate at 4 % noise.
+
+    Measured over 21 distribution shapes and 168 noisy synthetic traces: mean
+    $|t_0$ error$|$ 15.2 → 10.5 ns, worst case 163.7 → 63.7 ns, and no
+    concave-peak failures (8 → 1, each of which otherwise costs a full residual
+    search). The recovered distributions gain **+0.0098 overlap on the Mellin
+    engine and +0.0111 on Tikhonov** — *both* engines, which is what says it is a
+    genuine improvement rather than the accidental cancellation described under
+    `xcheck`.
 - **`'residual'`** — minimize the V-space reconstruction residual. A candidate
   offset $s$ shifts both the time axis and the (data-anchored) background window,
   so only the kernel alignment changes; the residual is smooth with a single
