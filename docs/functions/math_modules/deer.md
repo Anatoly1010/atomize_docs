@@ -61,8 +61,8 @@ but a flexible empirical form $a\,e^{\,b(t + c\,d^{\,t})}$ is also available
 !!! tip "Why GCV is the default"
     A DEER L-curve is nearly *vertical* — the residual stays at the noise floor
     across decades of $\alpha$ — so the Menger-curvature "corner" is ill-defined.
-    Measured on the test traces, `method='curvature'` lands at **either end**
-    of the grid depending only on where the background window starts.
+    In practice `method='curvature'` can land at **either end** of the grid
+    depending only on where the background window starts.
     GCV has a single — if shallow — minimum, matches DeerLab's `gcv` selection
     exactly on a shared grid, and is used by default; treat `'curvature'` as a
     cross-check only. For a $P(r)$ with a trustworthy uncertainty band use
@@ -113,11 +113,11 @@ invert to $P(r)$ by Tikhonov + NNLS. This is what most users want.
   hand-picked L-corner regularization used to obtain smooth distributions in
   inter-laboratory ring tests
   ([Schiemann et al., *JACS* **2021**, 143, 17875](https://doi.org/10.1021/jacs.1c07371)).
-  It buys that smoothness with **bias**: $P(r)$ is pulled measurably off the truth
-  while the [`tikhonov_ci()`](#tikhonov_ci) band, which propagates noise only, gets
-  *narrower*. Measured coverage of the nominal-95% band at the mode falls from
-  ≈ 0.84 at 1× to ≈ 0.08 at 2× and ≈ 0 at 3×. Above 1×, read the band as a noise
-  scale rather than a confidence interval.
+  It buys that smoothness with **bias**: $P(r)$ is pulled off the truth while the
+  [`tikhonov_ci()`](#tikhonov_ci) band, which propagates noise only, gets
+  *narrower* — so the band's coverage collapses as the factor rises, and the two
+  errors compound rather than cancel. Above 1×, read the band as a noise scale
+  rather than a confidence interval.
 - **`alphas`** — the regularization scan grid (default `np.logspace(-4, 3, 36)`).
 - **`reg_order`** — derivative order of the smoothing operator $L$ (default 2).
 - **`scan_lcurve`** — when `True` (default) the regularization scan is always
