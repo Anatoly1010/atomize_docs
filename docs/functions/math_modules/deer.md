@@ -68,7 +68,7 @@ Returns a dict:
 | --- | ----------- |
 | `t`, `r` | The time and distance axes used |
 | `form_factor` | Background-corrected form factor $F(t)$ |
-| `F_fit` | Back-calculated fit $K P$ |
+| `F_fit` | Back-calculated fit $K P$ (Mellin: from the non-negative projection of $P$) |
 | `residuals` | `form_factor - F_fit` |
 | `P` | Raw distance masses ($\ge 0$) |
 | `P_norm` | Masses normalized to sum $= 1$ |
@@ -292,7 +292,7 @@ and the inverse Mellin transform gives $p(w)$ directly; the Jacobian maps it to 
 - **`taumax_extend`** (default on) — a resolution-aware extension of the discrepancy cutoff. The discrepancy stops at the noise floor, but $P(r)$ can keep sharpening past it, so the cutoff is pushed up as long as the short-$r$ leakage (bottom `extend_short_frac` of the grid) keeps dropping, and stopped at the first increase. Clean data extends; noisy data stays put. Used only with `taumax_method='discrepancy'`; the default `'penalty'` method does not need it.
 - **`taper_short`** (default `True`) — smoothly taper the reported $P(r)$ to zero at the unreliable short-$r$ edge with a geometric raised-cosine, removing the short-$r$ noise spike while leaving the mid- and long-$r$ density unchanged. The tapered density also feeds `F_fit`. See the info box above. `False` returns the raw signed density.
 - **`fit_rmin_abs`, `fit_rmin_width`** (nm) — the taper window: it ramps from the bottom of the distance grid up to at most `fit_rmin_abs`, over at most `fit_rmin_width`, and is switched off entirely when the grid starts above `fit_rmin_abs`. Absolute distances, so editing the distance axis does not change the reported distribution.
-- **`signed_fit`** (default `True`) — score the automatic `tau_max` selection against the honest signed density rather than the clipped, tapered one. Set `False` for low-$\lambda$ data, where a short-$r$ negative spike can otherwise pull the selection. **With `taper_short=True` (the default) it does not change `F_fit`**, which is always built from the tapered density; it changes only which cutoff the automatic selection lands on, and so the result at the next run.
+- **`signed_fit`** (default `True`) — score the automatic `tau_max` selection against the honest signed density rather than the clipped, tapered one. Set `False` for low-$\lambda$ data, where a short-$r$ negative spike can otherwise pull the selection. **It does not change `F_fit`**, which is always built from the non-negative projection of the reported density; it changes only which cutoff the automatic selection lands on, and so the result at the next run.
 - **`wiener`** (default `0` = off) — strength of a Wiener-regularized inverse filter on the kernel-image division. The plain inverse $1/\Phi(\tau)$ amplifies noise at high $|\tau|$, which the $r$-space Jacobian concentrates into a short-$r$ spike. The filter rolls that off, with its $\varepsilon$ scaled by the measured tail noise so it does nothing on clean data. A value $\approx 0.12$ removes the spike at moderate noise. Rarely needed, since the adaptive $\delta$ and `taper_short` already handle the spike.
 - **`n_mc`** — number of Monte-Carlo noise realizations for the confidence band (0 = off). The band is built by **additive-noise propagation**: the white electrical-noise level is read from the **decayed tail of $V$** by smoothing (returned as `noise_level`), added to the smooth $V$ fit, and propagated through the *fixed* background to $F$ — so $F$ inherits the realistic $1/(\lambda B)$ amplification toward the tail. The band is the **per-distance STD** across the realizations: `P_lower`/`P_upper` $= $ `P_density` $\mp\,$`ci_z`$\cdot$`P_std`. ~100 realizations are typical.
 
@@ -309,6 +309,7 @@ Returns the same dict shape as [`deer_invert()`](#deer_invert) (so the GUI and e
 | `engine` | `'mellin'` |
 | `P_density` | Recovered **signed** density (area-normalized; short-$r$ noise ripples kept, can be < 0) — plot this |
 | `P_signed_density` | Alias of `P_density` (kept for back-compat) |
+| | `F_fit` is **not** $K\cdot$`P_density` — see the note below |
 | `P_lower`, `P_upper` | Monte-Carlo band $= $ `P_density` $\mp$ `ci_z`·`P_std` (when `n_mc > 0`; else `None`) |
 | `P_std` | Per-distance STD across the MC realizations (when `n_mc > 0`) |
 | `noise_level` | White electrical-noise σ read from the decayed tail of $V$; `NaN` when the trace is too short to measure it, `0.0` when the tail is exactly constant |
@@ -322,6 +323,11 @@ Returns the same dict shape as [`deer_invert()`](#deer_invert) (so the GUI and e
 | `tau`, `V_image`, `kernel_image` | The $\tau$ grid and the Mellin spectra $\tilde V(\tau)$, $\Phi(\tau)$ |
 
 `alpha` is `NaN` and `l_curve` is `None` (no Tikhonov regularization here).
+
+!!! note
+    `P_density` is the honest model-free Mellin output and keeps its negative excursions — short-$r$ noise ripples, and the signal `neg_area` reports. The forward *model* cannot keep them. Since $K(0, r) = 1$ for every $r$, $F_\text{fit}(0)$ is the sum of the masses; a negative mass at short $r$ subtracts from $t = 0$ but less from $t > 0$, because its kernel decays fastest, so the fitted curve rises after the zero time. The form factor being even in $t$, that renders as two maxima straddling a dip at $t_0$ — which a form factor cannot have.
+
+    `F_fit` is therefore built from the non-negative **projection** of the reported density (isotonic regression of its cumulative mass, which leaves an already non-negative density untouched). That makes the fit a convex mixture of kernels, and since $|K(t,r)| \le K(0,r) = 1$ it guarantees $F_\text{fit}(0) = \max F_\text{fit}$. Only the fit curve and the residual diagnostics derived from it are affected — never `P_density`, `P_norm` or the distances read off them. Expect `sigma_fit` to be marginally larger than a signed fit would report: the signed version flatters itself by fitting with a curve that is not a form factor.
 
 ```python
 res = deer.deer_invert_mellin(t, V, r=r, bg_start=1.0,
