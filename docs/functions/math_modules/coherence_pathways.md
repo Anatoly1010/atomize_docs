@@ -31,7 +31,9 @@ An echo forms where the offset-dependent phase $\sum_k p_k\,\tau_k$ over the seq
 | `[x]` | a nested **4-step** cycle (90° quadrature) |
 | `'-1,2'` (receiver only) | per-pulse **coherence-order coefficients**; the receiver phase is derived automatically |
 
-## expand_phase_cycling(recv, *pulse_phases) { #expand_phase_cycling data-toc-label="expand_phase_cycling" }
+## Functions
+
+### expand_phase_cycling(recv, *pulse_phases) { #expand_phase_cycling data-toc-label="expand_phase_cycling" }
 
 Expand the short notation into explicit per-step lists.
 
@@ -42,7 +44,7 @@ coh.expand_phase_cycling('-1,2', '(x)', 'x')
 
 Returns `{"pulses": [[phase per step] per pulse], "receiver": [phase per step]}`.
 
-## analyze_pathways(recv, pulse_phases, positions, det_pos) { #analyze_pathways data-toc-label="analyze_pathways" }
+### analyze_pathways(recv, pulse_phases, positions, det_pos) { #analyze_pathways data-toc-label="analyze_pathways" }
 
 Enumerate and classify the pathways.
 
@@ -76,7 +78,7 @@ for f in an['fids']:
 # P1 FID -> kept ; P2 (pi-pulse) FID -> phased out
 ```
 
-## pathway_report(recv, pulse_phases, positions, det_pos) { #pathway_report data-toc-label="pathway_report" }
+### pathway_report(recv, pulse_phases, positions, det_pos) { #pathway_report data-toc-label="pathway_report" }
 
 A ready-to-print multi-line summary — the survivor table, the per-pulse FID table, and the caveat — for `print` or `general.message(...)`.
 
@@ -101,7 +103,7 @@ Coherence transfer pathways  (electron p in -1,0,+1; detection -1)
 
 The five surviving artefacts here are exactly the unsuppressed DEER echoes discussed by Prisner *et al.* — useful for spotting one that overlaps the detection window.
 
-## positions_from_taus(taus, base=0.0, grid=None) { #positions_from_taus data-toc-label="positions_from_taus" }
+### positions_from_taus(taus, base=0.0, grid=None) { #positions_from_taus data-toc-label="positions_from_taus" }
 
 Cumulative absolute pulse positions from inter-pulse delays: the first pulse at `base`, each next one `+tau` later. With `grid` set, positions snap **up** to that raster (matching hardware timing); leave it `None` for exact values.
 

@@ -14,7 +14,9 @@ The module-level functions ([`apodization_window`](#apodization_window), [`zerof
 
 ---
 
-## apodization_window() { #apodization_window data-toc-label="apodization_window" }
+## Functions
+
+### apodization_window() { #apodization_window data-toc-label="apodization_window" }
 
 ```python
 w = sigproc.apodization_window(n, name, param=8.6)
@@ -38,7 +40,7 @@ signal = signal*sigproc.apodization_window(len(signal), 'Kaiser', 8.6)
 
 ---
 
-## zerofill_length() { #zerofill_length data-toc-label="zerofill_length" }
+### zerofill_length() { #zerofill_length data-toc-label="zerofill_length" }
 
 ```python
 n = sigproc.zerofill_length(length, choice)
@@ -54,7 +56,7 @@ freq = np.fft.fftfreq(n, dt)
 
 ---
 
-## echo_center() { #echo_center data-toc-label="echo_center" }
+### echo_center() { #echo_center data-toc-label="echo_center" }
 
 ```python
 k = sigproc.echo_center(envelope, window=0)
@@ -74,7 +76,7 @@ spectrum = np.fft.fft((i + 1j*q)[k:], n)
 
 ---
 
-## Signal_Processing() { #class data-toc-label="Signal_Processing()" }
+### Signal_Processing() { #class data-toc-label="Signal_Processing()" }
 
 ```python
 sp = sigproc.Signal_Processing()
@@ -84,7 +86,7 @@ Creates the helper object exposing the methods below.
 
 ---
 
-## savitzky_golay() { #savitzky_golay data-toc-label="savitzky_golay" }
+### savitzky_golay() { #savitzky_golay data-toc-label="savitzky_golay" }
 
 ```python
 y_smooth = sp.savitzky_golay(y, window=11, order=3)
@@ -94,7 +96,7 @@ Savitzky–Golay smoothing (requires `scipy`). `window` must be odd and greater 
 
 ---
 
-## moving_average() { #moving_average data-toc-label="moving_average" }
+### moving_average() { #moving_average data-toc-label="moving_average" }
 
 ```python
 y_smooth = sp.moving_average(y, window=5)
@@ -104,7 +106,7 @@ Centred moving-average smoothing; edges are padded by reflection so the output h
 
 ---
 
-## baseline_poly() { #baseline_poly data-toc-label="baseline_poly" }
+### baseline_poly() { #baseline_poly data-toc-label="baseline_poly" }
 
 ```python
 y_corr = sp.baseline_poly(x, y, order=1, region='all', npts=0)
@@ -128,7 +130,7 @@ y_corr = sp.baseline_poly(x, y, order=1, region='ends', npts=50)
 
 ---
 
-## normalize() { #normalize data-toc-label="normalize" }
+### normalize() { #normalize data-toc-label="normalize" }
 
 ```python
 y_norm = sp.normalize(y, mode='minmax')

@@ -36,7 +36,9 @@ import atomize.math_modules.deer as deer
 
 ---
 
-## deer_invert() { #deer_invert data-toc-label="deer_invert" }
+## Functions
+
+### deer_invert() { #deer_invert data-toc-label="deer_invert" }
 
 ```python
 res = deer.deer_invert(t, V, r=None, bg_start=None, bg_end=None,
@@ -97,7 +99,7 @@ print(f"lambda = {res['lambda']:.3f}, alpha = {res['alpha']:.3g}, peak r = {peak
 
 ---
 
-## deer_invert_joint() { #deer_invert_joint data-toc-label="deer_invert_joint" }
+### deer_invert_joint() { #deer_invert_joint data-toc-label="deer_invert_joint" }
 
 ```python
 res = deer.deer_invert_joint(t, V, r=None, bg_start=None, bg_end=None,
@@ -127,7 +129,7 @@ Returns the same dict as [`deer_invert()`](#deer_invert), with `engine='joint'`.
 
 ---
 
-## tikhonov_ci() { #tikhonov_ci data-toc-label="tikhonov_ci" }
+### tikhonov_ci() { #tikhonov_ci data-toc-label="tikhonov_ci" }
 
 ```python
 lower, upper = deer.tikhonov_ci(K, F, alpha, P, L=None, dr=1.0, z=1.96)
@@ -147,7 +149,7 @@ with $\sigma^2$ estimated from the fit residuals (effective dof $= N - \operator
 
 ---
 
-## fit_zero_time() { #fit_zero_time data-toc-label="fit_zero_time" }
+### fit_zero_time() { #fit_zero_time data-toc-label="fit_zero_time" }
 
 ```python
 t0 = deer.fit_zero_time(t, V, bg_start=None, bg_end=None,
@@ -180,7 +182,7 @@ res = deer.deer_invert(t - t0, V, r=r, bg_start=1.0 - t0)
 
 ---
 
-## deer_validate() { #deer_validate data-toc-label="deer_validate" }
+### deer_validate() { #deer_validate data-toc-label="deer_validate" }
 
 ```python
 val = deer.deer_validate(t, V, r=None, bg_start=None, bg_starts=None,
@@ -237,7 +239,7 @@ In the Data Treatment GUI this is the **"Validate (background sweep → P(r) ban
 
 ---
 
-## deer_invert_mellin() { #deer_invert_mellin data-toc-label="deer_invert_mellin" }
+### deer_invert_mellin() { #deer_invert_mellin data-toc-label="deer_invert_mellin" }
 
 ```python
 res = deer.deer_invert_mellin(t, V, r=None, bg_start=None, bg_end=None,
@@ -331,7 +333,7 @@ print(f"peak r = {peak:.2f} nm, sigma_fit/sigma_noise = "
 
 ---
 
-## deer_invert_gauss() { #deer_invert_gauss data-toc-label="deer_invert_gauss" }
+### deer_invert_gauss() { #deer_invert_gauss data-toc-label="deer_invert_gauss" }
 
 ```python
 res = deer.deer_invert_gauss(t, V, r=None, bg_start=None, bg_end=None,
@@ -420,7 +422,7 @@ print(f"N = {res['n_gauss']} (AICc pick {res['n_gauss_ic']}, pruned={res['pruned
 
 ---
 
-## joint_background() { #joint_background data-toc-label="joint_background" }
+### joint_background() { #joint_background data-toc-label="joint_background" }
 
 ```python
 bg = deer.joint_background(t, V, bg_start=None, bg_end=None, dim=3.0,
@@ -447,7 +449,7 @@ Reliability keys in the returned dict — each also raises a `RuntimeWarning`, a
 
 ---
 
-## mellin_kernel_spectrum() { #mellin_kernel_spectrum data-toc-label="mellin_kernel_spectrum" }
+### mellin_kernel_spectrum() { #mellin_kernel_spectrum data-toc-label="mellin_kernel_spectrum" }
 
 ```python
 Phi = deer.mellin_kernel_spectrum(tau, n_u=512)
@@ -459,7 +461,7 @@ $x = x_0\cosh u$, $x_0 = 1/\sqrt3$) into an exact Beta-function term plus a smoo
 
 ---
 
-## mellin_signal_spectrum() { #mellin_signal_spectrum data-toc-label="mellin_signal_spectrum" }
+### mellin_signal_spectrum() { #mellin_signal_spectrum data-toc-label="mellin_signal_spectrum" }
 
 ```python
 Vimg = deer.mellin_signal_spectrum(t, F, tau, delta, F0=1.0, du=0.02,
@@ -479,7 +481,7 @@ The curvature $b$ is least-squares fit over a widened low-$T$ window (out to whe
 
 ---
 
-## mellin_inverse() { #mellin_inverse data-toc-label="mellin_inverse" }
+### mellin_inverse() { #mellin_inverse data-toc-label="mellin_inverse" }
 
 ```python
 p_w = deer.mellin_inverse(P_tau, tau, w)
@@ -489,7 +491,7 @@ Inverse Mellin transform on the line $s = \tfrac12 + i\tau$ back to $p(w)$: $\op
 
 ---
 
-## mellin_delta() { #mellin_delta data-toc-label="mellin_delta" }
+### mellin_delta() { #mellin_delta data-toc-label="mellin_delta" }
 
 ```python
 delta = deer.mellin_delta(t, F, level=0.95, floor=0.09, cap=0.12, floor_ratio=2.0)
@@ -503,7 +505,7 @@ The raw level estimate is then **clipped to `[floor, cap]`** (µs; set either to
 
 ---
 
-## residual_whiteness() { #residual_whiteness data-toc-label="residual_whiteness" }
+### residual_whiteness() { #residual_whiteness data-toc-label="residual_whiteness" }
 
 ```python
 w = deer.residual_whiteness(resid, max_lag=None)
@@ -524,7 +526,7 @@ w = deer.residual_whiteness(resid, max_lag=None)
 
 ---
 
-## distribution_moments() { #distribution_moments data-toc-label="distribution_moments" }
+### distribution_moments() { #distribution_moments data-toc-label="distribution_moments" }
 
 ```python
 d = deer.distribution_moments(r, P)
@@ -543,7 +545,7 @@ Unlike a shape-overlap coefficient, the moments expose the *direction* of an err
 
 ---
 
-## moment_error_apriori() { #moment_error_apriori data-toc-label="moment_error_apriori" }
+### moment_error_apriori() { #moment_error_apriori data-toc-label="moment_error_apriori" }
 
 ```python
 ME_n = deer.moment_error_apriori(eps, dt, n_points, n=1)
@@ -567,7 +569,7 @@ Returns $ME_n$ in nm$^n$ (nm for the mean distance). Against the paper's reporte
 
 ---
 
-## dipolar_kernel() { #dipolar_kernel data-toc-label="dipolar_kernel" }
+### dipolar_kernel() { #dipolar_kernel data-toc-label="dipolar_kernel" }
 
 ```python
 K = deer.dipolar_kernel(t, r, nu_dd=deer.NU_DD)
@@ -582,7 +584,7 @@ $$
 
 ---
 
-## dipolar_frequency() { #dipolar_frequency data-toc-label="dipolar_frequency" }
+### dipolar_frequency() { #dipolar_frequency data-toc-label="dipolar_frequency" }
 
 ```python
 nu = deer.dipolar_frequency(r, nu_dd=deer.NU_DD)
@@ -592,7 +594,7 @@ Perpendicular dipolar frequency $\nu_\perp(r) = \nu_{dd}/r^3$ [MHz], `r` in nm.
 
 ---
 
-## background_fit() { #background_fit data-toc-label="background_fit" }
+### background_fit() { #background_fit data-toc-label="background_fit" }
 
 ```python
 bg = deer.background_fit(t, V, bg_start, bg_end=None, dim=3.0, fit_dim=False)
@@ -610,7 +612,7 @@ Returns a dict with `lambda`, `k`, `dim`, `A`, `B`, `form_factor`, `V_norm`, `t`
 
 ---
 
-## background_general() { #background_general data-toc-label="background_general" }
+### background_general() { #background_general data-toc-label="background_general" }
 
 ```python
 bg = deer.background_general(t, V, bg_start, bg_end=None,
@@ -645,7 +647,7 @@ res = deer.deer_invert(t, V, r=r, bg_start=2.0, engine='general',
 
 ---
 
-## tikhonov_nnls() { #tikhonov_nnls data-toc-label="tikhonov_nnls" }
+### tikhonov_nnls() { #tikhonov_nnls data-toc-label="tikhonov_nnls" }
 
 ```python
 P = deer.tikhonov_nnls(K, F, alpha, L=None)
@@ -655,7 +657,7 @@ Non-negative Tikhonov solution of $K P = F$: minimizes $\lVert K P - F \rVert^2 
 
 ---
 
-## regularization_matrix() { #regularization_matrix data-toc-label="regularization_matrix" }
+### regularization_matrix() { #regularization_matrix data-toc-label="regularization_matrix" }
 
 ```python
 L = deer.regularization_matrix(n, order=2)
@@ -665,7 +667,7 @@ Discrete derivative operator $L$ for Tikhonov smoothing. `order=0` → identity,
 
 ---
 
-## l_curve() { #l_curve data-toc-label="l_curve" }
+### l_curve() { #l_curve data-toc-label="l_curve" }
 
 ```python
 lc = deer.l_curve(K, F, alphas, L=None, method='gcv')
@@ -685,7 +687,7 @@ Returns a dict with `alphas`, `rho` (residual norms), `eta` (solution norms), `c
 
 ---
 
-## default_r_axis() { #default_r_axis data-toc-label="default_r_axis" }
+### default_r_axis() { #default_r_axis data-toc-label="default_r_axis" }
 
 ```python
 r = deer.default_r_axis(rmin=1.5, rmax=8.0, n=200)
@@ -695,7 +697,7 @@ Returns a linear distance grid (nm).
 
 ---
 
-## simulate() { #simulate data-toc-label="simulate" }
+### simulate() { #simulate data-toc-label="simulate" }
 
 ```python
 V = deer.simulate(t, r, P, lam=0.3, k=0.05, dim=3.0,
@@ -713,7 +715,7 @@ $$
 
 ---
 
-## NU_DD { #nu_dd data-toc-label="NU_DD" }
+### NU_DD { #nu_dd data-toc-label="NU_DD" }
 
 Module constant — the perpendicular dipolar frequency constant $\nu_{dd} = 52.04\ \text{MHz·nm}^3$ (for $g = 2.0023$), so that $\nu_\perp(r) = \nu_{dd}/r^3$. Override it via the `nu_dd` argument of the kernel / simulate / invert functions for other $g$-values.
 

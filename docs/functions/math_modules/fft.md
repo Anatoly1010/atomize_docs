@@ -13,7 +13,9 @@ By project convention a time `sample_spacing` given in **ns** produces a frequen
 
 ---
 
-## Fast_Fourier() { #class data-toc-label="Fast_Fourier()" }
+## Functions
+
+### Fast_Fourier() { #class data-toc-label="Fast_Fourier()" }
 
 ```python
 fft = fft_module.Fast_Fourier()
@@ -23,7 +25,7 @@ Create the helper. The transform/phase methods are pure array math; [`auto_phase
 
 ---
 
-## auto_phase_zero() { #auto_phase_zero data-toc-label="auto_phase_zero" }
+### auto_phase_zero() { #auto_phase_zero data-toc-label="auto_phase_zero" }
 
 ```python
 phi0 = fft_module.Fast_Fourier.auto_phase_zero(spectrum, threshold=0.1)
@@ -59,7 +61,7 @@ real, imag = fft.ph_correction(np.fft.fftfreq(n), spectrum.real, spectrum.imag,
 
 ---
 
-## auto_phase_zero_echo() { #auto_phase_zero_echo data-toc-label="auto_phase_zero_echo" }
+### auto_phase_zero_echo() { #auto_phase_zero_echo data-toc-label="auto_phase_zero_echo" }
 
 ```python
 auto_phase_zero_echo(signal)               # -> float; zero-order phase in degrees, [0, 360)
@@ -88,7 +90,7 @@ real, imag = fft.ph_correction(t, z.real, z.imag, phi0*np.pi/180, 0.0, 0.0)
 
 ---
 
-## carrier_offset() { #carrier_offset data-toc-label="carrier_offset" }
+### carrier_offset() { #carrier_offset data-toc-label="carrier_offset" }
 
 ```python
 carrier_offset(signal, dt)               # -> float; line offset in cycles per unit of dt
@@ -101,7 +103,7 @@ The offset is estimated from the phase increment per sample over the echo window
 
 ---
 
-## ph_correction() { #ph_correction data-toc-label="ph_correction" }
+### ph_correction() { #ph_correction data-toc-label="ph_correction" }
 
 ```python
 out = fft.ph_correction(freq, data_i, data_q, cor1, cor2, cor3)
@@ -125,7 +127,7 @@ Multiplies the complex signal `data_i + 1j·data_q` by a phase polynomial and re
 
 ---
 
-## fft() { #fft data-toc-label="fft" }
+### fft() { #fft data-toc-label="fft" }
 
 ```python
 freq, mag        = fft.fft(x_axis, data_i, data_q, sample_spacing)               # re='False'
