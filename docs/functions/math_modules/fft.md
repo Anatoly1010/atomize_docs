@@ -75,12 +75,50 @@ real, imag = fft.ph_correction(np.fft.fftfreq(n), spectrum.real, spectrum.imag,
                                phi0*np.pi/180, 0.0, 0.0)
 ```
 
-!!! tip "Phase of an off-centre line couples to the sample timing"
-    A spectral line at offset `f` carries a phase that changes by
-    `360·f·dt` degrees per sample of echo-centre shift. For a line far from
-    zero frequency, an integer echo-centre skip leaves a sub-sample residual
-    that `auto_phase_zero` reports as part of `φ₀`; trim what remains with a
-    small first-order term.
+!!! warning
+    The returned value belongs to the time origin the spectrum was built from. A spectral line at offset `f` carries a phase that changes by `360·f·dt` degrees **per sample** of echo-centre skip — 72°/sample for a 100 MHz carrier at `dt = 2 ns`. The `φ₀` measured on a skipped spectrum is therefore the right value for *that* spectrum, and is wrong by `360·f·skip·dt` for a correction applied to the trace from the start of the window. Phase the spectrum it was measured on, or use [`auto_phase_zero_echo`](#auto_phase_zero_echo), which does not move the origin.
+
+---
+
+## auto_phase_zero_echo() { #auto_phase_zero_echo data-toc-label="auto_phase_zero_echo" }
+
+```python
+auto_phase_zero_echo(signal)               # -> float; zero-order phase in degrees, [0, 360)
+auto_phase_zero_echo(signal, frac=0.5)     # tighter echo window (50 % of the envelope peak)
+```
+
+This function is a zero-order auto-phase measured on the **time-domain echo**, for a correction that is applied in the time domain. It should be called with the complex signal `I + 1j*Q`, either a single trace or a 2D stack in which rows are traces and columns are the time axis. The returned value is meant to be fed back as the zero-order term of [`ph_correction`](#ph_correction) (`cor1 = φ₀·π/180`).
+
+The echo window is the set of samples where the `|signal|` envelope, averaged over the traces, is at or above `frac` of its peak. Inside that window the estimator works in two levels: each trace is first summed coherently, `s_r = Σ z_r(t)`, and the per-trace sums are then combined by the sign-blind principal axis of [`auto_phase_zero`](#auto_phase_zero), `φ₀ = -½·angle(Σ s_r²)`.
+
+Both levels earn their place. Summing each trace first makes the estimate track the integrated echo — the quantity the phased data is actually headed for — and the `|s_r|²` weighting of the second level all but drops traces that have decayed into noise, which a sample-by-sample estimate cannot do. Squaring the per-trace sums keeps the sign-blindness, so a set whose traces change sign, such as an inversion recovery, still phases correctly. The ±180° the axis leaves open is resolved as in [`auto_phase_zero`](#auto_phase_zero), by the orientation that makes the magnitude-weighted real part positive; for a balanced bipolar set that choice is arbitrary either way. For a single trace the whole thing collapses to `φ₀ = -angle(Σ z)` over the echo.
+
+This function should be preferred to [`auto_phase_zero`](#auto_phase_zero) whenever the phase multiplies the trace rather than its transform. Restricting to the echo does the same job the leading-point skip does for the frequency-domain estimator — removing the dead-time ramp — without shifting the time origin that the correction is applied from.
+
+!!! warning
+    An undemodulated record — anything digitised at an intermediate frequency rather than at the video output — carries the whole signal at that offset, and **no zero-order phase can make such a trace real**: its real part just oscillates. `z²` then rotates right around the circle and the sum cancels. Check the offset with [`carrier_offset`](#carrier_offset) and remove it with the first-order term before calling this function.
+
+```python
+z = i + 1j*q                                             # 2D: rows are traces
+f0 = fft.carrier_offset(z, dt)                           # cycles per unit dt
+z = z*np.exp(-2j*np.pi*f0*dt*np.arange(z.shape[1]))      # demodulate
+
+phi0 = fft.auto_phase_zero_echo(z)
+real, imag = fft.ph_correction(t, z.real, z.imag, phi0*np.pi/180, 0.0, 0.0)
+```
+
+---
+
+## carrier_offset() { #carrier_offset data-toc-label="carrier_offset" }
+
+```python
+carrier_offset(signal, dt)               # -> float; line offset in cycles per unit of dt
+carrier_offset(signal, dt, frac=0.5)     # tighter echo window (50 % of the envelope peak)
+```
+
+This function returns the dominant line offset of a time-domain echo, in cycles per unit of `dt`, so that `f0*1000` is MHz when `dt` is given in ns. The `signal` and `frac` arguments are the same as for [`auto_phase_zero_echo`](#auto_phase_zero_echo). Feeding `-f0` to the first-order term of [`ph_correction`](#ph_correction) (`cor2 = -2π·f0`) brings the signal to zero frequency, which is what makes a zero-order phase meaningful in the first place.
+
+The offset is estimated from the phase increment per sample over the echo window, `f0 = angle(Σ z(t+1)·z*(t)) / (2π·dt)`. This needs neither frequency resolution nor zero fill, and is unambiguous up to the Nyquist offset `±1/(2·dt)`.
 
 ---
 
