@@ -44,7 +44,8 @@ import atomize.math_modules.deer as deer
 res = deer.deer_invert(t, V, r=None, bg_start=None, bg_end=None,
                        dim=3.0, fit_dim=False, alpha=None, alphas=None,
                        reg_order=2, nu_dd=deer.NU_DD, scan_lcurve=True,
-                       method='gcv', engine='sequential', alpha_factor=1.0)
+                       method='gcv', engine='sequential', alpha_factor=1.0,
+                       pre_zero='even', reg_edges=True, clamp_alias=True)
 ```
 
 The full one-call pipeline: background-correct $V(t)$, build the kernel, and invert to $P(r)$ by Tikhonov + NNLS. This is what most users want.
@@ -57,6 +58,9 @@ The full one-call pipeline: background-correct $V(t)$, build the kernel, and inv
 - **`alpha_factor`** — multiplier applied to the *auto-selected* $\alpha$ (ignored when an explicit `alpha` is given). A factor of 2–4 reproduces the heavier hand-picked L-corner regularization used to obtain smooth distributions in inter-laboratory ring tests ([Schiemann et al., *JACS* **2021**, 143, 17875](https://doi.org/10.1021/jacs.1c07371)). It buys that smoothness with **bias**: $P(r)$ is pulled off the truth while the [`tikhonov_ci()`](#tikhonov_ci) band, which propagates noise only, gets *narrower* — so the band's coverage collapses as the factor rises, and the two errors compound rather than cancel. Above 1×, read the band as a noise scale rather than a confidence interval.
 - **`alphas`** — the regularization scan grid (default `np.logspace(-4, 3, 36)`).
 - **`reg_order`** — derivative order of the smoothing operator $L$ (default 2).
+- **`reg_edges`** — close the smoothing operator's free ends (default `True`). The plain $(n-2)\times n$ second difference penalises $P[0]$ with one row where an interior point gets three, so the **grid boundary is the cheapest place in the problem to park mass** — a spurious peak then tracks `r_min` rather than any distance. Worth **+0.0046 overlap** ($t=5.1$) over 756 synthetic traces, rising with noise, and it collapses the edge amplitude 5×. Set `False` when the distribution genuinely has mass at the grid boundary, where forcing $P\to0$ is wrong. See [`regularization_matrix()`](#regularization_matrix).
+- **`pre_zero`** — what to do with samples recorded *before* the zero time: `'even'` (default) keeps the ones that pass a mirror test, `'crop'` drops them all. Every $K(\cdot,r)$ is even, so any model form factor has $F'(0)=0$ exactly; on a one-sided domain a zero-time error is no longer orthogonal to the model space and the inversion buys the missing initial slope with short-$r$ mass. Keeping the mirrored samples is worth **+0.0082 overlap** ($t=7.6$), positive at every noise level and in every shape class. Mellin uses `'even_fold'` (the same samples averaged into their positive twins, since $u=\ln T$ needs $t\ge0$); the multi-Gaussian engine keeps `'crop'`, where the change measured neutral-to-negative.
+- **`clamp_alias`** — drop grid points below the sampling-resolution floor $(4\,\nu_{dd}\,\Delta t)^{1/3}$ (default `True`). The kernel's fastest component is $2\omega$, so it aliases below that distance — 1.28 nm at 10 ns sampling but **1.88 nm at 32 ns** — and those columns, unconstrained by the data, give the fit a free place to put mass. Worth +0.007…+0.008 overlap at 24–32 ns sampling and exactly a no-op at $\Delta t\le16$ ns. See [`alias_r_min()`](#alias_r_min).
 - **`scan_lcurve`** — when `True` (default) the regularization scan is always computed for display, even if an explicit `alpha` is given.
 - **`method`** — automatic-$\alpha$ criterion: `'gcv'` (default — generalized cross-validation, robust) or `'curvature'` (classic maximum-Menger-curvature L-corner). See [`l_curve()`](#l_curve).
 - **`engine`** — how the inversion is done: `'sequential'` (default; fit the background tail, divide it out, then invert), `'joint'` (fit background + modulation depth together with $P(r)$ in one pass — see [`deer_invert_joint()`](#deer_invert_joint); more robust when the background window is short or hard to place), `'mellin'` (the model-free analytic transform — see [`deer_invert_mellin()`](#deer_invert_mellin)), `'gauss'` (the parametric sum-of-Gaussians fit — see [`deer_invert_gauss()`](#deer_invert_gauss)), or `'none'` (**no background**: $B(t)=1$, fit only the modulation depth $\lambda$ — for pre-corrected / simulated / full-modulation $\lambda\!\to\!1$ data; fitting a decay there would absorb the dipolar decay and badly broaden $P(r)$). `'general'` selects the empirical [`background_general()`](#background_general) background with an otherwise sequential Tikhonov inversion.
@@ -105,7 +109,10 @@ print(f"lambda = {res['lambda']:.3f}, alpha = {res['alpha']:.3g}, peak r = {peak
 res = deer.deer_invert_joint(t, V, r=None, bg_start=None, bg_end=None,
                              dim=3.0, fit_dim=False, alpha=None, alphas=None,
                              reg_order=2, nu_dd=deer.NU_DD, method='gcv',
-                             scan_lcurve=True, alpha_factor=1.0)
+                             scan_lcurve=True, alpha_factor=1.0,
+                             pre_zero='even', reg_edges=True, clamp_alias=True,
+                             echo_head=False, head_level=0.60, head_cap=0.35,
+                             head_ratio_max=1.25)
 ```
 
 DEER inversion with a **joint** fit of the background and modulation depth *together* with the regularized non-negative $P(r)$ — the strategy DeerLab uses. More robust than the sequential [`deer_invert()`](#deer_invert) pipeline on real traces with short or shallow backgrounds, where the tail fit and the inversion are coupled. Also reachable as `deer.deer_invert(..., engine='joint')`.
@@ -127,6 +134,10 @@ Returns the same dict as [`deer_invert()`](#deer_invert), with `engine='joint'`.
 !!! tip "Lightweight variant for the Mellin engine"
     [`joint_background()`](#joint_background) runs the same λ-pinned rate fit but returns **only** the background (no full-resolution inversion / L-curve) on a coarse internal grid, and is further hardened against collapse on short traces / short `bg_end`. It is what [`deer_invert_mellin()`](#deer_invert_mellin) and Mellin validation use.
 
+
+**`echo_head`** (default `False`, opt-in) replaces the echo top with an even parabola fitted to the trace's own even part, $G(u) = [F(u)+F(-u)]/2$. $F$ is even about $t_0$, so the head carries far fewer degrees of freedom than it has samples and this denoises the highest-leverage part of the trace. Fitting that parabola on the **one-sided** window $[0,\delta]$ — as an earlier version did — is what leaks: there the odd part of a zero-time error $D$ is not orthogonal to $\{1, t^2\}$, and the fitted curvature picks up $b\,(1 + 15D/8\delta)$. Since $b = -(2/5)\langle\omega^2\rangle$ and $\omega \propto r^{-3}$, that is a **distance** bias linear in the zero-time error. Averaging mirrored pairs cancels the odd part identically, which is only possible because `pre_zero='even'` keeps those samples.
+
+A **breadth guard** decides whether the head is applied at all: it compares the recovered mean distance with the distance the echo-top curvature alone implies, $r_{\rm eff} = (2\pi\nu_{dd}/\omega_{\rm rms})^{1/3}$, and declines when they disagree by more than `head_ratio_max`. A broad $P(r)$ has an echo top dominated by its shortest component ($\langle\omega^2\rangle \propto r^{-6}$), and a two-parameter head cannot stand in for that mixture — without the guard the head shifted the mean distance by +0.07…+0.15 nm on the broad traces of a real ring test. Worth **+0.0016 overlap** ($t=3.2$) over 756 traces on top of `pre_zero` and `reg_edges`; note its value fell from +0.0046 as those two landed, since all three suppress the same short-$r$ pile-up. It costs a second regularization scan when it fires, which is why it is off by default. Needs pre-$t_0$ samples, so it silently declines on a trace whose $t_0$ sits at the record start.
 ---
 
 ### tikhonov_ci() { #tikhonov_ci data-toc-label="tikhonov_ci" }
@@ -449,7 +460,9 @@ Reliability keys in the returned dict — each also raises a `RuntimeWarning`, a
 | --- | ------- |
 | `lambda_raw`, `lambda_clamped` | The raw pinned modulation depth, and whether it hit the [0.02, 0.95] clamp |
 | `tail_abs_F` | $\langle|F|\rangle$ over the pin window; above ~0.05 the tail has **not** decayed and $\lambda$ is a guess |
-| `k_ref`, `k_ratio`, `k_disagrees` | The sequential tail-fit rate, and how far the joint rate sits from it |
+| `k_ref`, `k_ratio`, `k_disagrees` | The sequential tail-fit rate, and how far the joint rate sits from it. **A disagreement between the two background routes, not a reliability verdict:** measured 56 % detection at a 45 % false-alarm rate, and structurally blind to a background window that opens too early — there both routes absorb the same dipolar decay and agree on the same wrong rate |
+| `conc_implied_uM`, `conc_implausible` | The spin concentration the fitted rate implies, $k = 9.974\times10^{-4}\,C\,\lambda$. Flagged above 1000 µM, which no spin-labelled DEER sample reaches — the background fit has absorbed the dipolar decay. 43 % detection at a **1 %** false-alarm rate |
+| `bg_start_periods`, `bg_start_early` | `bg_start` expressed in dipolar periods of the **recovered** mean distance, and whether it is below 0.75. The background rate is only meaningful once the dipolar signal has finished evolving, and how late that is depends on the distance: one period is 2.4 µs at 5 nm but 0.17 µs at 2 nm. Below 0.75 periods the fitted $k$ runs 8–36× high, $\lambda$ collapses, and the reported distance is biased **short** by 0.09–0.35 nm. **92 % detection at 23 % false alarm** over 1260 calibration cells; it never fires on a routine 2–4 nm measurement (set on the engine result, so it needs the inversion) |
 | `k_at_bound` | $k$ landed on an edge of its search bracket — it carries no information there (this happens when the sequential seed itself collapses) |
 | `rmax_cap` | The distance cap the rate fit used |
 
@@ -666,10 +679,12 @@ Non-negative Tikhonov solution of $K P = F$: minimizes $\lVert K P - F \rVert^2 
 ### regularization_matrix() { #regularization_matrix data-toc-label="regularization_matrix" }
 
 ```python
-L = deer.regularization_matrix(n, order=2)
+L = deer.regularization_matrix(n, order=2, include_edges=False)
 ```
 
 Discrete derivative operator $L$ for Tikhonov smoothing. `order=0` → identity, `1` → first difference, `2` → second difference (curvature, the default).
+
+`include_edges` closes the operator's **free ends**. The plain second difference is $(n-2)\times n$: $P[0]$ and $P[-1]$ each appear in one row where an interior point appears in three, so edge mass is ~3× under-penalised and a spike sitting exactly at the grid edge is the cheapest roughness available. The two extra rows $[-2,1,\dots]$ and $[\dots,1,-2]$ treat $P$ as zero just outside the grid. The Tikhonov engines pass `include_edges=True` by default (`reg_edges`); it is **wrong** when the truth genuinely has mass at the boundary.
 
 ---
 
@@ -699,7 +714,17 @@ Returns a dict with `alphas`, `rho` (residual norms), `eta` (solution norms), `c
 r = deer.default_r_axis(rmin=1.5, rmax=8.0, n=200)
 ```
 
-Returns a linear distance grid (nm).
+Returns a linear distance grid (nm). Note the 1.5 nm default is **not** always legal: see [`alias_r_min()`](#alias_r_min).
+
+---
+
+### alias_r_min() { #alias_r_min data-toc-label="alias_r_min" }
+
+```python
+r_min = deer.alias_r_min(t, nu_dd=deer.NU_DD)
+```
+
+Shortest distance the **sampling** can carry, $(4\,\nu_{dd}\,\Delta t)^{1/3}$ nm. The kernel's argument $a(1-3\cos^2\theta)$ spans $[-2a, a]$, so its fastest component is $2\omega$ and it aliases once $2\omega > \pi/\Delta t$. Grid points below this are not resolved by the data — 1.28 nm at 10 ns sampling, **1.88 nm at 32 ns**. Inverted, a 1.5 nm grid is legitimate only at $\Delta t \le 16$ ns; to reach shorter distances, sample faster, since a finer $r$ grid cannot recover what the sampling did not capture. This is the short-distance mirror of the familiar $r_\max \approx 5\,(T_\max/2)^{1/3}$ limit set by trace length. The inversion engines clamp to it by default (`clamp_alias`).
 
 ---
 
