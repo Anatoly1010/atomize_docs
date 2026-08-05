@@ -81,6 +81,7 @@ Returns a dict:
 | `ci_kind` | `'noise'`, or `'noise_fixed_bg'` for `engine='joint'` (background and $\lambda$ held fixed) |
 | `kernel` | The dipolar kernel matrix $K$ |
 | `alpha` | The regularization weight used |
+| `r_alias` | The sampling-resolution floor for this trace (see [`alias_r_min()`](#alias_r_min)). Compare it with the `r_min` you asked for: when the floor is higher, `clamp_alias` has dropped the grid points below it, so `r` is **shorter than the axis you passed in**. Reported by every engine |
 | `l_curve` | The [`l_curve()`](#l_curve) result dict (or `None`) |
 | `background` | The [`background_fit()`](#background_fit) result dict |
 | `lambda`, `k`, `dim` | Modulation depth, background decay rate, dimension |
@@ -129,7 +130,7 @@ the only nonlinear unknown is the background decay rate $k$ (and $d$ when `fit_d
 !!! note "Why the rate is fit on a truncated grid"
     This breaks two coupled ambiguities. First, on the full $r$ grid a gentle background can be imitated by spurious long-distance $P(r)$ mass, so an unconstrained rate search collapses to $k \to 0$ and broadens $P(r)$; truncating the grid at $r_\text{max}$ removes that escape route. Second, with $\lambda$ free, a shallow background plus extra long-$r$ mass can also imitate the correct deeper background, so $\lambda$ is pinned to the decayed-tail baseline. So `bg_start`/`bg_end` set the **baseline window**, not just an initial guess.
 
-Returns the same dict as [`deer_invert()`](#deer_invert), with `engine='joint'`.
+Returns the same dict as [`deer_invert()`](#deer_invert), with `engine='joint'`, plus an `echo_head` sub-dict recording what the head did: `requested` (whether it was asked for at all), `applied`, the split point `delta`, and the guard's `r_eff` / `r_ratio`. When `requested` is true and `applied` is false the head declined — with `r_ratio` set, the breadth guard refused it; without, its curvature fit failed.
 
 !!! tip "Lightweight variant for the Mellin engine"
     [`joint_background()`](#joint_background) runs the same λ-pinned rate fit but returns **only** the background (no full-resolution inversion / L-curve) on a coarse internal grid, and is further hardened against collapse on short traces / short `bg_end`. It is what [`deer_invert_mellin()`](#deer_invert_mellin) and Mellin validation use.
@@ -138,6 +139,17 @@ Returns the same dict as [`deer_invert()`](#deer_invert), with `engine='joint'`.
 **`echo_head`** (default `False`, opt-in) replaces the echo top with an even parabola fitted to the trace's own even part, $G(u) = [F(u)+F(-u)]/2$. $F$ is even about $t_0$, so the head carries far fewer degrees of freedom than it has samples and this denoises the highest-leverage part of the trace. Fitting that parabola on the **one-sided** window $[0,\delta]$ — as an earlier version did — is what leaks: there the odd part of a zero-time error $D$ is not orthogonal to $\{1, t^2\}$, and the fitted curvature picks up $b\,(1 + 15D/8\delta)$. Since $b = -(2/5)\langle\omega^2\rangle$ and $\omega \propto r^{-3}$, that is a **distance** bias linear in the zero-time error. Averaging mirrored pairs cancels the odd part identically, which is only possible because `pre_zero='even'` keeps those samples.
 
 A **breadth guard** decides whether the head is applied at all: it compares the recovered mean distance with the distance the echo-top curvature alone implies, $r_{\rm eff} = (2\pi\nu_{dd}/\omega_{\rm rms})^{1/3}$, and declines when they disagree by more than `head_ratio_max`. A broad $P(r)$ has an echo top dominated by its shortest component ($\langle\omega^2\rangle \propto r^{-6}$), and a two-parameter head cannot stand in for that mixture — without the guard it shifts the mean distance on broad distributions. The head costs a second regularization scan when it fires, which is why it is off by default, and it needs pre-$t_0$ samples, so it declines on a trace whose $t_0$ sits at the record start.
+
+!!! warning "The guard also declines as noise rises — the head is not a denoiser of last resort"
+    $r_{\rm eff}$ is read from the curvature of a short window of noisy data, and noise
+    inflates that curvature, so $r_{\rm eff}$ falls and the ratio climbs past
+    `head_ratio_max` on a distribution that has not changed at all. The head therefore
+    switches itself off on exactly the noisy traces where an echo-top artefact is most
+    visible, and forcing it on by raising `head_ratio_max` does not help. Read
+    `echo_head` in the result — the GUI prints whether the head was applied, declined
+    by the guard, or declined because its curvature fit failed — rather than assuming
+    that ticking the box did something. The parity problem the head exists to fix is
+    already handled more cheaply by `pre_zero='even'` and `reg_edges`.
 ---
 
 ### tikhonov_ci() { #tikhonov_ci data-toc-label="tikhonov_ci" }
@@ -454,13 +466,14 @@ Two robustness measures — both critical to **either** engine (the truncated-gr
 - **λ pinned over the later, more-decayed part of the tail** (`lam_pin_frac`, the last 50 % of $[\text{bg\_start}, T_\max]$ by default). $\lambda$ is the *asymptotic* baseline ($F\to0$); pinning $\langle F\rangle = 0$ over the whole tail biases it high when a broad/long-$r$ component has not decayed ($\langle F\rangle > 0$ there), underestimating $\lambda$ and pushing $k$ too steep — a residual tail droop the Mellin engine cannot represent. The later window is more decayed, so $k$ returns near-true. (The rate-fit residual still spans the whole trace; `bg_end` only seeds the initial guess.)
 - **Rate fit on the trace-supported distance cap** $r_\max \approx 5\,(T_\max/2)^{1/3}$ nm, which keeps $k$ determined on short single-peak traces and stops a gentle background being absorbed as spurious long-$r$ mass. A second, wider cap used to be fitted alongside it and preferred unless it collapsed toward a flat background; that discrete choice was removed, because the objective is multi-modal in $\log k$ — two branches can sit far apart in $k$ while being nearly indistinguishable in the objective, so a background-start cursor moved by a single sampling step could switch between them and jump the reported mean distance.
 
-Reliability keys in the returned dict — each also raises a `RuntimeWarning`, and the Data Treatment / DEER windows render them as an orange flag line:
+Reliability keys in the returned dict — each also raises a `RuntimeWarning`. The **DEER / PDS Analysis** window renders them on two lines, because they do not all mean the same thing: an orange **⚠** line for the ones that predict a wrong distance, and a separate blue **note** line for diagnostics that are informative but false-alarm too often to be read as a verdict.
 
 | Key | Meaning |
 | --- | ------- |
 | `lambda_raw`, `lambda_clamped` | The raw pinned modulation depth, and whether it hit the [0.02, 0.95] clamp |
 | `tail_abs_F` | $\langle|F|\rangle$ over the pin window; above ~0.05 the tail has **not** decayed and $\lambda$ is a guess |
-| `k_ref`, `k_ratio`, `k_disagrees` | The sequential tail-fit rate, and how far the joint rate sits from it. Read it as **a disagreement between the two background routes, not a reliability verdict**: it cannot see a background window that opens too early, because there both routes absorb the same dipolar decay and agree on the same wrong rate |
+| `k_ref`, `k_ratio`, `k_disagrees` | The sequential tail-fit rate, and how far the joint rate sits from it. Read it as **a disagreement between the two background routes, not a reliability verdict**: it cannot see a background window that opens too early, because there both routes absorb the same dipolar decay and agree on the same wrong rate. It is reported as a *note*, not a warning, and is **suppressed entirely when there is no background to compare** — see `bg_flat` |
+| `bg_drop`, `bg_flat` | How far the fitted background decays across the whole trace, $1-e^{-(k\,T_\max)^{d/3}}$, and whether that is too small to compare two rate fits against each other. $k$`_ratio` is a *ratio* of two rates and swings freely when both sit near their floor, so on a trace whose background is essentially flat — pre-corrected, simulated, or simply a well-behaved sample — the comparison is meaningless and `k_disagrees` would otherwise fire on nothing. A routine background decays by far more than the threshold, so this only engages where the test genuinely has nothing to say |
 | `conc_implied_uM`, `conc_implausible` | The spin concentration the fitted rate implies, $k = 9.974\times10^{-4}\,C\,\lambda$. Flagged when it exceeds what a spin-labelled DEER sample can reach, which means the background fit has absorbed the dipolar decay |
 | `bg_start_periods`, `bg_start_early` | `bg_start` expressed in dipolar periods of the **recovered** mean distance, and whether it is too early. The background rate is only meaningful once the dipolar signal has finished evolving, and how late that is depends on the distance: one dipolar period is 2.4 µs at 5 nm but 0.17 µs at 2 nm. Start the window too early and the fit absorbs dipolar decay into $k$, which biases the reported distance **short**. Long distances on a short trace are the case to watch; a routine 2–4 nm measurement is unaffected (set on the engine result, so it needs the inversion) |
 | `k_at_bound` | $k$ landed on an edge of its search bracket — it carries no information there (this happens when the sequential seed itself collapses) |
