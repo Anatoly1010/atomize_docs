@@ -244,7 +244,26 @@ Returns a dict:
 | `peak`, `r_mean` | Peak position and first moment of the consensus curve |
 | `base` | The single central inversion (its `form_factor` / `F_fit` / `background` / `l_curve`, for display) |
 | `trials` | Per-trial `bg_start`, `r_mean`, `lambda`, `k` and `flagged` (whether that trial raised a background reliability flag) |
-| `trial_spread` | `r_mean_spread`, `lambda_spread`, `n_flagged` / `n`, and `disagree` |
+| `trial_spread` | `r_mean_spread`, `lambda_spread`, `n_flagged` / `n`, `disagree`, and `band_degenerate` (with the `P_spread` / `P_scale` it is measured from) |
+
+!!! warning "`band_degenerate` — when the band must not be read as an uncertainty"
+    A background-start sweep only probes an engine whose answer depends on the
+    background start. The multi-Gaussian engine (`engine='gauss'`, any `bg_engine`
+    but `'general'`) fits the background, $\lambda$ and the Gaussians **jointly**
+    against $V(t)$, and its least-squares target is $V/V_{\rm echo\ top}$, in which
+    `bg_start` does not appear at all — so every trial minimizes the identical
+    objective and differs only in where the optimizer started. The percentile band
+    then collapses to flat-valley jitter, orders of magnitude below the band the
+    Tikhonov engines produce on the same trace and the same sweep — drawn as a
+    ribbon that reads as certainty rather than as "not measured".
+
+    `band_degenerate` is set for that case (structurally for `'gauss'`, and by a
+    1 %-of-scale test for anything else), and the DEER window then draws **no
+    band** and says why. The **flag** half of the sweep stays valid either way —
+    the per-trial background flags are rebuilt at every `bg_start`, so `n_flagged`
+    and `disagree` still mean what they say. For a genuine multi-Gaussian
+    uncertainty use the per-component intervals (`ci_mode`) or the `n_mc`
+    covariance band instead.
 
 `disagree` is the one to act on: the reliability flags of a validated result describe `base`, the central trial only, so a sweep in which the other trials land on a different background solution would otherwise pass unnoticed. It is set when a **majority** of trials raise a flag, or when the trial mean distances span more than max(0.15 nm, 5%). A single flagged trial is not enough — on healthy data that fires often while the answer is unaffected.
 
@@ -396,7 +415,7 @@ This is more robust than fitting a background first and dividing it out. On a co
     Two safeguards keep the fit reliable:
 
     - **Multi-start.** The fit starts from two seeds — the peaks of a quick Tikhonov pass, and an even spread across the distance range — and keeps the better result. The Tikhonov peaks alone can land every component on the dominant peak, from where the fit never finds a weak long-distance mode; missing that mode leaves its slow oscillation in the residual.
-    - **Width floor.** At long distances the dipolar frequency is low, so a finite trace length cannot resolve a narrow width. Left free, the fit collapses a weak long mode into a near-delta spike — a tall thin peak in $P(r)$ that adds an oscillation to the residual. Each component's width is therefore floored at the resolution limit for its distance, $\sigma_\text{res}(r)\approx r^4/(27\,\nu_{dd}\,T)$. Short, well-resolved peaks are unaffected. Set `sigma_min` to override.
+    - **Width floor.** At long distances the dipolar frequency is low, so a finite trace length cannot resolve a narrow width. Left free, the fit collapses a weak long mode into a near-delta spike — a tall thin peak in $P(r)$ that adds an oscillation to the residual. Each component's width is therefore floored at $\sigma_\text{res}(r) = r^4/(27\,\nu_{dd}\,T)$. Short, well-resolved peaks are unaffected. Set `sigma_min` to override. **The constant 27 is calibrated, not derived**: the resolution limit itself is $r^4/(3\,\nu_{dd}\,T)$, and imposing *that* is far too aggressive a floor — it forces every long-distance component broad and badly degrades both the recovered shape and the component count. The extra factor 9 is what makes the floor usable, and the value is narrowly bracketed: tightening it degrades the fit, loosening it makes the floor inert.
 
 - **`n_gauss`** — force a fixed number of components. `None` (default) selects $N$ automatically (see `ic` / `prune_spurious`).
 - **`max_gauss`** — largest $N$ tried during automatic selection (default 4).
@@ -415,9 +434,19 @@ This is more robust than fitting a background first and dividing it out. On a co
     `ci_mode='support'` computes rigorous support-plane / profile-likelihood intervals (Stein, Beth & Hustedt, *Methods Enzymol.* **2015**, [10.1016/bs.mie.2015.07.031](https://doi.org/10.1016/bs.mie.2015.07.031)). Each centre and $\sigma$ is fixed in turn while all other parameters are re-fit, and the interval is taken where the residual sum of squares rises past an F-test threshold. This accounts for parameter correlations and gives **asymmetric** intervals (`center_ci_lo/hi`, `sigma_ci_lo/hi`), which the linearized bar can misstate when the $\chi^2$ surface is not parabolic. It costs a fit per grid step (~1–5 s); opt-in.
 
 !!! note "`method='mc'` — frequency-domain Monte-Carlo"
-    An alternative solver after Dzuba, *JMR* **269** (2016) 1 and Matveeva *et al.*, *Z. Phys. Chem.* **231** (2017) 463. The Gaussian parameters are found by a random search in the dipolar frequency (Pake) domain instead of gradient descent in time. `mc_trials` random parameter sets are drawn, each locally polished, and the one whose Pake spectrum best matches the data is kept. This has two advantages over `'lsq'`: the random restarts cannot get stuck on a floor-width spike, and the frequency-domain comparison is naturally immune to ESEEM peaks and background error. The data-consistent trials form an ensemble; its per-$r$ percentiles give a confidence band (`P_lower`/`P_upper`) and its spread sets `center_err`/`sigma_err`.
+    An alternative solver after Dzuba, *JMR* **269** (2016) 1 and Matveeva *et al.*, *Z. Phys. Chem.* **231** (2017) 463. The Gaussian parameters are found by a random multi-start search selected on the dipolar frequency (Pake) spectrum instead of by gradient descent in time: a set of random parameter sets is drawn, each locally polished against the time-domain form factor, and the one whose Pake spectrum best matches the data is kept. The data-consistent trials form an ensemble whose spread sets `center_err`/`sigma_err` and `P_lower`/`P_upper`.
 
-    On clean synthetic data `'mc'` performs about the same as `'lsq'`, so it is opt-in (~seconds). Its real value is robustness to ESEEM and background artifacts on measured data, plus the honest ensemble error band. `n_mc` and `ci_mode` are ignored in this mode.
+    !!! danger "Limitations — read before using this mode"
+        Four claims previously made here did not survive testing:
+
+        * **It is not immune to ESEEM or to background error.** The frequency band is selected from the data, so it always contains the zero-frequency bin, and an ESEEM line *selects itself in* as soon as it is present.
+        * **It does not match `'lsq'` on clean data.** It is measurably worse on both distribution overlap and the recovered number of components, and on real traces the two solvers of the same engine can disagree substantially on peak position.
+        * **`'mc'` does not use the joint V-space model.** It fits the *pre-computed* form factor, so $\lambda$, $A$ and $k$ are never re-fitted — switching the solver changes the estimator, not just the search.
+        * **The ensemble is not a confidence band.** It is the spread of the optimizer over its own restarts, thresholded by a tolerance that carries no noise scale, so it is either empty or wide with little in between, and it under-covers badly. `mc_trials` has no effect at any value up to its default.
+
+        Use `'lsq'` unless you are deliberately probing the solution's stability against a different search.
+
+    It is opt-in and costs seconds per trace. `n_mc` and `ci_mode` are ignored in this mode.
 
 !!! tip "How $N$ is chosen (`prune_spurious`)"
     Every $N$ from 1 to `max_gauss` is fit, and the information criterion (`ic`) picks the best. DEER traces are heavily oversampled, so at low noise the criterion sometimes adds one extra Gaussian to absorb residual structure. Such a component is recognizable: it sits at the width floor and carries little weight ($<$ `spike_weight_max`), or it carries negligible weight ($<$ `weight_min`) at any width. With `prune_spurious` on (default) the chosen $N$ is the best fit that contains no such component, so a simple bimodal is not reported as 3–4 Gaussians. `n_gauss_ic` is the unpruned pick and `pruned` flags whether a reduction happened; forcing `n_gauss` bypasses it.
