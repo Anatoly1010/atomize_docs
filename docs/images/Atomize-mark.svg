@@ -1,13 +1,1 @@
-<?xml version="1.0" encoding="utf-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 495">
-  <style>
-    .nucleus  { fill: #2B3F7F; }
-    .orbit-r  { fill: none; stroke: #ED4C4C; stroke-width: 12; stroke-linecap: round; }
-    .orbit-b  { fill: none; stroke: #457FF4; stroke-width: 12; stroke-linecap: round; }
-    .orbit-g  { fill: none; stroke: #79F279; stroke-width: 12; stroke-linecap: round; }
-  </style>
-  <circle class="nucleus" cx="261.35" cy="230.41" r="91.18"/>
-  <path class="orbit-r" d="M66.39,250.72C91.3,124.51,117.35,27.45,149.05,26.93c78.42-1.28,75.78,429.34,157.13,439.64 c36.07,4.57,58.03-18.69,94.86-169.18"/>
-  <path class="orbit-b" d="M17.15,196.94c95.8-82.24,114.59-170.21,153.61-170.73c96.46-1.28,94.68,441.15,193.28,441.41 c50.68,0.14,78.49-101.94,100.9-203.71"/>
-  <path class="orbit-g" d="M29.47,262.71C95.91,72.88,150.66,26.73,197.33,26.21c115.69-1.28,107.82,429.21,225.44,441.41 c41.91,4.35,67.97-73.86,107.08-247.76"/>
-</svg>
+<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="gicon_atomize" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#193D82"/><stop offset="1" stop-color="#122E63"/></linearGradient></defs><rect x="1" y="1" width="62" height="62" rx="15" fill="url(#gicon_atomize)"/><mask id="kicon_atomize"><rect x="0" y="0" width="64" height="64" fill="white"/><path d="M14.70 42.60 L24.00 17.80 L33.30 42.60" fill="none" stroke="black" stroke-width="6.00" stroke-linecap="round" stroke-linejoin="round"/><path d="M17.84 35.66 L30.16 35.66" stroke="black" stroke-width="6.00" stroke-linecap="round"/></mask><circle cx="24.0" cy="32.0" r="18.5" fill="#FFFFFF" mask="url(#kicon_atomize)"/><circle cx="45.8" cy="17.47" r="5.2" fill="#D3C24E"/><circle cx="52.0" cy="31.5" r="4.2" fill="#FFFFFF"/><circle cx="46.04" cy="42.47" r="3.4" fill="#FFFFFF"/><circle cx="54.5" cy="44.5" r="2.4" fill="#FFFFFF"/></svg>
