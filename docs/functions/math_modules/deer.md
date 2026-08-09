@@ -434,7 +434,7 @@ This is more robust than fitting a background first and dividing it out. On a co
     `ci_mode='support'` computes rigorous support-plane / profile-likelihood intervals (Stein, Beth & Hustedt, *Methods Enzymol.* **2015**, [10.1016/bs.mie.2015.07.031](https://doi.org/10.1016/bs.mie.2015.07.031)). Each centre and $\sigma$ is fixed in turn while all other parameters are re-fit, and the interval is taken where the residual sum of squares rises past an F-test threshold. This accounts for parameter correlations and gives **asymmetric** intervals (`center_ci_lo/hi`, `sigma_ci_lo/hi`), which the linearized bar can misstate when the $\chi^2$ surface is not parabolic. It costs a fit per grid step (~1–5 s); opt-in.
 
 !!! note "`method='mc'` — frequency-domain Monte-Carlo"
-    An alternative solver after Dzuba, *JMR* **269** (2016) 1 and Matveeva *et al.*, *Z. Phys. Chem.* **231** (2017) 463. The Gaussian parameters are found by a random multi-start search selected on the dipolar frequency (Pake) spectrum instead of by gradient descent in time: a set of random parameter sets is drawn, each locally polished against the time-domain form factor, and the one whose Pake spectrum best matches the data is kept. The data-consistent trials form an ensemble whose spread sets `center_err`/`sigma_err` and `P_lower`/`P_upper`.
+    An alternative solver after Dzuba, *JMR* **269** (2016) 1 and Matveeva *et al.*, *Z. Phys. Chem.* **231** (2017) 463. The Gaussian parameters come from a random multi-start search that is **ranked** on the dipolar frequency (Pake) spectrum: a set of random parameter sets is drawn, each is locally polished against the time-domain form factor, and the one whose Pake spectrum best matches the data is kept. The polish is an ordinary gradient fit in time — the frequency domain chooses between polished candidates, it is not where the fitting happens. What the random starts buy is coverage: they can escape the narrow-spike solution a single gradient fit may settle into. The data-consistent trials form an ensemble whose spread sets `center_err`/`sigma_err` and `P_lower`/`P_upper`.
 
     !!! danger "Limitations — read before using this mode"
         Four claims previously made here did not survive testing:
@@ -453,19 +453,37 @@ This is more robust than fitting a background first and dividing it out. On a co
 
     Only weight, not width, condemns a component, because a real long-distance mode also sits near the width floor (the kernel constrains large-$r$ widths weakly). A floor-width peak with substantial weight is kept; only floor-width **and** low-weight is removed. With the joint fit, multi-start seeding, and the width floor doing the main work, pruning is now just a light backstop: a real 3–4 Gaussian distribution is resolved, while a simple bimodal stays $N=2$.
 
+    The width half of the test uses the **flat** lower bound $s_\text{lo}$, not the distance-dependent floor, so it can only fire below the distance at which the resolution floor is still equal to $s_\text{lo}$ — which depends on the distance grid and the trace length, not on a fixed value. Beyond it only the negligible-weight half applies, and that is deliberate: out there the per-component floor has already made the narrow spike impossible to build, so a width test would only be able to condemn a **genuine** weak long-distance mode. Keying the test on the per-component floor instead was tried and measured to be clearly worse at recovering the right number of components.
+
 Returns the same dict shape as [`deer_invert()`](#deer_invert) (shared GUI / exporters), with these Gaussian-specific keys:
 
 | Key | Description |
 | --- | ----------- |
 | `engine` | `'gauss'` |
-| `components` | list of `{amplitude, center, sigma, weight, center_err, sigma_err}` per Gaussian (plus `center_ci_lo/hi`, `sigma_ci_lo/hi` when `ci_mode='support'`) |
+| `components` | list of `{amplitude, center, sigma, weight, mass, mass_fraction, center_err, sigma_err}` per Gaussian, plus the bound flags below (and `center_ci_lo/hi`, `sigma_ci_lo/hi` when `ci_mode='support'`) |
+| &nbsp;&nbsp;`weight` vs `mass_fraction` | `weight` is the **analytic** area fraction $a\sigma\sqrt{2\pi}$, integrated over the whole real line; `mass_fraction` is the component's share of the **drawn** $P(r)$ on the distance grid. They agree for an interior component and diverge when the $r$ axis truncates one. Model selection is calibrated against `weight`; the panel and the plot describe `mass_fraction` |
+| &nbsp;&nbsp;`sigma_at_floor`, `sigma_at_ceiling`, `center_at_bound`, `bound_active` | whether the fit came back **on** a box bound. See the box below |
+| &nbsp;&nbsp;`sigma_bound_lo`, `sigma_bound_hi` | the width bounds actually imposed on that component (the lower one is distance-dependent) |
 | `n_gauss` | the chosen number of components |
 | `n_gauss_ic`, `pruned` | the unpruned criterion pick, and whether pruning reduced $N$ |
 | `aic`, `aicc`, `bic` | the information criteria of the chosen model |
 | `ic`, `ci_mode`, `ci_level` | the criterion and CI mode used |
 | `ic_curve` | list of `(N, criterion, rss)` over the $N$ tried |
+| `ic_failed` | list of `(N, reason)` for any component count that could not be fit and so never entered the selection |
+| `ic_railed` | `True` when the criterion was still improving at `max_gauss`, i.e. $N$ was decided by the cap rather than by the data. See the box below |
 | `P_lower`, `P_upper`, `P_std` | parametric band on the density (when `n_mc > 0`; else `None`) |
 | `noise_level` | white electrical-noise σ from the decayed tail |
+| `lambda_source` | present and equal to `'prep'` on the `'mc'` path, where λ / `k` / `dim` are the preparation fit's values rather than co-fitted ones |
+
+!!! warning "When `N max` decides $N$, not the data"
+    Automatic selection fits every $N$ from 1 to `max_gauss` and keeps the best. If the criterion is **still improving** at the last $N$ tried, it never found a minimum — the answer is the cap, and raising the cap would change it. `ic_railed` reports this, and the GUI says so beside the component count.
+
+    This is the normal case on real data at the default cap, not a rare one, and it is not harmless: on a spin-labelled protein set the reported peak distance moves noticeably between one $N$ and the next, and occasionally by a great deal. The right response is to raise `N max` until the criterion turns over and see whether the answer is stable, rather than to accept the first number. Note the criterion **does** have a minimum on such data — it simply sits above the default cap, so a railed selection means "look further", not "the criterion is broken".
+
+!!! warning "A parameter sitting on a bound is not a measurement"
+    Each component's width is bounded below by the distance-resolution floor and above by `sigma_max`, and its centre by the ends of the distance axis. When the fit comes back **on** one of those bounds, the parameter has been stopped by the bound rather than determined by the data, and its $\pm$ bar means nothing there — the local-quadratic error is taken at a point the parameter cannot move away from, so the interval runs outside the feasible region (a width pinned at its floor gets an interval reaching into negative widths). The `bound_active` flag and its three specific companions mark this, and the GUI prints *(at width floor)* / *(at width ceiling)* / *(at range bound)* in place of the bar.
+
+    This is common, not exotic: on a real spin-labelled protein data set the great majority of traces carry at least one such component, and a centre pinned at the top of the distance axis can hold a substantial share of the reported distribution while being reported with an enormous error bar. Treat a pinned centre as *"the distribution wants to go past the end of your axis"* and a pinned width as *"the trace cannot resolve this width"* — in both cases the fix is the acquisition or the axis, not the fit.
 
 `alpha` is `NaN` and `l_curve` is `None` (no Tikhonov regularization here).
 
