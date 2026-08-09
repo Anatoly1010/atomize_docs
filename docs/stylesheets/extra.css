@@ -1,3 +1,18 @@
+/* ---------- Header logo ---------- */
+
+/* Material sizes the header logo at 1.2rem, which reads small next to the
+   site title. The header is a fixed 2.4rem tall and the logo button carries
+   0.4rem of padding, so trim the padding to let the mark grow without
+   pushing the header taller. */
+.md-header__button.md-logo img,
+.md-header__button.md-logo svg {
+  height: 1.6rem;
+  width: 1.6rem;
+}
+.md-header__button.md-logo {
+  padding: 0.2rem;
+}
+
 /* ---------- Left sidebar — section labels ---------- */
 
 /* All section labels — top-level entries (Home, Documentation, Projects, …)
