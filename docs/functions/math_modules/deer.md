@@ -45,7 +45,7 @@ res = deer.deer_invert(t, V, r=None, bg_start=None, bg_end=None,
                        dim=3.0, fit_dim=False, alpha=None, alphas=None,
                        reg_order=2, nu_dd=deer.NU_DD, scan_lcurve=True,
                        method='gcv', engine='sequential', alpha_factor=1.0,
-                       pre_zero='even', reg_edges=True, clamp_alias=True)
+                       pre_zero=None, reg_edges=True, clamp_alias=True)
 ```
 
 The full one-call pipeline: background-correct $V(t)$, build the kernel, and invert to $P(r)$ by Tikhonov + NNLS. This is what most users want.
@@ -59,12 +59,12 @@ The full one-call pipeline: background-correct $V(t)$, build the kernel, and inv
 - **`alphas`** — the regularization scan grid (default `np.logspace(-4, 3, 36)`).
 - **`reg_order`** — derivative order of the smoothing operator $L$ (default 2).
 - **`reg_edges`** — close the smoothing operator's free ends (default `True`). The plain $(n-2)\times n$ second difference penalises $P[0]$ with one row where an interior point gets three, so the **grid boundary is the cheapest place in the problem to park mass**, and a spurious peak there tracks `r_min` rather than any distance. Set `False` when the distribution genuinely has mass at the grid boundary, where forcing $P\to0$ is wrong. See [`regularization_matrix()`](#regularization_matrix).
-- **`pre_zero`** — what to do with samples recorded *before* the zero time: `'even'` (default) keeps the ones that pass a mirror test, `'crop'` drops them all. Every $K(\cdot,r)$ is even, so any model form factor has $F'(0)=0$ exactly; on a one-sided domain a zero-time error is no longer orthogonal to the model space and the inversion buys the missing initial slope with short-$r$ mass. Keeping the mirrored samples removes that bias. Mellin uses `'even_fold'` (the same samples averaged into their positive twins, since $u=\ln T$ needs $t\ge0$); the multi-Gaussian engine keeps `'crop'`.
+- **`pre_zero`** — what to do with samples recorded *before* the zero time: `'even'` keeps the ones that pass a mirror test, `'crop'` drops them all, `'even_fold'` averages each into its positive twin. Every $K(\cdot,r)$ is even, so any model form factor has $F'(0)=0$ exactly; on a one-sided domain a zero-time error is no longer orthogonal to the model space and the inversion buys the missing initial slope with short-$r$ mass. Keeping the mirrored samples removes that bias. The default `None` means **the engine's own policy** — `'even'` on the Tikhonov paths, `'even_fold'` on Mellin (since $u=\ln T$ needs $t\ge0$), `'crop'` on the multi-Gaussian engine — and an explicit value is honoured on **every** engine.
 - **`clamp_alias`** — drop grid points below the sampling-resolution floor $(4\,\nu_{dd}\,\Delta t)^{1/3}$ (default `True`). The kernel's fastest component is $2\omega$, so it aliases below that distance — 1.28 nm at 10 ns sampling but **1.88 nm at 32 ns** — and those columns, unconstrained by the data, give the fit a free place to put mass. It has no effect when the grid already starts above the floor, which is the usual case at fine sampling. See [`alias_r_min()`](#alias_r_min).
 - **`scan_lcurve`** — when `True` (default) the regularization scan is always computed for display, even if an explicit `alpha` is given.
 - **`method`** — automatic-$\alpha$ criterion: `'gcv'` (default — generalized cross-validation, robust) or `'curvature'` (classic maximum-Menger-curvature L-corner). See [`l_curve()`](#l_curve).
 - **`engine`** — how the inversion is done: `'sequential'` (default; fit the background tail, divide it out, then invert), `'joint'` (fit background + modulation depth together with $P(r)$ in one pass — see [`deer_invert_joint()`](#deer_invert_joint); more robust when the background window is short or hard to place), `'mellin'` (the model-free analytic transform — see [`deer_invert_mellin()`](#deer_invert_mellin)), `'gauss'` (the parametric sum-of-Gaussians fit — see [`deer_invert_gauss()`](#deer_invert_gauss)), or `'none'` (**no background**: $B(t)=1$, fit only the modulation depth $\lambda$ — for pre-corrected / simulated / full-modulation $\lambda\!\to\!1$ data; fitting a decay there would absorb the dipolar decay and badly broaden $P(r)$). `'general'` selects the empirical [`background_general()`](#background_general) background with an otherwise sequential Tikhonov inversion.
-- **`**kwargs`** — forwarded to the model-free / parametric engines: `engine='mellin'` takes `delta`, `tau_max`, `n_tau`, `bg_engine`, `n_mc`, …; `engine='gauss'` takes `n_gauss`, `max_gauss`, `ic`, `ci_mode`, `bg_engine`, …; `bg_params` (the [`background_general()`](#background_general) coefficients) is forwarded to any engine. Ignored otherwise.
+- **`**kwargs`** — forwarded to the model-free / parametric engines: `engine='mellin'` takes `delta`, `tau_max`, `n_tau`, `bg_engine`, `n_mc`, …; `engine='gauss'` takes `n_gauss`, `max_gauss`, `ic`, `ci_mode`, `bg_engine`, …; `bg_params` (the [`background_general()`](#background_general) coefficients) is forwarded to any engine; `engine='joint'` takes `echo_head` and its `head_level` / `head_cap` / `head_ratio_max` settings. Ignored otherwise.
 
 Returns a dict:
 
@@ -212,7 +212,8 @@ val = deer.deer_validate(t, V, r=None, bg_start=None, bg_starts=None,
                          bg_end=None, dim=3.0, fit_dim=False, alpha=None,
                          alpha_factor=1.0, reg_order=2, nu_dd=deer.NU_DD,
                          method='gcv', engine='sequential',
-                         noise=0.0, n_noise=0, seed=0, percentiles=(5, 95))
+                         noise=0.0, n_noise=0, seed=0, percentiles=(5, 95),
+                         pre_zero='even', clamp_alias=True)
 ```
 
 **Validation by ensemble averaging**, in the style of the DeerAnalysis validation tool. The regularization weight is selected **once** on the central trace (honouring `alpha` / `alpha_factor`) and then held **fixed**, while the inversion is re-run over a sweep of background-start times (and, optionally, added-noise realizations). The ensemble of $P(r)$ is collapsed to a **median consensus curve** plus a percentile **uncertainty band**.
@@ -228,6 +229,7 @@ A single GCV inversion of a noisy DEER trace leaves a spiky comb-like $P(r)$; av
 - **`noise`, `n_noise`** — when both are positive, each background-start trial is repeated with `n_noise` Gaussian-noise realizations of standard deviation `noise` added to $V$ (estimate `noise` from the trace residual).
 - **`engine`** — `'sequential'`, `'joint'`, `'mellin'`, `'gauss'`, `'none'`, or `'general'`, as in [`deer_invert()`](#deer_invert). Extra engine parameters (Mellin `delta` / `tau_max`, Gaussian `n_gauss` / `max_gauss`, the `bg_params` general-background coefficients, …) pass through via `**kwargs`.
 - **`percentiles`** — the lower/upper percentiles of the band (default 5–95%).
+- **`pre_zero`, `clamp_alias`** — as in [`deer_invert()`](#deer_invert), applied once to the shared grid every trial runs on. Note `pre_zero` here defaults to `'even'` rather than to the per-engine policy, because the sweep needs one fixed sample set: re-deciding it per trial would make the ensemble spread report the sample set rather than the background sensitivity it claims to measure.
 
 Returns a dict:
 
