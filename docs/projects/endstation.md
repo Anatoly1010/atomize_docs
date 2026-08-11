@@ -49,6 +49,16 @@ measurements with SNR- and time-budget-driven scan counts, judges every
 result and records a full run manifest. See the
 [epr_auto overview](epr_auto/index.md) for the manual.
 
+## Saving the full 2D data
+
+The two tools that acquire a full 2D array can write it as a single [HDF5](../functions/general_functions/data_managment.md#hdf5-files) file instead of comma separated text. The 1D result of an experiment stays CSV in both of them; only the 2D arrays change format, and reading either format stays supported everywhere.
+
+In the **AWG phasing** tool the Settings tab carries the pair of checkboxes. "Save 2D" saves the full 2D array next to the integrated 1D result, as before; "Save 2D as HDF5" makes every 2D dump of the run an `.h5` file — the `_2d` companion, the primary dump when the phase correction is off (so the 2D array is the result itself), and the per-cycle files of an ESEEM tau average, which stay one file per cycle. The 1D result files are unaffected, and are now written with three more digits than before.
+
+In the **TR EPR** tool a single "Save as HDF5" checkbox picks the format for the whole run: the save dialog then offers `.h5`, and the derived `_osc2` and `_pulse` files follow the name you choose. With "Save Each Scan" on, an HDF5 run no longer writes a whole new `_{j}_scans` file per scan — the cumulative average after each scan is appended as one slice of a `scans` dataset inside the same file, which is both far faster inside the acquisition loop and far smaller on disk.
+
+The main window's "Open 1D Data" / "Open 2D Data" / "Open TR Data" actions and both Data Treatment windows read `.h5` as well as `.csv`. A 2D file holding both quadratures opens as I and Q together, and the axes stored in the file are used to set the plot scales.
+
 ## Per-tool working directories
 
 The endstation runs as several independent Qt processes — the main window plus
