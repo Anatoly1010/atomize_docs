@@ -261,11 +261,14 @@ Returns a dict:
 
     `band_degenerate` is set for that case (structurally for `'gauss'`, and by a
     1 %-of-scale test for anything else), and the DEER window then draws **no
-    band** and says why. The **flag** half of the sweep stays valid either way —
-    the per-trial background flags are rebuilt at every `bg_start`, so `n_flagged`
-    and `disagree` still mean what they say. For a genuine multi-Gaussian
-    uncertainty use the per-component intervals (`ci_mode`) or the `n_mc`
-    covariance band instead.
+    band** and says why. `method='mc'` is exempt: it does not re-fit, it inverts
+    the *prepared* form factor, which is built at `bg_start`, so the sweep does
+    move its objective and its band is a real one. The **flag** half of the sweep
+    stays valid either way — the per-trial background flags are rebuilt at every
+    `bg_start`, so `n_flagged` and `disagree` still mean what they say (on the
+    re-fitting engine they are read from `background['prep']` and describe each
+    trial's *starting* background). For a genuine multi-Gaussian uncertainty use
+    the per-component intervals (`ci_mode`) or the `n_mc` covariance band instead.
 
 `disagree` is the one to act on: the reliability flags of a validated result describe `base`, the central trial only, so a sweep in which the other trials land on a different background solution would otherwise pass unnoticed. It is set when a **majority** of trials raise a flag, or when the trial mean distances span more than max(0.15 nm, 5%). A single flagged trial is not enough — on healthy data that fires often while the answer is unaffected.
 
@@ -476,6 +479,7 @@ Returns the same dict shape as [`deer_invert()`](#deer_invert) (shared GUI / exp
 | `P_lower`, `P_upper`, `P_std` | parametric band on the density (when `n_mc > 0`; else `None`) |
 | `noise_level` | white electrical-noise σ from the decayed tail |
 | `lambda_source` | present and equal to `'prep'` on the `'mc'` path, where λ / `k` / `dim` are the preparation fit's values rather than co-fitted ones |
+| `background['prep']` | on the `'lsq'` path only: the reliability keys of the background the fit **started** from ([`joint_background()`](#joint_background)), moved out of the way of the λ and $k$ this engine then fitted. Quote them as diagnostics of the starting estimate — they are not verdicts on the reported fit, and they are not recomputed on the refitted rate. `bg_start_early` stays at the top level, since it is re-derived from the final $P(r)$ |
 
 !!! warning "When `N max` decides $N$, not the data"
     Automatic selection fits every $N$ from 1 to `max_gauss` and keeps the best. If the criterion is **still improving** at the last $N$ tried, it never found a minimum — the answer is the cap, and raising the cap would change it. `ic_railed` reports this, and the GUI says so beside the component count.
@@ -505,7 +509,8 @@ print(f"N = {res['n_gauss']} (AICc pick {res['n_gauss_ic']}, pruned={res['pruned
 ```python
 bg = deer.joint_background(t, V, bg_start=None, bg_end=None, dim=3.0,
                            fit_dim=False, nu_dd=deer.NU_DD, n_r=60,
-                           rate_alpha=1.0, lam_pin_frac=0.5)
+                           rate_alpha=1.0, lam_pin_frac=0.5,
+                           prep_only=False)
 ```
 
 The λ-pinned joint background, returning **only** the background (same dict shape as [`background_fit()`](#background_fit)). The rate is fit on a coarse internal distance grid (`n_r`) at a fixed regularization (`rate_alpha`): $k$ and $\lambda$ are insensitive to the $P(r)$ resolution, so this is far cheaper than a full joint inversion — cheap enough to re-run per background-start during Mellin validation. This is the **shared** background fit of **both** inversion engines: [`deer_invert_joint()`](#deer_invert_joint) (Tikhonov, `engine='joint'`) and [`deer_invert_mellin()`](#deer_invert_mellin) (`bg_engine='joint'`) both call it.
@@ -527,6 +532,8 @@ Reliability keys in the returned dict — each also raises a `RuntimeWarning`. T
 | `bg_start_periods`, `bg_start_early` | `bg_start` expressed in dipolar periods of the **recovered** mean distance, and whether it is too early. The background rate is only meaningful once the dipolar signal has finished evolving, and how late that is depends on the distance: one dipolar period is 2.4 µs at 5 nm but 0.17 µs at 2 nm. Start the window too early and the fit absorbs dipolar decay into $k$, which biases the reported distance **short**. Long distances on a short trace are the case to watch; a routine 2–4 nm measurement is unaffected (set on the engine result, so it needs the inversion) |
 | `k_at_bound` | $k$ landed on an edge of its search bracket — it carries no information there (this happens when the sequential seed itself collapses) |
 | `rmax_cap` | The distance cap the rate fit used |
+
+Every key above describes **the background fit that produced it**. An engine that goes on to *re-fit* the background — the multi-Gaussian [`deer_invert_gauss()`](#deer_invert_gauss) on its default `method='lsq'` — therefore moves them into a `background['prep']` sub-dict and reports them as diagnostics of the *starting* estimate, beside the λ and $k$ it actually fitted. Set `prep_only=True` in that situation and the `RuntimeWarning` says so too. They are deliberately **not** recomputed on the refitted rate: `k_ratio` compares against a sequential tail fit made on the starting background, and recomputing it turned a healthy measured trace into a warning. `bg_start_early` is the exception — it is re-derived from the final $P(r)$ and stays at the top level. `method='mc'` does not re-fit, so its keys stay where they were.
 
 ---
 
