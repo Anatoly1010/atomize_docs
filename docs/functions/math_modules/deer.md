@@ -635,6 +635,8 @@ w = deer.residual_whiteness(resid, max_lag=None)
 
 [`deer_invert_mellin()`](#deer_invert_mellin) runs it on the V-space fit residual and returns it under `whiteness`. The standalone **DEER / PDS Analysis** tool surfaces it as the *Residual* and *Residual ACF* top-plot views (autocorrelogram + white-noise band) and the `DW`/$r_1$ verdict in the info panel, with `offset` shown alongside when it exceeds $0.25\sigma$.
 
+Everything above is scored on $t>0$ only, and the *Residual* view draws the samples **before** $t_0$ as a separate curve for the same reason. No engine fits below the zero time — they crop those samples, since the kernel evaluates $|\omega t|$ and a pre-$t_0$ sample would be modelled as $+|t|$ evolution and pile $P(r)$ mass at short $r$. Both $B(t)$ and $F(t)=K(|\omega t|)P$ are exactly **even**, so the curve shown there is the fitted one read at $|t|$: an evaluation, not a fit. A real echo is never exactly even about $t_0$ — measured 1.4–2.4$\sigma$ rms mirror mismatch on the YopO ring-test `sample1` traces, at a $t_0$ already sitting on the symmetry optimum — so that curve runs at several $\sigma$ however good the inversion is, and it shifts whenever the modelled echo top shifts. Read it as an echo-symmetry diagnostic, not as a goodness-of-fit one.
+
 ---
 
 ### distribution_moments() { #distribution_moments data-toc-label="distribution_moments" }
