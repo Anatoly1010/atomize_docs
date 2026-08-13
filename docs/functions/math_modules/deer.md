@@ -220,8 +220,10 @@ val = deer.deer_validate(t, V, r=None, bg_start=None, bg_starts=None,
 
 A single GCV inversion of a noisy DEER trace leaves a spiky comb-like $P(r)$; averaging across background choices suppresses those noise-driven spikes and yields the smooth, banded distribution familiar from inter-laboratory ring tests ([Schiemann et al., *JACS* **2021**, 143, 17875](https://doi.org/10.1021/jacs.1c07371), Fig. 4). Holding $\alpha$ fixed is both physically correct — validation probes *background/noise sensitivity*, not the regularization choice — and what keeps it fast (no per-trial L-curve scan).
 
-!!! note "Mellin engine"
+!!! note "Mellin and multi-Gaussian engines"
     $\alpha$ is not the Mellin regularizer, so for `engine='mellin'` the cutoff `tau_max` is pinned to the central trial instead (together with its `n_tau` grid and the split point `delta`). Without that, every trial would re-run the cutoff selection and the band would report the jump between cutoffs rather than the background sensitivity it claims to measure.
+
+    `engine='gauss'` has no regularizer at all; what sets its model complexity is the component count, so **`n_gauss` is pinned** to the central trial's pick for the same reason. Left free it is re-selected per trial, and a $1\to2$ Gaussian switch moves $P(r)$ far more than the background start does — the band would then be part model-selection jump. Each trial's count is reported in `trials[i]['n_gauss']`; on this route they are all equal by construction.
 
 - **`bg_start`** — centre of the default background-start sweep (µs). `None` uses the trace midpoint.
 - **`bg_starts`** — explicit sweep of background-start times. `None` builds a 9-point grid spanning $\pm 7.5\%$ of the trace length around `bg_start`.
@@ -245,7 +247,7 @@ Returns a dict:
 | `alpha` | The fixed regularization weight |
 | `peak`, `r_mean` | Peak position and first moment of the consensus curve |
 | `base` | The single central inversion (its `form_factor` / `F_fit` / `background` / `l_curve`, for display) |
-| `trials` | Per-trial `bg_start`, `r_mean`, `lambda`, `k` and `flagged` (whether that trial raised a background reliability flag) |
+| `trials` | Per-trial `bg_start`, `r_mean`, `lambda`, `k`, `n_gauss` (multi-Gaussian only) and `flagged` (whether that trial raised a background reliability flag) |
 | `trial_spread` | `r_mean_spread`, `lambda_spread`, `n_flagged` / `n`, `disagree`, and `band_degenerate` (with the `P_spread` / `P_scale` it is measured from) |
 
 !!! warning "`band_degenerate` — when the band must not be read as an uncertainty"
@@ -293,11 +295,9 @@ res = deer.deer_invert_mellin(t, V, r=None, bg_start=None, bg_end=None,
                               dim=3.0, fit_dim=False, nu_dd=deer.NU_DD,
                               delta=None, tau_max=30.0, n_tau=601,
                               bg_engine='joint', n_mc=0, ci_z=1.96, seed=0,
-                              taumax_method='penalty', noise_space='V',
-                              wiener=0.0, taumax_extend=True,
-                              extend_short_frac=0.18, fit_rmin_abs=2.0,
-                              fit_rmin_width=0.5, signed_fit=True,
-                              taper_short=True)
+                              taumax_method='penalty', wiener=0.0,
+                              fit_rmin_abs=2.0, fit_rmin_width=0.5,
+                              signed_fit=True, taper_short=True)
 ```
 
 **Model-free** DEER inversion by the analytic integral **Mellin transform** (Matveeva, Nekrasov & Maryasov, *PCCP* **2017**, [10.1039/C7CP04059H](https://doi.org/10.1039/C7CP04059H)). No Tikhonov, no NNLS, no L-curve: the distance distribution is recovered in closed form, so it is **not broadened** and bimodal peaks are **not merged**. Also reachable as `deer.deer_invert(..., engine='mellin')`.
@@ -333,10 +333,11 @@ and the inverse Mellin transform gives $p(w)$ directly; the Jacobian maps it to 
 
     !!! warning "Shallow modulation + high noise"
         The form factor carries the electrical noise amplified by $1/\lambda$. Once that noise approaches the level drop the automatic $\delta$ tests for (roughly $\sigma/\lambda \gtrsim 0.09$), the split point and the echo-top curvature are both estimated on noise: they are therefore read off a lightly smoothed form factor in that regime, and the curvature is fitted over a wider window. Below that threshold nothing changes. Note the repair fixes the *forward fit*, which is otherwise held above the data across the whole echo top — it does not make $P(r)$ more accurate there, and at that noise level a Mellin distance distribution should not be quoted without a cross-check.
-- **`tau_max`, `n_tau`** — the Mellin variable runs over $[-\tau_\max, \tau_\max]$ with `n_tau` samples. The high-$\tau$ cutoff is the regularizer. **`tau_max=None` auto-selects it** by `taumax_method` (see below).
-- **`taumax_method`** — how the auto cutoff is chosen. `'penalty'` (default) minimises the forward-fit RMS plus a penalty on the negative area of the signed density: the first term demands a good fit, the second stops the cutoff once it would only add high-$\tau$ noise. It self-adapts, keeping clean data sharp and noisy data smooth. `'discrepancy'` picks the smallest cutoff that reaches the noise floor, then applies the `taumax_extend` extension. `'lcurve'` is for comparison only — it under-regularizes on DEER (the residual is nearly flat in $\tau_\max$, so the corner is ill-defined).
-- **`noise_space`** — `'V'` (default) or `'F'`: the space the noise floor and per-cutoff residual are measured in for the discrepancy selection. `'V'` (the whole background-normalized curve) is stationary and robust; `'F'` (the background-corrected form factor) is noise-amplified toward the tail.
-- **`taumax_extend`** (default on) — a resolution-aware extension of the discrepancy cutoff. The discrepancy stops at the noise floor, but $P(r)$ can keep sharpening past it, so the cutoff is pushed up as long as the short-$r$ leakage (bottom `extend_short_frac` of the grid) keeps dropping, and stopped at the first increase. Clean data extends; noisy data stays put. Used only with `taumax_method='discrepancy'`; the default `'penalty'` method does not need it.
+- **`tau_max`, `n_tau`** — the Mellin variable runs over $[-\tau_\max, \tau_\max]$ with `n_tau` samples. The high-$\tau$ cutoff is the regularizer. **`tau_max=None` auto-selects it**; pass a number only to pin it deliberately.
+- **`taumax_method`** — `'penalty'` is the only selector. It minimises the forward-fit RMS plus a penalty on the negative area of the signed density: the first term demands a good fit, the second stops the cutoff once it would only add high-$\tau$ noise. It self-adapts, keeping clean data sharp and noisy data smooth.
+
+    !!! note "`'discrepancy'` and `'lcurve'` were removed"
+        Along with their `noise_space` / `taumax_extend` / `extend_short_frac` settings. Both lost to `'penalty'` on the benchmark, and both were broken. The discrepancy threshold was floored at the smallest residual on the grid so that some candidate always passed, which on 17 of 28 real traces turned it into plain $\arg\min\sigma_\text{fit}$ — precisely the over-fit it was written to avoid. The L-curve scored curvature only on interior candidates, so it could never return either end of the cutoff grid, and had no fallback when no corner was found. Passing any of these arguments now raises `ValueError` rather than being silently ignored.
 - **`taper_short`** (default `True`) — smoothly taper the reported $P(r)$ to zero at the unreliable short-$r$ edge with a geometric raised-cosine, removing the short-$r$ noise spike while leaving the mid- and long-$r$ density unchanged. The tapered density also feeds `F_fit`. See the info box above. `False` returns the raw signed density.
 - **`fit_rmin_abs`, `fit_rmin_width`** (nm) — the taper window: it ramps from the bottom of the distance grid up to at most `fit_rmin_abs`, over at most `fit_rmin_width`, and is switched off entirely when the grid starts above `fit_rmin_abs`. Absolute distances, so editing the distance axis does not change the reported distribution.
 - **`signed_fit`** (default `True`) — score the automatic `tau_max` selection against the honest signed density rather than the clipped, tapered one. Set `False` for low-$\lambda$ data, where a short-$r$ negative spike can otherwise pull the selection. **It does not change `F_fit`**, which is always built from the non-negative projection of the reported density; it changes only which cutoff the automatic selection lands on, and so the result at the next run.
@@ -531,6 +532,7 @@ Reliability keys in the returned dict — each also raises a `RuntimeWarning`. T
 | `conc_implied_uM`, `conc_implausible` | The spin concentration the fitted rate implies, $k = 9.974\times10^{-4}\,C\,\lambda$. Flagged when it exceeds what a spin-labelled DEER sample can reach, which means the background fit has absorbed the dipolar decay |
 | `bg_start_periods`, `bg_start_early` | `bg_start` expressed in dipolar periods of the **recovered** mean distance, and whether it is too early. The background rate is only meaningful once the dipolar signal has finished evolving, and how late that is depends on the distance: one dipolar period is 2.4 µs at 5 nm but 0.17 µs at 2 nm. Start the window too early and the fit absorbs dipolar decay into $k$, which biases the reported distance **short**. Long distances on a short trace are the case to watch; a routine 2–4 nm measurement is unaffected (set on the engine result, so it needs the inversion) |
 | `k_at_bound` | $k$ landed on an edge of its search bracket — it carries no information there (this happens when the sequential seed itself collapses) |
+| `k_fit_failed` | The joint rate fit raised, or returned a non-finite $k$, and the **sequential** `k_ref` is reported in its place. This is not a joint background, and `k_ratio` is then exactly 1.0 *by construction* — without the flag the fallback is indistinguishable from the two routes agreeing perfectly |
 | `rmax_cap` | The distance cap the rate fit used |
 
 Every key above describes **the background fit that produced it**. An engine that goes on to *re-fit* the background — the multi-Gaussian [`deer_invert_gauss()`](#deer_invert_gauss) on its default `method='lsq'` — therefore moves them into a `background['prep']` sub-dict and reports them as diagnostics of the *starting* estimate, beside the λ and $k$ it actually fitted. Set `prep_only=True` in that situation and the `RuntimeWarning` says so too. They are deliberately **not** recomputed on the refitted rate: `k_ratio` compares against a sequential tail fit made on the starting background, and recomputing it turned a healthy measured trace into a warning. `bg_start_early` is the exception — it is re-derived from the final $P(r)$ and stays at the top level. `method='mc'` does not re-fit, so its keys stay where they were.
