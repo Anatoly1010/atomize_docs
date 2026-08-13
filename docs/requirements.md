@@ -8,6 +8,7 @@
 - [PyVisa-py >= 0.5](https://github.com/pyvisa/pyvisa-py)
 - [platformdirs >= 4.5](https://pypi.org/project/platformdirs/)
 - [hatchling >= 1.9](https://pypi.org/project/hatchling/)
+- [h5py >= 3.8](https://pypi.org/project/h5py/)
 
 ## Optional
 
