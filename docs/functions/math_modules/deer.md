@@ -719,18 +719,30 @@ $$
 
 with $d^{\,t}$ a true power. The same convention as [`background_fit()`](#background_fit): $V$ is normalized so $V(0)=1$, the tail baseline $g(t)=(1-\lambda)\,B(t)$, so the background normalized to $B(0)=1$ is $B(t)=g(t)/g(0)$ with $g(0)=a\,e^{\,bc}$ (since $d^{\,0}=1$), the modulation depth $\lambda = 1 - g(0)$, and $F(t)=(V(t)/B(t)-(1-\lambda))/\lambda$. The amplitude $a$ **cancels** in the shape $B(t)=\exp\!\big(b(t+c(d^{\,t}-1))\big)$ — which stays strictly positive — so $b,c,d$ set the background shape and $a$ only its $t=0$ level (hence $\lambda$). Reachable as `deer.deer_invert(..., engine='general')` and via `bg_engine='general'` in the Mellin / Gaussian engines.
 
-- **`fit`** — when `True` (default), the four coefficients are fit on the tail window; any of `a`/`b`/`c`/`d` supplied are used as the initial guess. When `False`, they are used **directly** as the background (manual mode — no fitting).
+- **`fit`** — when `False`, the coefficients are used **directly** as the background (manual mode — no fitting). When `True` (default), what is fitted depends on whether you assert the $d^{\,t}$ shape:
+    - **neither `c` nor `d` given** — the identifiable two-parameter form $g=a\,e^{\,bt}$ is fitted, so $c=0$ and $a$ *is* $g(0)$, giving $\lambda$ directly;
+    - **`c` or `d` given** — all four are fitted, seeded with whatever you supplied, with `d` bounded so the $d^{\,t}$ term keeps $\ge5\%$ of its $t=0$ amplitude across the window. You are asserting a shape the tail cannot supply.
 - **`a`, `b`, `c`, `d`** — the coefficients (seeds when fitting, values when not). Time $t$ is in **microseconds**, so they act on $t$ in µs.
 
-!!! note "Needs a clean (well-decayed) tail"
-    With four free parameters the model has more freedom than a stretched exponential, so it will **chase residual dipolar modulation** if the fit window still contains it — on a clean, well-decayed tail it recovers $\lambda$ to ~1%, but on an under-decayed tail it over-estimates the modulation depth. When fitting, `d` is constrained so the $d^{\,t}$ term keeps $\ge 5\%$ of its $t=0$ amplitude across the window ($d^{\,\text{span}}\ge 0.05$): otherwise $c$ and $d$ are unconstrained by the tail (where $d^{\,t}$ has vanished) and the fit is degenerate. The model can still be over-parametrized for a gentle decay, so the fitted $a$ / $c$ may be large (a near-constant exponential trading against the offset) — mathematically valid, $\lambda$ is unaffected.
+!!! warning "Why the four-coefficient form is not auto-fitted"
+    $\lambda = 1 - a\,e^{\,bc}$ is an **extrapolation** to $t=0$, but only the product $bc$ reaches it and that product is fitted where $d^{\,t}$ has already decayed to a few percent. Measured over 28 real traces: $|\mathrm{corr}(a,c)|$ median **0.986** with a covariance condition number of $2.9\times10^{23}$ (against $2.2\times10^{2}$ for the two-parameter form) — numerically singular, roughly **two determined degrees of freedom out of four**. Fitted $c$ came back as $-1.3\times10^{5}$, $-2.2\times10^{5}$, $-642$ against $b\approx-0.001$, and on **13 of 28** traces the four-coefficient fit did not converge at all.
 
-Returns the same dict shape as [`background_fit()`](#background_fit), with `k` / `dim` $=$ `NaN` (not applicable) and the coefficients in `params` (`a`, `b`, `c`, `d`) plus `model='general'`. In the **DEER / PDS Analysis** GUI this is the **"General (a·exp[b(t+c·dᵗ)])"** background option, with an **Auto (fit)** toggle and per-coefficient boxes — Auto fits and writes the fitted values back, unchecking it uses the hand-set coefficients directly.
+    The consequences were not cosmetic: across five trace-trim settings $\lambda$ moved by $>30\%$ on **13/28** traces (worst $3.6\times$), **15 of 140** trace × trim combinations collapsed onto the $\lambda$ clamp, and one trace's reported distance flipped between **3.75 and 7.85 nm** on two points of trim. The two-parameter form over the same grid: **0/140** collapses, $\lambda$ spread median 0.008 (vs 0.276), within 20% of the joint engine on **133/140** (vs 81/140), and mean distance agreeing with it to a median **0.004 nm**.
+
+    So the extra flexibility is a **manual-mode feature** — supply `c`/`d` (or `fit=False`) when you have independent reason to believe a shape. An earlier version of this page said a large fitted $a$/$c$ was "mathematically valid, $\lambda$ is unaffected": that is **wrong**, and $\lambda$ is exactly what it affects.
+
+!!! note "Still needs a clean (well-decayed) tail"
+    The model will **chase residual dipolar modulation** if the fit window still contains it — on a clean, well-decayed tail it recovers $\lambda$ to ~1%, but on an under-decayed tail it over-estimates the modulation depth.
+
+Returns the same dict shape as [`background_fit()`](#background_fit), with `k` / `dim` $=$ `NaN` (not applicable), the coefficients in `params` (`a`, `b`, `c`, `d`), `model='general'`, `n_free` (2 or 4 when fitting, 0 when not) and `fit_failed` — which also raises a `RuntimeWarning`, since a failed fit used to be indistinguishable from a good one. In the **DEER / PDS Analysis** GUI this is the **"General (a·exp[b(t+c·dᵗ)])"** background option, with an **Auto (fit)** toggle and per-coefficient boxes — Auto fits and writes the fitted values back (so `c` reads 0), unchecking it uses the hand-set coefficients directly.
 
 ```python
-# fit the four coefficients on the tail
+# auto: fits the identifiable a*exp(b*t) (c = 0), so lambda is measured, not extrapolated
 bg = deer.background_general(t, V, bg_start=2.0)
-print(bg['params'], 'lambda =', round(bg['lambda'], 3))
+print(bg['n_free'], bg['params'], 'lambda =', round(bg['lambda'], 3))
+
+# assert the d^t shape yourself to get all four fitted
+bg4 = deer.background_general(t, V, bg_start=2.0, c=1.0, d=0.5)
 
 # or set them by hand (no fitting) and invert with that fixed background
 res = deer.deer_invert(t, V, r=r, bg_start=2.0, engine='general',
