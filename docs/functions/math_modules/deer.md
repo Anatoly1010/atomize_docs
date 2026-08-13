@@ -296,6 +296,7 @@ res = deer.deer_invert_mellin(t, V, r=None, bg_start=None, bg_end=None,
                               delta=None, tau_max=30.0, n_tau=601,
                               bg_engine='joint', n_mc=0, ci_z=1.96, seed=0,
                               taumax_method='penalty', wiener=0.0,
+                              parab_tol_min=0.01,
                               fit_rmin_abs=2.0, fit_rmin_width=0.5,
                               signed_fit=True, taper_short=True)
 ```
@@ -329,10 +330,11 @@ and the inverse Mellin transform gives $p(w)$ directly; the Jacobian maps it to 
     Together they remove the short-$r$ spurious mass and restore the echo-top width while $P(r)$ stays natural.
 
 - **`bg_engine`** — `'joint'` (default), `'sequential'`, or `'none'`, how the form factor is prepared (see [`joint_background()`](#joint_background) / [`background_fit()`](#background_fit)). **This matters a lot:** the Mellin kernel $\varphi(wT)\to0$, so the recovered density cannot represent a DC pedestal left by an imperfect background — a too-shallow background shows up as a constant gap between data and fit. The joint engine gives a clean $F\to0$ and is the default. `'none'` sets $B(t)=1$ and fits only $\lambda$ — use it for data with **no** background (pre-corrected / simulated / full-modulation $\lambda\!\to\!1$): there the form factor decays to zero on its own, so fitting a background absorbs that dipolar decay and badly broadens $P(r)$.
-- **`delta`** — the Mellin split point $\delta$ (µs): $[0,\delta]$ is integrated analytically, $[\delta, T_\max]$ numerically. The echo top is parabolic ($F\approx F_0 + b\,T^2$), so the analytic term keeps that quadratic and removes a systematic error in $F_\text{fit}$ at the echo (the "thin parabola" near $t=0$). `None` auto-selects $\delta$ where $F(\delta)\approx0.85$, then clips it to a noise-adaptive window (wider on noisier data). A larger $\delta$ moves the steep, noisy near-echo region into the clean analytic term, suppressing the short-$r$ spike at its source. See [`mellin_signal_spectrum()`](#mellin_signal_spectrum) / [`mellin_delta()`](#mellin_delta).
+- **`delta`** — the Mellin split point $\delta$ (µs): $[0,\delta]$ is integrated analytically, $[\delta, T_\max]$ numerically. The echo top is parabolic ($F\approx F_0 + b\,T^2$), so the analytic term keeps that quadratic and removes a systematic error in $F_\text{fit}$ at the echo (the "thin parabola" near $t=0$). `None` auto-selects $\delta$ where $F(\delta)\approx0.85$, then clips it to a noise-adaptive window (wider on noisier data) and holds it inside the parabolic part of the echo top (`parab_tol_min`, below). A larger $\delta$ moves the steep, noisy near-echo region into the clean analytic term, suppressing the short-$r$ spike at its source. See [`mellin_signal_spectrum()`](#mellin_signal_spectrum) / [`mellin_delta()`](#mellin_delta).
 
     !!! warning "Shallow modulation + high noise"
         The form factor carries the electrical noise amplified by $1/\lambda$. Once that noise approaches the level drop the automatic $\delta$ tests for (roughly $\sigma/\lambda \gtrsim 0.09$), the split point and the echo-top curvature are both estimated on noise: they are therefore read off a lightly smoothed form factor in that regime, and the curvature is fitted over a wider window. Below that threshold nothing changes. Note the repair fixes the *forward fit*, which is otherwise held above the data across the whole echo top — it does not make $P(r)$ more accurate there, and at that noise level a Mellin distance distribution should not be quoted without a cross-check.
+- **`parab_tol_min`** (default `0.01`, `None` = off) — floors the tolerance that stops the automatic $\delta$ being stretched past the parabolic echo top; the tolerance itself is $\max(4\sigma_e/\lambda,$ `parab_tol_min`$)$, so it follows the noise and falls back to the floor only on a very clean trace. It binds on **fast-decaying** form factors — short mean distance, or a broad distribution — whose head leaves the parabolic regime well before the 90 ns floor, and is a no-op otherwise. See [`mellin_delta()`](#mellin_delta) for the mechanism and the measured effect.
 - **`tau_max`, `n_tau`** — the Mellin variable runs over $[-\tau_\max, \tau_\max]$ with `n_tau` samples. The high-$\tau$ cutoff is the regularizer. **`tau_max=None` auto-selects it**; pass a number only to pin it deliberately.
 - **`taumax_method`** — `'penalty'` is the only selector. It minimises the forward-fit RMS plus a penalty on the negative area of the signed density: the first term demands a good fit, the second stops the cutoff once it would only add high-$\tau$ noise. It self-adapts, keeping clean data sharp and noisy data smooth.
 
@@ -586,7 +588,8 @@ Inverse Mellin transform on the line $s = \tfrac12 + i\tau$ back to $p(w)$: $\op
 ### mellin_delta() { #mellin_delta data-toc-label="mellin_delta" }
 
 ```python
-delta = deer.mellin_delta(t, F, level=0.95, floor=0.09, cap=0.12, floor_ratio=2.0)
+delta = deer.mellin_delta(t, F, level=0.95, floor=0.09, cap=0.12, floor_ratio=2.0,
+                          rel_noise=0.0, parab_tol=None)
 ```
 
 Practical Mellin split point $\delta$: the first $T>0$ where the form factor has fallen to `level` of $F(0)$ ($F(\delta)\approx0.95$). Falls back to the first positive sample if $F$ never drops that far.
@@ -594,6 +597,12 @@ Practical Mellin split point $\delta$: the first $T>0$ where the form factor has
 The raw level estimate is then **clipped to `[floor, cap]`** (µs; set either to `None` to disable, and both are clamped to the last sample). The **floor** widens a too-narrow analytic parabolic $[0,\delta]$ echo-top anchor (the "thin parabola"), which otherwise leaves the recovered $F_\text{fit}$ top too steep and the short-$r$ density unstable. The **cap** ($\approx 120$ ns) stops a slow-decaying (long-$r$) trace from over-smoothing $P(r)$ by integrating too much of the modulation analytically.
 
 **`floor_ratio`** bounds how far the floor may stretch $\delta$ beyond the trace's *own* decay scale: $\delta$ is raised to at most `floor_ratio` × the raw crossing. Without it the floor is an absolute time, so for $r_0\lesssim2.5$ nm — where the raw crossing is several times smaller than 90 ns — it hands most of the first dipolar oscillation to a single parabola and the reconstruction collapses: at $r_0=1.6$ nm the $P(r)$ overlap falls to **0.17**, against **0.68** with `floor_ratio=2`. Above $\approx3$ nm the raw crossing already exceeds `floor/floor_ratio`, so the clamp binds exactly as before.
+
+**`parab_tol`** bounds that same stretch by what the echo top can actually support (`None` = off). The $[0,\delta]$ term models $F$ as a *single* parabola, so stretching $\delta$ past the parabolic head puts a known-wrong analytic model over part of the modulation, and the error lands as a **systematic early-time residual** rather than as noise. `floor_ratio` cannot catch this on its own — it is relative to the crossing, and on a fast-decaying form factor (short mean distance, or a broad distribution) twice the crossing is already deep inside the first oscillation. With `parab_tol` set, the stretch stops where the least-squares parabola over $[0,T]$ first misses a sample by more than that tolerance, so $\delta$ still widens on a slow echo top and stops short on a steep one. It can only *lower* a stretched $\delta$ and never pushes it below the crossing, so a trace whose head is parabolic past the floor is untouched.
+
+!!! note "Measured on real traces"
+
+    On the YopO ring-test set the shipped $\delta$ (from `deer_invert_mellin()`, which passes `parab_tol` automatically) overshot the parabolic head by **8–21 σ** on the short-distance samples, leaving an early-time residual of 3–10× the noise. One trace (2.1 nm peak, form factor down to 0.02 within 120 ns) went from $\delta=62$ to 39 ns, its early residual from 4.1 to 2.5 σ and its Durbin–Watson from 0.76 to 0.98. Over the 28 traces: 7 improved, 0 regressed, 21 untouched, with the reported peak moving at most 0.05 nm.
 
 ---
 
