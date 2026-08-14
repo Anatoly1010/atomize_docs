@@ -85,6 +85,7 @@ Returns a dict:
 | `l_curve` | The [`l_curve()`](#l_curve) result dict (or `None`) |
 | `background` | The [`background_fit()`](#background_fit) result dict |
 | `lambda`, `k`, `dim` | Modulation depth, background decay rate, dimension |
+| `noise_level` | White electrical-noise σ read from the decayed tail of $V$, so the residual has a scale to be judged against. Reported by every engine and never fed back into the fit; `NaN` when the trace is too short to measure it, `0.0` when the tail is exactly constant |
 | `engine` | `'sequential'`, `'joint'`, `'mellin'`, `'gauss'`, `'none'`, or `'general'` |
 
 ```python
@@ -297,7 +298,7 @@ res = deer.deer_invert_mellin(t, V, r=None, bg_start=None, bg_end=None,
                               bg_engine='joint', n_mc=0, ci_z=1.96, seed=0,
                               taumax_method='penalty', wiener=0.0,
                               parab_tol_min=0.01,
-                              fit_rmin_abs=2.0, fit_rmin_width=0.5,
+                              fit_rmin_abs=2.1, fit_rmin_width=1.0,
                               signed_fit=True, taper_short=True)
 ```
 
@@ -322,7 +323,10 @@ and the inverse Mellin transform gives $p(w)$ directly; the Jacobian maps it to 
     The chain is linear, so noise enters $f(r)$ additively, and the $r$-space Jacobian ($\sim r^{-2.5}$) concentrates it into a spurious spike at short distances — the "double peak near $t=0$" in $P(r)$. The same high-$|\tau|$ content also makes the forward-fit echo top decay too fast. Two mechanisms, both on by default, suppress this without distorting the real peaks:
 
     - **Noise-adaptive $\delta$.** $\delta$ splits the form factor into an analytic parabola term on $[0,\delta]$ and a numeric integral on $[\delta, T_\max]$; the noise enters through the numeric part. $\delta$'s floor and cap grow with the measured relative noise, so on noisy data more of the early signal goes to the clean analytic term. This fixes the spike at its source and does not touch the displayed density.
-    - **`taper_short`** (default on). A geometric raised-cosine taper sends the reported $P(r)$ smoothly to zero at the unreliable short-$r$ edge. Its window is **absolute**: it ramps from the bottom of the grid up to at most `fit_rmin_abs` nm — the distance below which a DEER measurement is not meaningful anyway — over at most `fit_rmin_width` nm, and it switches off entirely on a grid that already starts above `fit_rmin_abs`. Because the window is fixed in nanometres rather than as a fraction of the grid, the reported distribution does not change when you widen or narrow the distance axis. A genuine short-$r$ peak is attenuated rather than deleted; the tapered density also feeds `F_fit`. Set `taper_short=False` for the raw signed density.
+    - **`taper_short`** (default on). A geometric raised-cosine taper sends the reported $P(r)$ smoothly to zero at the unreliable short-$r$ edge. Its window is **absolute**: it ramps from the bottom of the grid up to at most `fit_rmin_abs` nm over at most `fit_rmin_width` nm, and it switches off entirely on a grid that already starts above `fit_rmin_abs`. Because the window is fixed in nanometres rather than as a fraction of the grid, the reported distribution does not change when you widen or narrow the distance axis. A genuine short-$r$ peak is attenuated rather than deleted; the tapered density also feeds `F_fit`. Set `taper_short=False` for the raw signed density.
+
+    !!! note
+        **`fit_rmin_abs` is not a minimum distance.** The shortest distance reported is the bottom of the distance grid you pass in (raised further by `clamp_alias` when the time step cannot resolve it); `fit_rmin_abs` only says where the taper reaches full weight, and population below it is attenuated, not removed. Nor is the value physical — it is calibrated. A short-distance sample leaves part of its main peak inside the ramp, so the setting trades the short-$r$ noise spike against a bias in the modelled echo top: too low and the fit sits above the data there, too high and it sits below. The default is the crossing point. `fit_rmin_width` only caps the ramp length, so it must leave room for the full window or raising `fit_rmin_abs` has no effect at all.
 
     !!! warning
         The taper multiplies the **reported** density, not only the fit curve, and the area is renormalized afterwards. On a distribution with real population below `fit_rmin_abs` it therefore shifts the reported mean distance and the relative peak areas: keep the distance grid starting at or above the shortest distance you intend to quote, or set `taper_short=False`.
@@ -341,7 +345,7 @@ and the inverse Mellin transform gives $p(w)$ directly; the Jacobian maps it to 
     !!! note "`'discrepancy'` and `'lcurve'` were removed"
         Along with their `noise_space` / `taumax_extend` / `extend_short_frac` settings. Both lost to `'penalty'` on the benchmark, and both were broken. The discrepancy threshold was floored at the smallest residual on the grid so that some candidate always passed, which on 17 of 28 real traces turned it into plain $\arg\min\sigma_\text{fit}$ — precisely the over-fit it was written to avoid. The L-curve scored curvature only on interior candidates, so it could never return either end of the cutoff grid, and had no fallback when no corner was found. Passing any of these arguments now raises `ValueError` rather than being silently ignored.
 - **`taper_short`** (default `True`) — smoothly taper the reported $P(r)$ to zero at the unreliable short-$r$ edge with a geometric raised-cosine, removing the short-$r$ noise spike while leaving the mid- and long-$r$ density unchanged. The tapered density also feeds `F_fit`. See the info box above. `False` returns the raw signed density.
-- **`fit_rmin_abs`, `fit_rmin_width`** (nm) — the taper window: it ramps from the bottom of the distance grid up to at most `fit_rmin_abs`, over at most `fit_rmin_width`, and is switched off entirely when the grid starts above `fit_rmin_abs`. Absolute distances, so editing the distance axis does not change the reported distribution.
+- **`fit_rmin_abs`, `fit_rmin_width`** (nm) — the taper window: it ramps from the bottom of the distance grid up to at most `fit_rmin_abs`, over at most `fit_rmin_width`, and is switched off entirely when the grid starts above `fit_rmin_abs`. Absolute distances, so editing the distance axis does not change the reported distribution. Neither is a minimum distance, and `fit_rmin_width` must leave room for the window or raising `fit_rmin_abs` is inert — see the info box above.
 - **`signed_fit`** (default `True`) — score the automatic `tau_max` selection against the honest signed density rather than the clipped, tapered one. Set `False` for low-$\lambda$ data, where a short-$r$ negative spike can otherwise pull the selection. **It does not change `F_fit`** (see below); it changes only which cutoff the automatic selection lands on, and so the result at the next run.
 
 !!! info "How `F_fit` is built, and why it is not always the non-negative projection"
@@ -622,7 +626,7 @@ The raw level estimate is then **clipped to `[floor, cap]`** (µs; set either to
 w = deer.residual_whiteness(resid, max_lag=None)
 ```
 
-**Residual-whiteness goodness-of-fit diagnostic** (DeerLab-style). An adequate DEER fit leaves a **white** (uncorrelated) residual; a structured, *oscillating* residual is the hallmark of a distance distribution that has not captured all the dipolar modulation — typically an over-smoothed (too-broad) $P(r)$ at an over-regularized cutoff, but also missing dipolar pathways or orientation selection. Such model inadequacy shows up as **autocorrelation** even when the residual *amplitude* already matches the noise level — so the discrepancy principle alone cannot see it (Edwards & Stoll, *JMR* **288** (2018) 58; Fábregas Ibáñez *et al.*, *Magn. Reson.* **1** (2020) 209). Returned as a dict:
+**Residual-whiteness goodness-of-fit diagnostic** (DeerLab-style). An adequate DEER fit leaves a **white** (uncorrelated) residual; a structured, *oscillating* residual is classically read as a distance distribution that has not captured all the dipolar modulation — an over-smoothed (too-broad) $P(r)$ at an over-regularized cutoff, missing dipolar pathways, or orientation selection. Such model inadequacy shows up as **autocorrelation** even when the residual *amplitude* already matches the noise level — so the discrepancy principle alone cannot see it (Edwards & Stoll, *JMR* **288** (2018) 58; Fábregas Ibáñez *et al.*, *Magn. Reson.* **1** (2020) 209). Returned as a dict:
 
 | Key | Description |
 | --- | ----------- |
@@ -634,6 +638,11 @@ w = deer.residual_whiteness(resid, max_lag=None)
 | `white` | bool, $\lvert r_1\rvert \le$ `ci95` (residual consistent with white noise) |
 
 [`deer_invert_mellin()`](#deer_invert_mellin) runs it on the V-space fit residual and returns it under `whiteness`. The standalone **DEER / PDS Analysis** tool surfaces it as the *Residual* and *Residual ACF* top-plot views (autocorrelogram + white-noise band) and the `DW`/$r_1$ verdict in the info panel, with `offset` shown alongside when it exceeds $0.25\sigma$.
+
+!!! warning
+    **`structured` does not mean over-smoothed.** On a long trace it usually is not. Once the late part of a trace is noise-dominated, the fitted peak's own dipolar frequency goes on ringing in the *model* where the data no longer shows it — so data minus model is coherent **by construction**, with nothing inadequate about the fit. The signature is the same either way, and the difference is not something the diagnostic can see. Before acting on a `structured` verdict, check whether the *data* carries the oscillation at all: if its amplitude over the region in question is consistent with white noise, no change to $P(r)$, $\alpha$ or the background will flatten the residual, because there is nothing there to fit. Neither stronger regularization, nor a deliberately broadened $P(r)$, nor any admissible background choice suppresses such a residual — and the same behaviour appears in other DEER packages on the same trace. What remains is the forward model, or a shorter trace.
+
+The *Residual* view draws **two** noise bands, one per curve: $\pm\sigma$ (from `noise_level`) for the raw residual, and $\pm\sigma/\sqrt{w}$ for the smoothed "coherent" overlay, $w$ being the boxcar width. Judge each curve against its own band. The smoothed curve averages $w$ points, so its noise level is $\sqrt{w}$ times smaller — read against the raw $\pm\sigma$ band it would make an ordinary noise-level wiggle look like a real oscillation.
 
 Everything above is scored on $t>0$ only, and the *Residual* view draws the samples **before** $t_0$ as a separate curve for the same reason. No engine fits below the zero time — they crop those samples, since the kernel evaluates $|\omega t|$ and a pre-$t_0$ sample would be modelled as $+|t|$ evolution and pile $P(r)$ mass at short $r$. Both $B(t)$ and $F(t)=K(|\omega t|)P$ are exactly **even**, so the curve shown there is the fitted one read at $|t|$: an evaluation, not a fit. A real echo is never exactly even about $t_0$ — measured 1.4–2.4$\sigma$ rms mirror mismatch on the YopO ring-test `sample1` traces, at a $t_0$ already sitting on the symmetry optimum — so that curve runs at several $\sigma$ however good the inversion is, and it shifts whenever the modelled echo top shifts. Read it as an echo-symmetry diagnostic, not as a goodness-of-fit one.
 
