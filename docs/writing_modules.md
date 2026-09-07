@@ -189,7 +189,7 @@ self.ref_ampl_max = 5
 
 ## Configuration Files
 
-Each device should have a configuration file. In this file the communication [protocol settings](protocol_settings.md) and device specific parameters in the case of a module for a series of the devices should be specified. Examples can be found in `atomize/device_modules/config/` directory with a local copy in [`DEVICE CONFIG DIRECTORY`](usage.md). Reading of a local copy of the configuration file should be done inside an `__init__()` function of the device class using special functions from the `config_utils` and `local_config` modules:
+Each device should have a configuration file. In this file the communication [protocol settings](protocol_settings.md) and device specific parameters in the case of a module for a series of the devices should be specified. **The configuration file is named after the module**, not after one instrument, so a module covering a whole series is not tied to a single model; the model itself belongs in the `name` field inside the file. Examples can be found in `atomize/device_modules/config/` directory with a local copy in [`DEVICE CONFIG DIRECTORY`](usage.md). Reading of a local copy of the configuration file should be done inside an `__init__()` function of the device class using special functions from the `config_utils` and `local_config` modules:
 
 ```python
 # Stanford Research Systems SR-860 module
@@ -212,6 +212,20 @@ def __init__(self):
     #   self.config['serial_address']  = 'ASRL/dev/ttyUSB0::INSTR'
     #   ...
 ```
+
+Some older modules shipped a configuration file named after one instrument of the series, for example `Keysight_2012a_config.ini` for `Keysight_2000_Xseries`. These have been renamed to match the module. Installations made before the rename keep only the old file, because the local copy is never re-created once it exists, so such modules declare both names and let `config_path()` pick whichever is present:
+
+```python
+class Keysight_2000_Xseries:
+    config_file = 'Keysight_2000_Xseries_config.ini'
+
+    def __init__(self):
+        self.path_current_directory = lconf.load_config_device()
+        self.path_config_file = cutil.config_path(self.path_current_directory,
+                                    self.config_file, legacy = 'Keysight_2012a_config.ini')
+```
+
+The new name wins when both files are present, and a message says so, since that combination usually means a freshly copied default is shadowing a tuned configuration. A new module needs no `legacy` argument.
 
 The corresponding `config.ini` file is as follows:
 
