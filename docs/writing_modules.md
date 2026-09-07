@@ -213,20 +213,6 @@ def __init__(self):
     #   ...
 ```
 
-Some older modules shipped a configuration file named after one instrument of the series, for example `Keysight_2012a_config.ini` for `Keysight_2000_Xseries`. These have been renamed to match the module. Installations made before the rename keep only the old file, because the local copy is never re-created once it exists, so such modules declare both names and let `config_path()` pick whichever is present:
-
-```python
-class Keysight_2000_Xseries:
-    config_file = 'Keysight_2000_Xseries_config.ini'
-
-    def __init__(self):
-        self.path_current_directory = lconf.load_config_device()
-        self.path_config_file = cutil.config_path(self.path_current_directory,
-                                    self.config_file, legacy = 'Keysight_2012a_config.ini')
-```
-
-The new name wins when both files are present, and a message says so, since that combination usually means a freshly copied default is shadowing a tuned configuration. A new module needs no `legacy` argument.
-
 The corresponding `config.ini` file is as follows:
 
 ```ini
