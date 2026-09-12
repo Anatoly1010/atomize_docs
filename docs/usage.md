@@ -173,6 +173,16 @@ general.plot_1d('1D Plot', data[0], data[1],
 
 Python is used to write an experimental script. Examples can be found in the `SCRIPTS DIRECTORY`.
 
+## Workspace
+
+The Main tab contains the Script Editor, Output and Queue panels. Use the script actions to open, edit and test a script, then Start to run it. Stop interrupts the current experiment. Add to Queue schedules scripts to run in sequence.
+
+![Main workspace with script editor and a populated queue](images/atomize-workspace.png)
+
+The Liveplot tab displays live plots and lists them in the Plots panel. Long names in Queue and Plots are shortened in the middle; hover over an entry to see the full path or name. Right-click a list or plot to access its available actions.
+
+![Liveplot with synthetic demonstration data](images/atomize-liveplot.png)
+
 ## Additional Interactivity
 
 The Main tab has the following additional features in the Output dock (available via right-click menu):
@@ -183,15 +193,18 @@ The Main tab has the following additional features in the Output dock (available
 
 Keyboard shortcuts for the buttons on the Main tab — format `Alt + key`:
 
-| Shortcut  | Button     |
-| --------- | ---------- |
-| `Alt + O` | Open       |
-| `Alt + E` | Edit       |
-| `Alt + U` | Run        |
-| `Alt + T` | Test       |
-| `Alt + S` | Stop       |
-| `Alt + Q` | Queue      |
-| `Alt + H` | Help       |
+| Shortcut | Button |
+| --- | --- |
+| `Alt + O` | Open Script |
+| `Alt + E` | Edit Script |
+| `Alt + U` | Update Script |
+| `Alt + T` | Test Script |
+| `Alt + S` | Start |
+| `Alt + A` | Add to Queue |
+| `Alt + H` | Help |
+| `Alt + Q` | Quit |
+
+Use Tab / Shift+Tab to move between actions and Space to activate the focused button, including Stop.
 
 The Script Editor dock has the following shortcuts:
 
@@ -208,7 +221,7 @@ The Queue dock is used to create an execution queue by pressing `Add to Queue` b
 - clear the queue;
 - drag and drop files to change the execution order.
 
-The Liveplot tab has the following additional features in the Current Plots dock (available via right-click menu):
+The Liveplot tab has the following additional features in the Plots list (available via right-click menu):
 
 - delete a selected dock with graphs;
 - open 1d data in csv multi-column format and plot it in a new graph dock;
