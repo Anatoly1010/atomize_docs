@@ -15,6 +15,17 @@ A parameter marked *required* has no default and must appear in the
 protocol; every other parameter may be omitted. Time and field values are
 the framework-wide `"<value> <unit>"` strings (`ns/us/ms/s`, `G/mT/T`).
 
+## MW bridge steps
+
+### bridge.set
+
+Set RV and/or synthesizer with mechanical settling.
+
+| Parameter | Type | Default | Description |
+| --------- | ---- | ------- | ----------- |
+| `attenuation_db` | number (0..60) | — |  |
+| `frequency_mhz` | integer (7000..12000) | — |  |
+
 ## Tuning steps
 
 ### tune.auto_phase
@@ -26,6 +37,7 @@ Acquire an echo and zero the signal phase (principal-axis auto_phase_zero).
 | `preset` | preset file | `hahn_echo_4s.phase_awg` | echo preset the phase is measured on |
 | `points` | integer (>= 2) | `16` | sweep points for the quick phase acquisition (the phase_coherence judge needs >= ~10 to be informative — its noise floor is 3/sqrt(n)) |
 | `scans` | integer (>= 1) | `1` | scans for the quick acquisition |
+| `apply_cal` | mapping {P2..P9: pi \| pi2} \| 'none' | — | slot -> pi/pi2 map; none = do not patch; omitted = patch from the session pi_calibration when one exists (inferred from the preset amplitude levels), else the stored values |
 
 ### tune.echo_window
 
@@ -36,6 +48,46 @@ Set the integration window from an averaged echo trace (center = smoothed |V| ma
 | `preset` | preset file | `hahn_echo_4s.phase_awg` | echo preset the trace is taken with |
 | `factor` | number (1..10) | `2.0` | window width as a multiple of the echo FWHM |
 | `sweeps` | integer (>= 1) | `3` | full phase cycles to average for the trace |
+| `search_from` | time ("300 ns") | `200 ns` | start the echo search at this time relative to DETECTION; exclude early receiver transients while retaining the echo |
+| `min_width` | time ("300 ns") | `20 ns` | reject a peak whose FWHM is below this as a transient (masked out, the search goes on); nothing wider left = the echo_in_trace judge fails |
+| `apply_cal` | mapping {P2..P9: pi \| pi2} \| 'none' | — | slot -> pi/pi2 map; none = do not patch; omitted = patch from the session pi_calibration when one exists (inferred from the preset amplitude levels), else the stored values |
+
+### tune.find_echo
+
+Full-window magnitude field search, then resolve the echo window.
+
+| Parameter | Type | Default | Description |
+| --------- | ---- | ------- | ----------- |
+| `preset` | preset file | `hahn_echo_4s.phase_awg` | AWG SINE echo preset; defines the IF |
+| `center` | field ("3478 G") | *required* |  |
+| `span` | field ("3478 G") | *required* |  |
+| `points` | integer (7..1001) | `41` |  |
+| `attenuation_db` | number (5..10) | `10` |  |
+| `frequency_shift_mhz` | integer | `0` | signed shift from resonator center, or current bridge frequency without a scan |
+| `scans` | integer (1..100) | `1` |  |
+| `averages` | integer (1..10000) | `10` |  |
+| `search_from` | time ("300 ns") | `200 ns` |  |
+| `min_width` | time ("300 ns") | `20 ns` |  |
+
+### tune.maximize_echo
+
+Bounded RV (0.5 dB), field and optional mapped length optimization.
+
+| Parameter | Type | Default | Description |
+| --------- | ---- | ------- | ----------- |
+| `preset` | preset file | `hahn_echo_4s.phase_awg` | AWG SINE echo preset; defines the IF |
+| `rv_range` | [number, number] | `[0, 10]` |  |
+| `coarse_step_db` | number (0.5..10) | `2` |  |
+| `field_span` | field ("3478 G") | `10 G` |  |
+| `points` | integer (7..1001) | `21` |  |
+| `improvement` | number (0.001..1) | `0.05` |  |
+| `length_range` | [time ("300 ns"), time ("300 ns")] | — | pi/2 length bounds; mapped lengths scale together |
+| `length_points` | integer (2..101) | `5` |  |
+| `pulse_map` | mapping {P2..P9: pi \| pi2} \| 'none' | — | explicit two-pulse map, e.g. {P2: pi2, P3: pi} |
+| `scans` | integer (1..100) | `1` |  |
+| `averages` | integer (1..10000) | `10` |  |
+| `search_from` | time ("300 ns") | `200 ns` |  |
+| `min_width` | time ("300 ns") | `20 ns` |  |
 
 ### tune.pi_calibration
 
@@ -79,6 +131,45 @@ Repetition-rate saturation scan: quick echo per rate on a log grid, fit A = A0*(
 | `factor` | number (1..20) | `5.0` | quantitative-mode period = factor x T1_eff (5 -> <1% residual saturation) |
 | `mode` | quantitative \| sensitivity | `quantitative` | sensitivity: period = 1.26 x T1_eff, max S/sqrt(time) — tuning/EDFS only, NOT for quantitative relaxation runs |
 
+### tune.resonator
+
+AWG SINE diode scan; choose a stable early-ringing frequency maximum.
+
+| Parameter | Type | Default | Description |
+| --------- | ---- | ------- | ----------- |
+| `if_mhz` | integer (1..280) | `50` | built-in SINE IF; must match the later echo preset DETECTION IF |
+| `start_mhz` | integer (7000..12000) | `9200` |  |
+| `end_mhz` | integer (7000..12000) | `9600` |  |
+| `step_mhz` | integer (>= 1) | `1` |  |
+| `pulse_length` | time ("300 ns") | `102.4 ns` |  |
+| `window` | time ("300 ns") | `2 ns` |  |
+| `precision_mhz` | number (>= 1) | `5` |  |
+| `min_snr` | number (>= 3) | `5` |  |
+| `competitor_ratio` | number (0.1..1) | `0.8` |  |
+| `region` | [time ("300 ns"), time ("300 ns")] | — | optional trailing-edge region in trace coordinates |
+| `clip_mv` | number (>= 0.001) | — | scope voltage clipping level, when known |
+| `scans` | integer (1..100) | `1` |  |
+| `averages` | integer (1..10000) | `10` |  |
+
+### tune.ringing_check
+
+Home RV; check magnitude at each of 60,40,20,10,5,0 dB; hard-stop above 100 mV.
+
+| Parameter | Type | Default | Description |
+| --------- | ---- | ------- | ----------- |
+| `if_mhz` | integer (1..280) | `50` | built-in SINE IF; must match the later echo preset DETECTION IF |
+| `max_length` | time ("300 ns") | `102.4 ns` | longest MW pulse any preliminary stage may use |
+
+### tune.save_presets
+
+Export echo/calibration/field preset copies and a fine-tuning YAML handoff.
+
+| Parameter | Type | Default | Description |
+| --------- | ---- | ------- | ----------- |
+| `preset` | preset file | `hahn_echo_4s.phase_awg` | AWG SINE echo preset; defines the IF |
+| `calibration_preset` | preset file | `ampl_4s.phase_awg` |  |
+| `field_preset` | preset file | `ed_4s.phase_awg` |  |
+
 ## Field steps
 
 ### field.edfs
@@ -95,8 +186,9 @@ Echo-detected field sweep; pick the working field and set the magnet. range: aut
 | `value` | field ("3478 G") | — | field to set when pick: value |
 | `g` | number (0.1..20) | `2.0023` | g-factor for the range: auto center |
 | `span` | field ("3478 G") | `250 G` | half-width of the range: auto sweep |
-| `offset` | field offset ("-15 G") | `0 G` | known magnet-calibration shift added to the range: auto center |
+| `offset` | field offset ("-15 G") | `-7.5 G` | known magnet-calibration shift added to the range: auto center; set for your magnet calibration |
 | `target_snr` | number (>= 3) | — | SNR-driven scan count: scans becomes the ceiling; stop early once the accumulated sweep reaches this echo_snr score (min = the judge pass floor: a lower target would stop on a sweep the hard judge then rejects) |
+| `apply_cal` | mapping {P2..P9: pi \| pi2} \| 'none' | — | slot -> pi/pi2 map; none = do not patch; omitted = patch from the session pi_calibration when one exists (inferred from the preset amplitude levels), else the stored values |
 
 ### field.set
 

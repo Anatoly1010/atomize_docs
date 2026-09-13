@@ -1,23 +1,14 @@
 # The tune-up chain
 
-Before a relaxation measurement can run unattended, the spectrometer has to be
-brought to a working point: enough microwave power that the pulses reach a
-π rotation, the magnet on the resonance line, an integration window over the
-echo, the receiver phase zeroed, and the pulse amplitudes calibrated. `epr_auto`
-does this as an ordered chain of tuning steps, each one measuring a quantity,
-judging it, and storing the result for the steps that follow. This page walks
-through that chain in the order the shipped `protocols/tune_up.yaml` runs it and
-explains the physics behind each rule. For the parameter tables see the
-[step reference](steps.md); for how retries and `on_fail` wrap each step see
-[Writing protocols](protocols.md).
-
-!!! warning "Commissioning status"
-    Live execution is enabled from the CLI, but the automation chain has not
-    yet been validated on the spectrometer — everything below is implemented
-    and verified in dry-run (`--test`) only. Follow the whole chain end to
-    end with `epr-auto run protocols/tune_up.yaml --test` before trusting it
-    with the magnet, and keep the first live sessions in `supervised`
-    autonomy with an operator present.
+Before a measurement can run unattended, the spectrometer has to be
+brought to a working point: enough microwave power, the magnet on the resonance
+line, an integration window over the echo, the receiver phase zeroed, and the
+pulse amplitudes calibrated. `epr_auto` does this as an ordered chain of tuning
+steps, each one measuring a quantity, judging it, and storing the result for
+the steps that follow. This page walks through that chain in the order
+the shipped `protocols/tune_up.yaml` runs it and explains the physics behind
+each rule. For the parameter tables see the [step reference](steps.md); for how
+retries and `on_fail` wrap each step see [Writing protocols](protocols.md).
 
 The canonical order is:
 
@@ -33,6 +24,47 @@ phase are fixed. A temperature prologue (`temp.set` / `temp.wait`) is optional
 and, when present, runs before everything else so the whole tune-up happens at
 the measurement temperature.
 
+## Preliminary tuning
+
+Use [protocols/preliminary_tuning.yaml](https://github.com/Anatoly1010/Atomize_ITC/blob/master/protocols/preliminary_tuning.yaml) to establish a working point before fine tuning. Set the sample name, synthesizer scan bounds, field center and field span for your experiment. All transmit pulses in this workflow use the AWG SINE channel. The first two steps use built-in sequences and do not accept a `preset` parameter; echo steps use `.phase_awg` files.
+
+```text
+ringing check -> [resonator scan] -> echo field search -> RV/field/length optimization -> fine-tuning handoff
+```
+
+### Ringing check
+
+`tune.ringing_check` homes the rotary vane (RV) to 60 dB, then checks 60, 40, 20, 10, 5 and 0 dB. Each move finishes before acquisition; the measured signal must pass before the next attenuation is commanded. The built-in sequence uses `+x,+x` on both DETECTION and its single SINE pulse, so phase cycling cannot cancel the ringing. Set `max_length` to cover the longest pulse that later preliminary steps may use; acquisition defaults are listed in the [step reference](steps.md).
+
+The limit is 100 mV on the maximum unsmoothed magnitude `sqrt(I² + Q²)` after protection. Missing or invalid data also fail the check. A failure stops the protocol and attempts a settled return to 60 dB; retries, `on_fail: skip` and a continuing series cannot override this safety stop. Operator cancellation during the ringing ladder also returns RV to 60 dB. Stopping at a checkpoint or in another step leaves RV unchanged.
+
+The check starts after receiver protection ends, using timing derived from the pulse sequence and the configured acquisition alignment. It includes the initial ringing amplitude. Rotary-vane movements are mechanical: the runner waits for calibrated movement and settling before acquiring data.
+
+### Optional resonator scan
+
+`tune.resonator` runs the built-in AWG SINE resonator procedure at RV = 10 dB. It measures reflected amplitude with the diode and oscilloscope. Frequency selection uses a common early-ringing time window, subtracts the pre-pulse baseline, and handles either diode polarity. Weak, competing, boundary or clipped peaks and centers that move excessively between nearby windows are rejected. The typical `precision_mhz` is 5.
+
+Both built-in steps have `if_mhz: 50` by default. Their IF values must match each other and the later echo preset's DETECTION IF. The scan axis is the bridge synthesizer frequency; the observation frequency is synthesizer minus IF. The selected synthesizer value is applied directly, without adding IF again. Omit this step to retain the existing synthesizer frequency.
+
+### Echo search and optimization
+
+`tune.find_echo` scans the requested field range at RV = 5–10 dB, scores the full recorded magnitude, and confirms a resolved echo and its integration window. No echo means stop and return to 60 dB. `frequency_shift_mhz` is a signed integer offset from the resonator-selected frequency, default 0. For a two-frequency experiment, `-50` puts the echo 50 MHz below the resonator center while keeping the AWG IF unchanged. Without a resonator scan, the reference is the bridge frequency at the first echo search; repeated searches do not accumulate the offset.
+
+`tune.maximize_echo` searches RV coarsely and then on a 0.5 dB grid, followed by a narrower field sweep. Optional pulse-length optimization runs only if the result indicates insufficient power at the allowed minimum attenuation. It requires an explicit two-pulse mapping such as `pulse_map: {P2: pi2, P3: pi}` and cannot exceed the ringing-tested maximum length. Ringing is checked once in the initial ladder, not again during RV optimization.
+
+### Fine-tuning handoff and bridge control
+
+`tune.save_presets` writes new echo, calibration and field `.phase_awg` copies plus `fine_tuning.yaml` into the run's handoff directory. The handoff restores RV and the selected, possibly shifted synthesizer frequency with `bridge.set`, then runs echo-window selection, phase and pulse calibration, field tuning, and subsequent fine tuning. Inspect the exported files and run the exported YAML in a new session when ready.
+
+The MW bridge control window may stay open. Manual bridge commands are blocked while the runner owns the bridge, and the window resynchronizes when control is released. The initial RV position is re-established by homing.
+
+```bash
+epr-auto validate protocols/preliminary_tuning.yaml
+epr-auto run protocols/preliminary_tuning.yaml --test
+```
+
+The dry-run completes all five stages with canned acquisitions, automatically continues checkpoints, and creates no acquisition or handoff files. A live supervised run uses launcher dialogs or a real terminal for checkpoints, with the Atomize GUI open for plotting. GUI dry runs keep the checkpoint dialogs. Full parameter details are in the [step reference](steps.md).
+
 ## Coarse power stage — `tune.power_for_length`
 
 ```yaml
@@ -42,7 +74,7 @@ the measurement temperature.
     checkpoint: true
 ```
 
-The microwave power is set mechanically, by a rotary vane in the bridge that
+The microwave power is set mechanically, by a RV in the bridge that
 attenuates the drive by a settable number of decibels. The step's job is to
 find the vane position at which a π pulse lands at the requested length while
 the AWG amplitude is held at a fixed, comfortable value (95 % of full scale in
@@ -63,13 +95,10 @@ attenuation; a few iterations (default four) absorb the residual nonlinearity of
 the real vane.
 
 Two mechanical details matter. The vane is always driven to its target *from
-above* — if the new setting is a smaller attenuation, the step first overshoots
+above* — if the new setting is a larger attenuation, the step first overshoots
 to a higher attenuation and comes back down — so that every approach compresses
 the same gear backlash the same way and the position is repeatable. And after
-commanding a move the step waits out the mechanical travel (the device's own
-calibration curve gives roughly 36 ms per motor step) before the next
-acquisition, because that acquisition runs in a separate worker process and the
-vane must be at rest first.
+commanding a move the step waits for the calibrated mechanical travel and settling before the next acquisition.
 
 Because a vane move changes B₁ for *everything*, it invalidates the receiver
 phase and the fine amplitude calibration — see
@@ -149,6 +178,8 @@ echo's full width at half maximum, and opens a window of `FWHM × factor` (facto
 clamping them to the acquisition window. The magnitude is smoothed with a fixed
 physical box (~3 ns), not a fraction of the trace length, so measuring the FWHM
 does not inflate the width of a short, sharp echo.
+
+`search_from` excludes early trace artifacts from the echo search; `min_width` rejects peaks too narrow to be an echo. Set these for the expected echo position and width. A rejected narrow peak is masked out and the search continues.
 
 The window is stored **relative to the DETECTION pulse start**, not as an
 absolute time. That is the same frame the preset's own "Window left/right" live

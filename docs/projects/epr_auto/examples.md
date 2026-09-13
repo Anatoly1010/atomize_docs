@@ -17,13 +17,6 @@ each position spend only the scans it needs. Read
 [The tune-up chain](tuning.md) for the physics behind the tuning steps; this
 page is about how the pieces fit together in a working file.
 
-!!! warning "Commissioning status"
-    Live execution is enabled from the CLI, but the automation chain has not
-    yet been validated on the spectrometer — both protocols are implemented
-    and verified in dry-run (`--test`) only. Always dry-run first, and keep
-    the first live sessions in `supervised` autonomy with an operator
-    present.
-
 ## A single T2 — `overnight_t2.yaml`
 
 ```yaml
@@ -231,3 +224,52 @@ to measure and recommend a rate; see
   files.
 - [Troubleshooting](troubleshooting.md) — what the failures these protocols
   can hit mean, verbatim.
+
+## Preliminary tuning and handoff
+
+This example is shipped as `protocols/preliminary_tuning.yaml`. Set the sample and scan bounds before use. The built-in ringing and resonator steps share the IF of the later echo preset; they take no external preset.
+
+```yaml
+# Dry-run: python3 -m atomize.epr_auto run protocols/preliminary_tuning.yaml --test
+sample: test_sample
+autonomy: supervised
+notify: none
+
+# Set the sample, synthesizer bounds and field range for the experiment.
+steps:
+  # Built-in sequences; both IF values must match the later echo preset.
+  - tune.ringing_check:
+      if_mhz: 50
+      max_length: 102.4 ns
+  # Optional: omit this step to keep the current synthesizer frequency.
+  - tune.resonator:
+      if_mhz: 50
+      start_mhz: 9200
+      end_mhz: 9600
+      step_mhz: 1
+  - tune.find_echo:
+      preset: hahn_echo_4s.phase_awg
+      center: 3445 G
+      span: 100 G
+      attenuation_db: 10
+      # Positive shifts the echo frequency above the resonator center.
+      frequency_shift_mhz: 0
+      points: 41
+  - tune.maximize_echo:
+      preset: hahn_echo_4s.phase_awg
+      rv_range: [0, 10]
+      coarse_step_db: 2
+      field_span: 10 G
+      points: 21
+      # Only used if power is insufficient; the pi pulse reaches at most 102.4 ns.
+      length_range: [22.4 ns, 51.2 ns]
+      length_points: 5
+      pulse_map: {P2: pi2, P3: pi}
+  # Writes preset copies and fine_tuning.yaml into the run's handoff directory.
+  - tune.save_presets:
+      preset: hahn_echo_4s.phase_awg
+      calibration_preset: ampl_4s.phase_awg
+      field_preset: ed_4s.phase_awg
+```
+
+Use a signed `frequency_shift_mhz`, such as `-50`, to optimize the echo below the resonator center in a two-frequency experiment. The live final step exports preset copies and `fine_tuning.yaml`; test mode reports the handoff without writing files. See [Preliminary tuning](tuning.md#preliminary-tuning) for the phase, ringing-limit and RV-settling requirements.

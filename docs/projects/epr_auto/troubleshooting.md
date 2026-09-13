@@ -9,12 +9,6 @@ data quality, **environment** problems around locks and the GUI, and
 [Writing protocols](protocols.md), [The tune-up chain](tuning.md), and
 [Presets](presets.md).
 
-!!! warning "Commissioning status"
-    Live execution is enabled from the CLI, but the automation chain has not
-    yet been validated on the spectrometer — the failure paths below are
-    implemented and exercised in dry-run (`--test`). Always dry-run a
-    protocol first.
-
 ## The `--test`-first workflow
 
 Most mistakes never need hardware to find. Two commands catch them at your
@@ -397,6 +391,15 @@ than letting the run reach the abort:
 
 Add a `tune.rep_rate` step before the experiment, or give the step an explicit
 rate in Hz.
+
+## (e) Preliminary tuning stops
+
+A ringing measurement above a threshold or an invalid trace stops before the next RV point and attempts to return to 60 dB. Do not treat `on_fail: skip` as a way past this check. Allow the mechanical return to finish before starting another operation. A message containing `return to 60 dB FAILED` means the return was not completed successfully.
+
+If the resonator scan reports a mismatched IF or an untested pulse length, make both built-in `if_mhz` values match the echo preset's DETECTION IF and ensure `max_length` covers the requested pulses. Neither `tune.ringing_check` nor `tune.resonator` accepts `preset`.
+
+A rejected resonator peak leaves diagnostic sections and rejection reasons alongside the diode data when acquisition succeeded. Review the scan bounds, clipping, signal strength and early time region before rerunning. A missing echo stops field search; review the field center/span, frequency shift and echo preset. Bridge controls being read-only while the run owns the bridge is expected.
+
 
 ## Next steps
 

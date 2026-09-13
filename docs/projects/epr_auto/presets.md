@@ -1,6 +1,6 @@
 # Presets
 
-Every acquisition `epr_auto` runs is built from a `*.phase_awg` **preset** —
+Most acquisitions `epr_auto` runs are built from a `*.phase_awg` **preset** —
 the same saved pulse-sequence file the AWG phasing tool uses interactively. A
 protocol step names a preset; the runner loads it, applies the calibrations
 earlier steps measured, and rebuilds the exact worker arguments the GUI would
@@ -11,6 +11,8 @@ preset's "Shift Offset" checkbox, and what the runner overrides at build time
 versus what it never touches. For the individual
 step parameters see the [Step reference](steps.md); for how the tuning
 results flow between steps see [The tune-up chain](tuning.md).
+
+The preliminary ringing check uses its internal `.phase_awg` with `+x,+x` phases; the resonator scan uses a built-in procedure. Neither step takes an external preset. Their `if_mhz` must match the later echo preset. The preliminary workflow uses `.phase_awg`; legacy `.phase` presets are not supported by this AWG automation path. See [Preliminary tuning](tuning.md#preliminary-tuning).
 
 ## Where presets come from
 

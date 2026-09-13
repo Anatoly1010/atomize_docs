@@ -131,14 +131,19 @@ The result is that a protocol is walked from first step to last, with all its
 validation and cross-step plumbing exercised, on a machine with no spectrometer
 attached.
 
-## Running live
+## Running from the main window
 
-!!! warning "Commissioning status"
-    Live execution is enabled from the CLI, but the automation chain has not
-    yet been validated on the spectrometer — every step is implemented and
-    verified in dry-run (`--test`) only. Always dry-run a protocol first, and
-    keep the first live sessions in `supervised` autonomy with an operator
-    present.
+Open **EPR Endstation Control**, leave **Dry run** checked, click **Run protocol…**, and choose a YAML protocol. Output and completion status appear in the application log. A second protocol cannot start while one is active.
+
+For a first dummy-data check, choose `protocols/preliminary_tuning.yaml` and Continue through its five checkpoints. GUI dry runs use canned data and display checkpoint dialogs; ordinary CLI `--test` auto-continues. Neither dry-run path creates acquisition or handoff files. Invalid YAML is reported in the log.
+
+Checkpoints offer Continue, Skip and Abort. Failure prompts offer Retry, Skip and Abort; a proposed coarse-stage fallback offers Re-run coarse stage or No. Closing a dialog aborts the run. Skipping a prerequisite may cause a later dependent step to fail.
+
+**Stop protocol** requests interruption and lets the acquisition worker finish its cleanup. The GUI remains responsive and shows a stopping state. The button becomes **Force stop**; pressing it sends a second interrupt during cleanup. Allow normal cleanup to finish whenever possible. The application refuses to close while the protocol process is active.
+
+During a live ringing ladder, Stop returns RV to 60 dB. Stopping at a checkpoint or in another step leaves RV unchanged. Instrument locks are released when the runner exits. Uncheck Dry run only when ready for a supervised live run.
+
+## Running live
 
 Prepare a live session as follows:
 
@@ -225,3 +230,14 @@ The directory holds three kinds of file:
 - [Examples](examples.md) — two annotated protocols walked through end to end.
 - [Troubleshooting](troubleshooting.md) — common failures, quoted verbatim,
   and what they mean.
+
+## Preliminary tuning
+
+From the ITC checkout, set the sample and scan bounds in `protocols/preliminary_tuning.yaml`, then validate and dry-run it:
+
+```bash
+epr-auto validate protocols/preliminary_tuning.yaml
+epr-auto run protocols/preliminary_tuning.yaml --test
+```
+
+This covers ringing, the optional resonator scan, echo search, optimization and a simulated fine-tuning handoff. The dry-run uses canned data and writes no acquisition or handoff files. See [Preliminary tuning](tuning.md#preliminary-tuning) before a supervised live run. Answer live checkpoints in the launcher dialogs or in a real terminal.

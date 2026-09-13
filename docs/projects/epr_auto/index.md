@@ -33,6 +33,10 @@ working directory into `libs/` before touching hardware: the Insys FPGA driver
 reads its `brd.ini` / `exam_adc.ini` relative to the current directory at
 instantiation time.
 
+The [preliminary-tuning workflow](tuning.md#preliminary-tuning) adds a ringing check, an optional resonator scan, echo search and optimization, and a preset handoff for fine tuning. Start from `protocols/preliminary_tuning.yaml` in the ITC repository.
+
+Launch protocols with **Run protocol** on the EPR Endstation Control tab, or from a terminal while the Atomize GUI is open for live plotting. The launcher has a separate **Dry run** checkbox, checked by default. See [Running from the main window](quickstart.md#running-from-the-main-window).
+
 ## A protocol at a glance
 
 ```yaml
@@ -61,15 +65,7 @@ key/value block. Full step and parameter details are on the
 
 ## Current status
 
-The runner is implemented and dry-run-verified end to end; on-hardware
-commissioning is in progress.
-
-!!! warning "Commissioning status"
-    Live execution is enabled from the CLI, but the automation chain has not
-    yet been validated on the spectrometer — every step is implemented and
-    verified in dry-run (`--test`) only. Always dry-run a protocol first, and
-    keep the first live sessions in `supervised` autonomy with an operator
-    present.
+Fine-tuning and relaxation steps have been used on the spectrometer. Preliminary tuning is implemented and dry-run tested; its complete hardware workflow is still being validated. Use supervised mode for initial live runs.
 
 ## Where to go next
 

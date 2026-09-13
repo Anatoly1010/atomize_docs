@@ -21,13 +21,6 @@ parameter, expands `foreach` blocks, and reports the first problem as
 `INVALID: <file>:<line>: <message>`. A protocol that validates will load; it
 does not guarantee the hardware will cooperate.
 
-!!! warning "Commissioning status"
-    Live execution is enabled from the CLI, but the automation chain has not
-    yet been validated on the spectrometer — everything on this page is
-    implemented and verified in dry-run (`--test`) mode. Always dry-run a
-    protocol first, and keep the first live sessions in `supervised`
-    autonomy with an operator present.
-
 ## Top-level keys
 
 The document is a YAML mapping with exactly these keys; any other top-level
@@ -208,9 +201,9 @@ spent:
 - **`skip`** continues the protocol without the step; the manifest records
   it as `failed-skipped` and later steps that depend on its result run with
   whatever the session already holds.
-- **`ask`** prompts the operator at the terminal to retry, skip, or abort.
-  This needs an attached terminal and an attended run: in a dry-run, in
-  `autonomous` mode, or with no tty, `ask` degrades to `abort` (and notifies
+- **`ask`** prompts the operator in the launcher dialog or terminal to retry, skip, or abort.
+  This needs an attended run: in an ordinary CLI dry-run, in
+  `autonomous` mode, or without either GUI interaction or a terminal, `ask` degrades to `abort` (and notifies
   that it did so), because there is no one to answer.
 
 `checkpoint: true` marks a step the operator should confirm before it runs —
@@ -231,12 +224,14 @@ In `autonomous` mode a `checkpoint: true` step is auto-approved with a
 notification rather than a pause, so an overnight run is never left waiting
 on a prompt. The judges (see below) remain the only brake on data quality.
 
-A checkpoint that would pause but has no terminal to prompt at — an
+A checkpoint that would pause but has neither a launcher dialog nor a terminal to prompt at — an
 unattended run in `supervised` or `checkpointed` mode — is a hard abort, not
 a silent continue, so a batch job cannot slip past a confirmation the author
-demanded. In a dry-run every checkpoint and every operator prompt is
+demanded. In an ordinary CLI dry-run every checkpoint and every operator prompt is
 auto-continued and logged, so `--test` exercises the full step list without
 stopping.
+
+Preliminary-tuning safety failures are hard aborts: ringing above a threshold, invalid traces and other preliminary acquisition failures stop the run and attempt to return RV to 60 dB. Step retries, `on_fail: skip` and `foreach` continuation do not override them. See [Preliminary tuning](tuning.md#preliminary-tuning).
 
 ## Series: the foreach block
 
@@ -422,3 +417,5 @@ feeds straight into the retry/`on_fail` machinery, while **advisory** judges
 coarse-stage convergence diagnostic) only warn and never abort. In a dry-run
 all judges are logged but none abort, so `--test` shows you the diagnostics
 without stopping the run.
+
+GUI dry runs retain operator dialogs, so Continue, Skip, Abort and Stop can be tested with canned data. See [Running from the main window](quickstart.md#running-from-the-main-window).
