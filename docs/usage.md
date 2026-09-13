@@ -221,6 +221,12 @@ The Queue dock is used to create an execution queue by pressing `Add to Queue` b
 - clear the queue;
 - drag and drop files to change the execution order.
 
+Use **Pin** to keep the current plot visible while selecting other plots. Pinned plots appear in bold in the Plots list; select one and click **Unpin** to release it.
+
+Enable **Grid** to display several plots together. Click entries in the Plots list to add or remove them from the view. Pinned plots stay visible. Turn Grid off to return to the current plot plus any pinned plots.
+
+When a new experiment starts, Grid is turned off and its plots appear together automatically as data arrives; pinned plots stay visible, while other plots from previous runs remain available in the Plots list.
+
 The Liveplot tab has the following additional features in the Plots list (available via right-click menu):
 
 - delete a selected dock with graphs;
