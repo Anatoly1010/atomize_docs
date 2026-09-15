@@ -175,7 +175,7 @@ Python is used to write an experimental script. Examples can be found in the `SC
 
 ## Workspace
 
-The Main tab contains the Script Editor, Output and Queue panels. Use the script actions to open, edit and test a script, then Start to run it. Stop interrupts the current experiment. Add to Queue schedules scripts to run in sequence.
+The Main tab contains the Script Editor, Output and Queue panels. Use the script actions to open, edit and test a script, then Start to run it. Stop interrupts the current experiment and clears the queue. Add to Queue schedules scripts to run in sequence. The running script appears at the top of the Queue panel, marked `Running`, even when it was started with an empty queue.
 
 ![Main workspace with script editor and a populated queue](images/atomize-workspace.png)
 
@@ -215,11 +215,16 @@ The Script Editor dock has the following shortcuts:
 | `Ctrl + N` | show the next occurrence                                   |
 | —          | hidden characters can be displayed by selecting any text   |
 
-The Queue dock is used to create an execution queue by pressing `Add to Queue` button. All scripts will be [tested](writing_modules.md#test-run) before being added to the queue. The execution order is from top to bottom. If there are items in the queue, pressing the `Stop Experiment` button will stop the execution of the current script and clear the queue. Additional features (available via right-click menu in the Queue dock):
+Use `Add to Queue` to schedule the open script. Scripts added with this button are [tested](writing_modules.md#test-run) before being added. Execution proceeds from top to bottom.
 
-- delete the selected file from the queue;
-- clear the queue;
-- drag and drop files to change the execution order.
+Once a script starts successfully, it appears at the top of the Queue dock, marked `Running`, including when the queue was empty. Opening another script does not change this entry. You can add more scripts while it runs; they are appended below it. When the running script finishes, its entry is removed and the next waiting script starts automatically.
+
+Drag waiting entries to change their execution order. The running entry stays first and cannot be moved or removed. The Queue dock's right-click menu provides:
+
+- `Remove from Queue`: remove the selected waiting entry;
+- `Remove All`: remove all waiting entries, keeping the running script and its entry.
+
+Press `Stop` to interrupt the running script and clear the entire queue.
 
 The Liveplot tab has the following additional features in the Plots list (available via right-click menu):
 
