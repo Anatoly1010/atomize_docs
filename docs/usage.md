@@ -226,6 +226,8 @@ Drag waiting entries to change their execution order. The running entry stays fi
 
 Press `Stop` to interrupt the running script and clear the entire queue.
 
+In Atomize_ITC, Start also checks whether the Insys FPGA is occupied, including by a RECT/AWG preview or experiment. This check applies when script tests are disabled or a previous test result is reused. A blocked launch leaves waiting scripts in the queue; press Start again after the active acquisition finishes. If the FPGA owner crashed without releasing the board, the message requires a computer reboot before another acquisition.
+
 The Liveplot tab has the following additional features in the Plots list (available via right-click menu):
 
 - delete a selected dock with graphs;
