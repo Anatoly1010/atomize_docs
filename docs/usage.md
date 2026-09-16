@@ -179,7 +179,7 @@ The Main tab contains the Script Editor, Output and Queue panels. Use the script
 
 ![Main workspace with script editor and a populated queue](images/atomize-workspace.png)
 
-The Liveplot tab displays live plots and lists them in the Plots panel. Use horizontal scrolling to read long entries in Queue and Plots, or hover over an entry to see its full path or name. Right-click a list or plot to access its available actions.
+The Liveplot tab displays live plots and lists them in the Plots panel. Long names in Queue and Plots are shortened in the middle; hover over an entry to see the full path or name. Right-click a list or plot to access its available actions.
 
 ![Liveplot showing three green-dot plots with Show current run active and synthetic demonstration data](images/atomize-liveplot.png)
 
