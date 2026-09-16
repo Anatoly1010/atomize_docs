@@ -179,13 +179,21 @@ The Main tab contains the Script Editor, Output and Queue panels. Use the script
 
 ![Main workspace with script editor and a populated queue](images/atomize-workspace.png)
 
-The Liveplot tab displays live plots and lists them in the Plots panel. Long names in Queue and Plots are shortened in the middle; hover over an entry to see the full path or name. Right-click a list or plot to access its available actions.
+The Liveplot tab displays live plots and lists them in the Plots panel. Use horizontal scrolling to read long entries in Queue and Plots, or hover over an entry to see its full path or name. Right-click a list or plot to access its available actions.
 
 ![Liveplot showing three green-dot plots with Show current run active and synthetic demonstration data](images/atomize-liveplot.png)
 
+### Output panel
+
+Output shows script messages and errors. By default, it sits below the Script Editor on the Main tab. Check **Shared** in its header to keep the same output visible on every tab, including Liveplot and any control-center tab. Uncheck Shared to return it to Main.
+
+Click the arrow button in the Output header to switch between bottom and right placement. The arrow points toward the next position. Drag the divider to adjust the panel size. The Shared setting, placement, and divider sizes are remembered between sessions.
+
+**Auto-scroll** keeps the latest message visible, including when you move or resize Output. Scroll up to pause it and read older messages; your reading position is preserved as new messages arrive or the panel moves. Scroll back to the bottom, press **Ctrl+End** while Output has focus, or check Auto-scroll to follow the latest messages again. Auto-scroll starts enabled each time Atomize opens.
+
 ## Additional Interactivity
 
-The Main tab has the following additional features in the Output dock (available via right-click menu):
+The Output dock has the following additional features, available via its right-click menu:
 
 - clear all text from the dock;
 - open the local directory with the device configuration files;
