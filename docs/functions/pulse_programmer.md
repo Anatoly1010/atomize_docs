@@ -309,6 +309,8 @@ pulser_open()    # open the board for use
 
 This function should be called only without arguments and is only available for Insys FM214x3GDA and Pulse Blaster Micran. In the case of Insys FM214x3GDA, the function should be used after defining pulses and repetition rate with [`pulser_pulse()`](#pulser_pulse) and [`pulser_repetition_rate()`](#pulser_repetition_rate).
 
+For Insys FM214x3GDA, both test and real execution check whether the FPGA is available. Test mode only reads the status; an incorrect test script does not mark the board busy. Real execution records ownership before board initialization and raises `RuntimeError` if another acquisition owns the FPGA or recovery requires a reboot. GUI-launched and terminal scripts using the same Atomize installation share this protection.
+
 ---
 
 ### pulser_close() { #pulser_close data-toc-label="pulser_close" }
@@ -318,6 +320,10 @@ pulser_close()    # gracefully close the board
 ```
 
 This function should be called only without arguments and is only available for Insys FM214x3GDA and Pulse Blaster Micran. The function must be used at the end of an experimental script to gracefully close the board.
+
+For Insys FM214x3GDA, call this function in a `finally` block so that handled errors also release the board. Only the process and driver instance that opened the FPGA may clear its busy status. Calling it in test mode, after a rejected open, or again after successful closing leaves the status unchanged. Reported cleanup failures raise `RuntimeError` and keep further acquisition blocked.
+
+If the acquisition process dies without releasing the FPGA, or initialization or cleanup reports an uncertain hardware state, recovery requires rebooting the computer. Restarting Atomize does not clear this condition. Status records from an earlier boot are ignored after reboot; do not manually clear the busy status to bypass recovery.
 
 ---
 

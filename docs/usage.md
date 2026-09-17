@@ -175,7 +175,7 @@ Python is used to write an experimental script. Examples can be found in the `SC
 
 ## Workspace
 
-The Main tab contains the Script Editor, Output and Queue panels. Use the script actions to open, edit and test a script, then Start to run it. Stop interrupts the current experiment. Add to Queue schedules scripts to run in sequence.
+The Main tab contains the Script Editor, Output and Queue panels. Use the script actions to open, edit and test a script, then Start to run it. Stop interrupts the current experiment and clears the queue. Add to Queue schedules scripts to run in sequence. The running script appears at the top of the Queue panel, marked `Running`, even when it was started with an empty queue.
 
 ![Main workspace with script editor and a populated queue](images/atomize-workspace.png)
 
@@ -183,9 +183,17 @@ The Liveplot tab displays live plots and lists them in the Plots panel. Long nam
 
 ![Liveplot showing three green-dot plots with Show current run active and synthetic demonstration data](images/atomize-liveplot.png)
 
+### Output panel
+
+Output shows script messages and errors. By default, it sits below the Script Editor on the Main tab. Check **Shared** in its header to keep the same output visible on every tab, including Liveplot and any control-center tab. Uncheck Shared to return it to Main.
+
+Click the arrow button in the Output header to switch between bottom and right placement. The arrow points toward the next position. Drag the divider to adjust the panel size. The Shared setting, placement, and divider sizes are remembered between sessions.
+
+**Auto-scroll** keeps the latest message visible, including when you move or resize Output. Scroll up to pause it and read older messages; your reading position is preserved as new messages arrive or the panel moves. Scroll back to the bottom, press **Ctrl+End** while Output has focus, or check Auto-scroll to follow the latest messages again. Auto-scroll starts enabled each time Atomize opens.
+
 ## Additional Interactivity
 
-The Main tab has the following additional features in the Output dock (available via right-click menu):
+The Output dock has the following additional features, available via its right-click menu:
 
 - clear all text from the dock;
 - open the local directory with the device configuration files;
@@ -215,11 +223,18 @@ The Script Editor dock has the following shortcuts:
 | `Ctrl + N` | show the next occurrence                                   |
 | —          | hidden characters can be displayed by selecting any text   |
 
-The Queue dock is used to create an execution queue by pressing `Add to Queue` button. All scripts will be [tested](writing_modules.md#test-run) before being added to the queue. The execution order is from top to bottom. If there are items in the queue, pressing the `Stop Experiment` button will stop the execution of the current script and clear the queue. Additional features (available via right-click menu in the Queue dock):
+Use `Add to Queue` to schedule the open script. Scripts added with this button are [tested](writing_modules.md#test-run) before being added. Execution proceeds from top to bottom.
 
-- delete the selected file from the queue;
-- clear the queue;
-- drag and drop files to change the execution order.
+Once a script starts successfully, it appears at the top of the Queue dock, marked `Running`, including when the queue was empty. Opening another script does not change this entry. You can add more scripts while it runs; they are appended below it. When the running script finishes, its entry is removed and the next waiting script starts automatically.
+
+Drag waiting entries to change their execution order. The running entry stays first and cannot be moved or removed. The Queue dock's right-click menu provides:
+
+- `Remove from Queue`: remove the selected waiting entry;
+- `Remove All`: remove all waiting entries, keeping the running script and its entry.
+
+Press `Stop` to interrupt the running script and clear the entire queue.
+
+In Atomize_ITC, Start also checks whether the Insys FPGA is occupied, including by a RECT/AWG preview or experiment. This check applies when script tests are disabled or a previous test result is reused. A blocked launch leaves waiting scripts in the queue; press Start again after the active acquisition finishes. If the FPGA owner crashed without releasing the board, the message requires a computer reboot before another acquisition.
 
 The Liveplot tab has the following additional features in the Plots list (available via right-click menu):
 
