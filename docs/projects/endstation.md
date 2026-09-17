@@ -49,6 +49,14 @@ measurements with SNR- and time-budget-driven scan counts, judges every
 result and records a full run manifest. See the
 [epr_auto overview](epr_auto/index.md) for the manual.
 
+## Linking pulses while tuning
+
+In the **AWG phasing** and **RECT phasing** tools, the first cell of the **Pulses** tab's **Link** row contains a parameter selector and a small **×** reset button. Choose **Length** or **Position** to couple that parameter across pulses; AWG also offers **Amplitude** and **Frequency**.
+
+Set each pulse's factor to **No**, **0.5x**, **1x**, or **2x**. Editing the selected parameter on a linked pulse changes the other linked pulses in proportion to their factors. Switching parameters retains the factors. Choosing **Off** temporarily disables linking and also retains them.
+
+Click **×** (**Reset all links**) to set every factor to **No** and the parameter to **Off**. Changing the link parameter or resetting links leaves pulse values unchanged and does not restart acquisition. Loading a preset or applying a pulse layout also resets links.
+
 ## Saving the full 2D data
 
 The two tools that acquire a full 2D array can write it as a single [HDF5](../functions/general_functions/data_managment.md#hdf5-files) file instead of comma separated text. The 1D result of an experiment stays CSV in both of them; only the 2D arrays change format, and reading either format stays supported everywhere.
