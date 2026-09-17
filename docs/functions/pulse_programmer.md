@@ -52,19 +52,14 @@ The keyword arguments:
 This function sets a pulse with specified parameters. The default argument is `name = 'P0'`, `channel = 'DETECTION'`, `start = '0 ns'`, `length = '100 ns'`, `delta_start = '0 ns'`, `length_increment = '0 ns'`, `phase_list = []`. The pulse sequence will be checked for overlap. In the auto defence mode (default option; can be changed in the config file) channels `AMP_ON` and `LNA_PROTECT` will be added automatically according to the delays indicated in the config file. In this mode `AMP_ON` and `LNA_PROTECT` pulses will be joined in one pulse if the distance between them is less than 12 ns (can be changed in the config file).
 
 **Allowed channels:** `'DETECTION'`, `'TRIGGER'`, `'AMP_ON'`, `'LNA_PROTECT'`, `'MW'`, `'-X'`, `'+Y'`, `'TRIGGER_AWG'`, `'AWG'`, `'LASER'`, `'SYNT2'`, `'CH10'`, …, `'CH20'`
-{: .enum }
 
 **Allowed phase_list values:** `'+x'`, `'-x'`, `'+y'`, `'-y'`
-{: .enum }
 
 **Output format (time args):** `'number'` + `'ns'` | `'us'` | `'ms'` | `'s'`
-{: .enum }
 
 **Range (Pulse Blaster ESR 500 Pro):** pulse length `10 ns` – `1900 ns`; sequence ≈ `10 s` max
-{: .enum }
 
 **Range (Insys FM214x3GDA):** pulse length `3.2 ns` – `1900 ns`; sequence ≈ `10 s` max
-{: .enum }
 
 In the case of Insys FM214x3GDA `start`, `length`, `delta_start`, and `length_increment` will be rounded to a multiple of 3.2 (`TRIGGER_AWG` timing, and the `DETECTION` `start`/`delta_start`, follow the grid set by [`awg_time_resolution()`](#awg_time_resolution): 3.2 ns by default, optionally 0.8 ns).
 
@@ -113,7 +108,6 @@ answer = np.zeros( data1.shape ) + 1j*np.zeros( data2.shape )
 The symbol at the index `J` of the `acq_cycle` array means that the corresponding values from the data arrays will be added with the following factor to the resulting array:
 
 **Allowed operations:** `'+x'`, `'-x'`, `'+y'`, `'-y'`
-{: .enum }
 
 | Symbol | Factor | Operation                                       |
 | ------ | ------ | ----------------------------------------------- |
@@ -140,7 +134,6 @@ pulser_repetition_rate('2 Hz')    # set to 2 Hz
 This function queries (if called without argument) or sets (if called with one argument) the repetition rate of the pulse sequence. If there is an argument it will be set as a repetition rate. If there is no argument the current repetition rate is returned as a string. The maximum available repetition rate depends on the total length of the pulse sequence.
 
 **Max:** `5 MHz`
-{: .enum }
 
 ---
 
@@ -225,7 +218,6 @@ This function sets the effective time grid for AWG pulse timing and is only avai
 The default resolution is `'3.2 ns'`, which is one pulser tick. With `'0.8 ns'`, which is one DAC sample, the TTL trigger and gate stay on the 3.2 ns hardware grid and the sub-tick remainder is produced by leading zero samples inside the pulse's DAC gate segment. The `DETECTION` window is likewise placed on the 3.2 ns grid and its sub-tick residual is corrected digitally at readout by shifting the integration window and aligning the trace. This correction is exact for a decimation of 1 or 2 and is rounded to 1.6 ns for a decimation of 4.
 
 **Allowed:** `'3.2 ns'`, `'0.8 ns'`
-{: .enum }
 
 ---
 
@@ -309,7 +301,7 @@ pulser_open()    # open the board for use
 
 This function should be called only without arguments and is only available for Insys FM214x3GDA and Pulse Blaster Micran. In the case of Insys FM214x3GDA, the function should be used after defining pulses and repetition rate with [`pulser_pulse()`](#pulser_pulse) and [`pulser_repetition_rate()`](#pulser_repetition_rate).
 
-For Insys FM214x3GDA, both test and real execution check whether the FPGA is available. Test mode only reads the status; an incorrect test script does not mark the board busy. Real execution records ownership before board initialization and raises `RuntimeError` if another acquisition owns the FPGA or recovery requires a reboot. GUI-launched and terminal scripts using the same Atomize installation share this protection.
+For Insys FM214x3GDA this function checks whether the FPGA is available in both test mode and real execution. In test mode it only reads the board status and does not mark the board as busy. During real execution it reserves the board before initialization and raises `RuntimeError` if another acquisition is using the FPGA or recovery requires a reboot. This protection applies to scripts launched from the GUI or a terminal using the same Atomize installation.
 
 ---
 
@@ -323,7 +315,8 @@ This function should be called only without arguments and is only available for 
 
 For Insys FM214x3GDA, call this function in a `finally` block so that handled errors also release the board. Only the process and driver instance that opened the FPGA may clear its busy status. Calling it in test mode, after a rejected open, or again after successful closing leaves the status unchanged. Reported cleanup failures raise `RuntimeError` and keep further acquisition blocked.
 
-If the acquisition process dies without releasing the FPGA, or initialization or cleanup reports an uncertain hardware state, recovery requires rebooting the computer. Restarting Atomize does not clear this condition. Status records from an earlier boot are ignored after reboot; do not manually clear the busy status to bypass recovery.
+!!! warning
+    For Insys FM214x3GDA, if the acquisition process terminates without releasing the FPGA, or initialization or cleanup reports an uncertain hardware state, the computer must be rebooted before another acquisition. Restarting Atomize does not clear this condition. Status records from an earlier boot are ignored after reboot. Do not manually clear the busy status to bypass recovery.
 
 ---
 
@@ -337,7 +330,6 @@ pulser_default_synt(2)    # select synthesizer 2
 This function should be called only with one argument and selects the default sources for microwave pulse generation.
 
 **Allowed:** `1`, `2`
-{: .enum }
 
 !!! note
     This function is only available for Insys FM214x3GDA.
@@ -391,4 +383,3 @@ pulser_test_flag('test')    # test mode
 This is a special function for changing test mode. The function is usually used in GUI applications that use the device module.
 
 **Allowed:** `'None'`, `'test'`
-{: .enum }

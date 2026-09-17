@@ -33,7 +33,12 @@ oscilloscope_record_length(4000)    # set number of waveform points to 4000
 
 This function queries or sets the number of waveform points to be transferred using [`oscilloscope_get_curve()`](#oscilloscope_get_curve) function. If there is no number of points setting fitting the argument the nearest available value is used and warning is printed.
 
-For Keysight 2000 and 3000 X-series the requested number is sent to the oscilloscope as is; the oscilloscope rounds it to a value that depends on the acquisition [mode](#oscilloscope_acquisition_type), the timebase and the memory in use, and the module queries the value actually set and prints it in the warning. Measured examples for a request of 4000 points: 2000 X-series 3839 (average), 3840 (high-resolution), 3846 (normal); 3000 X-series 3999 (average and high-resolution), 3829 (normal). Always use the queried value, not the request, to size the arrays. For Keysight 4000 X-series the number of points should be checked. There is also a known bug in older firmware versions that causes an incorrect number of points to be returned during the first data collection after changing the data collection settings. Please update the oscilloscope [firmware](https://www.keysight.com/us/en/assets/9922-03906/release-notes/Keysight-3000T-X-Series-Oscilloscope-Release-Notes-07-56.pdf).
+For Keysight 2000 and 3000 X-series the requested number of points is sent directly to the oscilloscope. The oscilloscope selects the actual number of points according to the acquisition [mode](#oscilloscope_acquisition_type), the [timebase](#oscilloscope_timebase) and the memory in use. If this value differs from the request, the module prints a warning with the actual number of points. The queried value should be used to determine the size of the data arrays.
+
+For example, a request of 4000 points on the tested Keysight 2000 X-series oscilloscope gives 3839 points in average mode, 3840 in high-resolution mode and 3846 in normal mode. On the tested 3000 X-series oscilloscope it gives 3999 points in average and high-resolution modes and 3829 in normal mode. These values depend on the acquisition settings. For Keysight 4000 X-series the number of points should be checked.
+
+!!! warning
+    Older Keysight firmware versions may return an incorrect number of points during the first acquisition after changing the acquisition settings. Please update the oscilloscope [firmware](https://www.keysight.com/us/en/assets/9922-03906/release-notes/Keysight-3000T-X-Series-Oscilloscope-Release-Notes-07-56.pdf).
 
 For Rigol MSO8000 Series the number of points in the waveform for normal, peak or high-resolution [mode](#oscilloscope_acquisition_type) is `[1000, 10000, 1e5, 1e6, 1e7, 2.5e7, 5e7, 1e8, 1.25e8]`. For the average [mode](#oscilloscope_acquisition_type) the number of points is `[1000, 10000, 1e5, 1e6, 1e7, 2.5e7]`. To use this feature effectively, one should disable the Auto ROLL option.
 
@@ -136,10 +141,17 @@ For Rigol MSO8000 Series this function clears all the waveforms on the screen an
 ### oscilloscope_wait_acquisition() { #oscilloscope_wait_acquisition data-toc-label="oscilloscope_wait_acquisition" }
 
 ```python
-oscilloscope_wait_acquisition()    # block until the started acquisition is complete
+oscilloscope_wait_acquisition()    # wait for acquisition to finish
 ```
 
-Keysight 2000, 3000 and 4000 X-series. For the 2000 X-series [`oscilloscope_start_acquisition()`](#oscilloscope_start_acquisition) returns immediately, so several oscilloscopes can be armed for the same triggers; this function then blocks until the acquisition of this oscilloscope has finished (`*OPC?`). Use it when something else, for example a magnetic field step, should happen after the shots are taken but before the curves are read out with [`oscilloscope_get_curve()`](#oscilloscope_get_curve). Reading the curve without this call is still correct, since the read waits for the acquisition anyway. For the 3000 and 4000 X-series the start call itself already waits, so this function returns at once.
+This function waits until the acquisition started by [`oscilloscope_start_acquisition()`](#oscilloscope_start_acquisition) is complete. The function should be called only without arguments.
+
+For Keysight 2000 X-series the start function returns before the acquisition is complete, allowing several oscilloscopes to be started before waiting for their data. This function should be used when another action, such as changing the magnetic field, must take place after acquisition but before reading the waveform. The [`oscilloscope_get_curve()`](#oscilloscope_get_curve) function also waits for acquisition to finish, so a separate wait is not required when reading the waveform immediately after starting acquisition.
+
+For Keysight 3000 and 4000 X-series the start function already waits for acquisition to finish. Calling this function afterwards does not wait for another acquisition.
+
+!!! note
+    This function is only available for Keysight 2000, 3000 and 4000 X-series oscilloscopes.
 
 ---
 
