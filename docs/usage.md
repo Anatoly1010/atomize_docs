@@ -246,21 +246,21 @@ The Liveplot tab has the following additional features in the Plots list (availa
 - open 1d data in csv multi-column format and plot it in a new graph dock;
 - open 2d data in csv format and plot it in a new graph dock.
 
-A **green dot** beside a plot means its data source is connected. The dot remains visible when the plot is hidden and disappears when the source disconnects. Hover over a plot name to see its connection status and the time of its last data update.
+A **green dot** beside a plot means it is receiving data. After 10 seconds without an update, the dot turns **grey** while the source remains connected; new data turns it green again. The dot remains visible when the plot is hidden and disappears when the source disconnects. Hover over a plot name to see its connection status and the time of its last data update. An idle connected plot shows **Source connected, idle since HH:MM:SS**.
 
-Click **Show current run** to restore all green-dot plots, including any you have hidden, and follow incoming plots from connected sources. The button is highlighted while this complete live view is active. Browsing a plot without a green dot, entering Grid or hiding a live plot removes the highlight. The button is disabled when there are no green-dot plots.
+Click **Show current run** to restore all connected plots (green or grey dots), including any you have hidden, and follow incoming plots from connected sources. The button is highlighted while this complete live view is active. Browsing a plot without a dot, entering Grid or hiding a live plot removes the highlight. The button is disabled when there are no connected plots.
 
-Use **Pin** to keep a plot visible while browsing other plots or using Grid. Pinned plots appear in bold in the Plots list; select one and click **Unpin** to release it. **Show current run** displays only green-dot plots: other pinned plots keep their pins but are hidden in this view.
+Use **Pin** to keep a plot visible while browsing other plots or using Grid. Pinned plots appear in bold in the Plots list; select one and click **Unpin** to release it. **Show current run** displays only connected plots (green or grey dots): other pinned plots keep their pins but are hidden in this view.
 
 Enable **Grid** to display several plots together. Click entries in the Plots list to add or remove them from the view. Pinned plots stay visible. Turn Grid off to return to the current plot plus any pinned plots.
 
-When a new experiment starts, Grid turns off and live plots appear together automatically. Plots from finished runs leave the workspace but remain available in the Plots list. When an experiment finishes, its green dots disappear, but the displayed plots remain on screen until you change the view or start a new experiment.
+When a new experiment starts, Grid turns off and live plots appear together automatically. Plots from finished runs leave the workspace but remain available in the Plots list. When an experiment finishes, its dots disappear, but the displayed plots remain on screen until you change the view or start a new experiment.
 
 The buttons in each plot header control its view:
 
 | Button | Action |
 | --- | --- |
-| **× (Hide plot)** | Hides the plot without deleting its data. Hidden live plots continue receiving updates. Click the plot name in the Plots list to reopen it, or use **Show current run** to restore all green-dot plots together. |
+| **× (Hide plot)** | Hides the plot without deleting its data. Hidden live plots continue receiving updates. Click the plot name in the Plots list to reopen it, or use **Show current run** to restore all connected plots (green or grey dots) together. |
 | **A (Auto range)** | Fits the axes to the plotted data after zooming or panning. Available on both 1D and 2D plots. |
 
 For 2D image plots, the graph right-click **Colormap** menu selects the colour map and
