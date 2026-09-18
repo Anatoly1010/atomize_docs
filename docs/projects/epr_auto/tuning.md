@@ -28,8 +28,10 @@ the measurement temperature.
 
 Use [protocols/preliminary_tuning.yaml](https://github.com/Anatoly1010/Atomize_ITC/blob/master/protocols/preliminary_tuning.yaml) to establish a working point before fine tuning. Set the sample name, synthesizer scan bounds, field center and field span for your experiment. All transmit pulses in this workflow use the AWG SINE channel. The first two steps use built-in sequences and do not accept a `preset` parameter; echo steps use `.phase_awg` files.
 
+**RV** (rotary-vane attenuator) controls the microwave excitation power at the sample. **VA** (video attenuation) controls the level of the received electrical signal sent to the ADC. It is set using two bridge controls: **VA1** (Video Attenuation 1, `video1_db`: 0–30 dB in 2 dB steps) and **VA2** (Video Attenuation 2, `video2_db`: 0–31.5 dB in 0.5 dB steps). Increasing either video attenuation reduces the measured signal amplitude; an additional 6 dB approximately halves it.
+
 ```text
-ringing check -> [resonator scan] -> echo field search -> amplitude/field optimization -> fine-tuning handoff
+ringing check -> [resonator scan] -> echo field search -> amplitude/field optimization -> video check -> fine-tuning handoff
 ```
 
 ### Ringing check
@@ -54,13 +56,35 @@ Both built-in steps have `if_mhz: 50` by default. Their IF values must match eac
 
 ### Echo search and optimization
 
+With the default `adjust_video: true`, `tune.find_echo` first homes RV and opens it through 60, 40, 20, 15, 10, 5 and 0 dB, ending at `attenuation_db`. A target between these values is the final point. The initial pulses run at `center`, normally near g = 2. The phasing tool's live preview reads the current 1D time trace from the ADC buffers during RV movement, so VA can be increased while the vane is opening. The next RV move starts after settling and a valid trace below 200 mV.
+
+Above **200 mV**, the runner adds video attenuation and remeasures. It uses the maximum unsmoothed I/Q magnitude after receiver protection. The increase is `20*log10(measured_mV/200)` dB, rounded upward to available settings: VA1 first (2 dB steps, up to 30 dB), then VA2 (0.5 dB steps, up to 31.5 dB). Invalid readout or a signal still too strong at maximum attenuation stops the protocol and attempts RV home.
+
+Set `adjust_video: false` in `tune.find_echo` to keep the current video attenuation and move directly to the requested RV. `tune.maximize_echo` and `tune.video_attenuation` inherit this choice unless explicitly overridden. The final video step skips both measurement and bridge access when disabled.
+
 `tune.find_echo` scans the requested field range at the chosen `attenuation_db` (default 10 dB, allowed 0–60 dB), scores the full recorded magnitude, and confirms a resolved echo and its integration window. `pulse_length` sets a common length for both microwave pulses; when omitted, it uses the shortest active microwave pulse in the preset. No echo means stop and return to 60 dB. `frequency_shift_mhz` is a signed integer offset from the resonator-selected frequency, default 0. For a two-frequency experiment, `-50` puts the echo 50 MHz below the resonator center while keeping the AWG IF unchanged. Without a resonator scan, the reference is the bridge frequency at the first echo search; repeated searches do not accumulate the offset.
 
 `tune.find_echo` accepts a relative `frequency_shift_mhz`, not an absolute frequency. To choose an absolute synthesizer frequency instead of running the resonator scan, place a `bridge.set` step with `frequency_mhz` before the echo search. Leave `frequency_shift_mhz: 0` to use that frequency unchanged.
 
 `tune.maximize_echo` holds RV attenuation and pulse length fixed at the values chosen for `tune.find_echo`, unless you explicitly override them. It scans the π/2 amplitude `a` with the π amplitude at `2a`: first across `amplitude_range` (default 5–50 %), then on a finer grid around the best point. Both pulses have the same `pulse_length`, so their rotation angles differ through amplitude. Pulse roles come from `pulse_map: {P2: pi2, P3: pi}` or are inferred from the preset. The selected amplitudes are followed by a narrower field sweep and an echo confirmation.
 
+Each coarse or fine amplitude scan keeps the FPGA initialized across its points. The fine scan reuses values already measured in the coarse scan at the same video attenuation. Each stage saves the integrated curve and full I/Q trace matrices; the amplitude-trial records identify the matrix files and the zero-based row for each measured pair. Echo selection still uses the integrated magnitude within the echo window.
+
+Field and amplitude scans check received traces once data for all receiver phases are available. Above 200 mV, the scan stops and saves its partial data, VA is increased, and the field and pulse settings of the reported point are remeasured. The field search then restarts; amplitude optimization repeats its coarse, fine and field comparisons, discarding scores from the previous VA setting. The optimized final pulse pair is checked again.
+
+`rep_rate` optionally sets the repetition rate in Hz for `tune.find_echo`, up to 10000 Hz. Without it, the preset rate is used. `tune.maximize_echo` inherits the selected rate and accepts an override. All four handoff presets carry the resulting rate; the ringing check remains at 500 Hz.
+
 RV attenuation and pulse length are operator choices; this step searches neither. A maximum at the upper amplitude bound stops with `reduce attenuation`; a maximum at the lower bound stops with `increase attenuation`. Change `attenuation_db` before rerunning. Ringing is checked in the initial ladder unless an earlier pass is declared with `done: true`. Later pulses must retain the tested IF and stay within the tested DAC amplitudes; their lengths are not limited by the ladder pulse.
+
+### Final video attenuation
+
+`tune.video_attenuation` checks the final target `preset` after pulse tuning. It preserves pulse lengths and field and zeroes sweep increments for the check. Its single `limit_mv` defaults to 200 mV and can be lowered. After correcting any excess, it reduces attenuation one step at a time, VA2 first and then VA1, only when the predicted signal remains within the limit. Each change is remeasured. A corrective increase ends the opening attempt. The result records the final VA1/VA2 settings and measured peak.
+
+```yaml
+- tune.video_attenuation:
+    preset: tuned/echo_cal.phase_awg
+    # adjust_video: false  # skip this check and leave VA unchanged
+```
 
 ### Fine-tuning handoff and bridge control
 
@@ -77,9 +101,9 @@ RV attenuation and pulse length are operator choices; this step searches neither
 
 To change the exported pulse length, set `calibration_length` and rerun the preliminary protocol. Editing the Rabi pulse length in `tuned/calibration.phase_awg` alone leaves the exported field and echo-pulse lengths unchanged. Fine calibration then transfers the measured amplitudes to those lengths using the ratio of the calibration pulse length to the target pulse length.
 
-The generated protocol restores RV and the selected synthesizer frequency with `bridge.set`, measures the echo window and receiver phase on `echo.phase_awg`, and runs amplitude calibration. It then calls `tune.apply_calibration` for both `field.phase_awg` and `echo_cal.phase_awg` before the EDFS. The field sweep covers the original `tune.find_echo` span, recentered on the tuned field, with 200 points by default; `field_span` and `field_points` in `tune.save_presets` override these settings. It does not use the narrower maximization span.
+The generated protocol restores RV, the selected synthesizer frequency and known VA settings with `bridge.set`, measures the echo window and receiver phase on `echo.phase_awg`, and runs amplitude calibration. It then calls `tune.apply_calibration` for both `field.phase_awg` and `echo_cal.phase_awg` before the EDFS. The field sweep covers the original `tune.find_echo` span, recentered on the tuned field, with 200 points by default; `field_span` and `field_points` in `tune.save_presets` override these settings. It does not use the narrower maximization span.
 
-After the EDFS, the protocol repeats the echo-window and phase measurements on `echo_cal.phase_awg`, then repeats amplitude calibration. A final `tune.apply_calibration` writes the resulting pulse amplitudes, zero-order phase, echo window and field into `echo_cal.phase_awg`. A later experiment can use this file with `window: preset` and `apply_cal: none`, without calibration results from the earlier session. The preset does not store RV or synthesizer frequency; retain those settings or restore them with `bridge.set`.
+After the EDFS, the protocol repeats the echo-window and phase measurements on `echo_cal.phase_awg`, then repeats amplitude calibration. A final `tune.apply_calibration` writes the resulting pulse amplitudes, zero-order phase, echo window and field into `echo_cal.phase_awg`. The handoff then runs `tune.video_attenuation` on this final sequence, inheriting the preliminary choice to enable or skip VA adjustment. A later experiment can use this file with `window: preset` and `apply_cal: none`, without calibration results from the earlier session. The preset does not store RV, synthesizer frequency or VA; retain the final settings or restore them with `bridge.set`. Its `video1_db` and `video2_db` values must be on the 2 dB and 0.5 dB hardware grids respectively.
 
 Open the MW bridge control window before a live run and allow its vane homing to finish. It may stay open: manual bridge commands are blocked while the runner owns the bridge, and the window resynchronizes when control is released. The ringing step explicitly homes RV unless `done: true` is set. A later `bridge.set` waits for any recorded move to finish and uses the recorded position; it homes again only when a stale runner lock indicates an interrupted run.
 
@@ -88,7 +112,7 @@ epr-auto validate protocols/preliminary_tuning.yaml
 epr-auto run protocols/preliminary_tuning.yaml --test
 ```
 
-The dry-run completes all five stages with canned acquisitions, automatically continues checkpoints, and creates no acquisition or handoff files. A live supervised run uses launcher dialogs or a real terminal for checkpoints, with the Atomize GUI open for plotting. GUI dry runs keep the checkpoint dialogs. Full parameter details are in the [step reference](steps.md).
+The dry-run completes all six stages with canned acquisitions, automatically continues checkpoints, and creates no acquisition or handoff files. A live supervised run uses launcher dialogs or a real terminal for checkpoints, with the Atomize GUI open for plotting. GUI dry runs keep the checkpoint dialogs. Full parameter details are in the [step reference](steps.md).
 
 ## Coarse power stage — `tune.power_for_length`
 

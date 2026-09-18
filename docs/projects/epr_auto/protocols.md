@@ -96,6 +96,14 @@ which needs a bot token and chat id in `main_config.ini` (see the
 `none` logs the same messages to the terminal only. Notifications never fire in a dry-run and a
 notification failure never takes down a run.
 
+## Preliminary receiver control
+
+Video attenuation (VA) sets the receiver signal level sent to the ADC. The bridge has two video attenuators: Video Attenuation 1 (VA1, `video1_db`) and Video Attenuation 2 (VA2, `video2_db`). The rotary-vane attenuator (RV, `attenuation_db`) sets microwave excitation power at the sample.
+
+`tune.find_echo` enables video-attenuation adjustment by default. Set `adjust_video: false` to retain the current VA settings; `tune.maximize_echo` and `tune.video_attenuation` inherit this choice unless they explicitly override it. When enabled, the RV approach uses live receiver monitoring and a 200 mV threshold. See [Preliminary tuning](tuning.md#preliminary-tuning) for the approach and recovery sequence.
+
+`rep_rate` on the preliminary echo search and maximization is in Hz and must be between 0.1 and 10000. `bridge.set` accepts `video1_db` from 0 to 30 in 2 dB steps and `video2_db` from 0 to 31.5 in 0.5 dB steps; values between hardware settings are rejected. At least one RV, synthesizer or video setting is required.
+
 ## Steps
 
 `steps` is an ordered list. Each entry is either an ordinary step or a

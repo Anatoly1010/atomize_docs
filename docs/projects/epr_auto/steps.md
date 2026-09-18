@@ -19,12 +19,14 @@ the framework-wide `"<value> <unit>"` strings (`ns/us/ms/s`, `G/mT/T`).
 
 ### bridge.set
 
-Set RV and/or synthesizer with mechanical settling.
+Set RV, synthesizer and/or video attenuation with settling.
 
 | Parameter | Type | Default | Description |
 | --------- | ---- | ------- | ----------- |
-| `attenuation_db` | number (0..60) | — |  |
+| `attenuation_db` | number (0..60) | — | rotary-vane (RV) attenuation of microwave excitation, in dB |
 | `frequency_mhz` | integer (7000..12000) | — |  |
+| `video1_db` | number (0..30) | — | receiver Video Attenuation 1 (VA1), in 2 dB increments |
+| `video2_db` | number (0..31.5) | — | receiver Video Attenuation 2 (VA2), in 0.5 dB increments |
 
 ## Tuning steps
 
@@ -75,6 +77,8 @@ Full-window magnitude field search, then resolve the echo window.
 | `attenuation_db` | number (0..60) | `10` | fixed RV for the echo search and maximization |
 | `frequency_shift_mhz` | integer | `0` | signed shift from resonator center, or current bridge frequency without a scan |
 | `pulse_length` | time ("300 ns") | — | target pi pulse length; every echo pulse takes it (default: the preset's shortest MW pulse) |
+| `adjust_video` | boolean | `True` | adjust video attenuation to keep the echo at or below 200 mV |
+| `rep_rate` | number (0.1..10000) | — | repetition rate in Hz; omitted keeps the preset value |
 | `scans` | integer (1..100) | `1` |  |
 | `averages` | integer (1..10000) | `10` |  |
 | `search_from` | time ("300 ns") | `200 ns` |  |
@@ -96,6 +100,8 @@ Fixed-RV amplitude scan (pi/2 at a, pi at 2a), then field refinement.
 | `points` | integer (7..1001) | `21` |  |
 | `improvement` | number (0.001..1) | `0.05` |  |
 | `pulse_map` | mapping {P2..P9: pi \| pi2} \| 'none' | — | pi2/pi roles, e.g. {P2: pi2, P3: pi}; inferred from the preset when omitted |
+| `adjust_video` | boolean | — | omit to inherit tune.find_echo; true adjusts video attenuation to 200 mV |
+| `rep_rate` | number (0.1..10000) | — | repetition rate in Hz; omitted inherits tune.find_echo |
 | `scans` | integer (1..100) | `1` |  |
 | `averages` | integer (1..10000) | `10` |  |
 | `search_from` | time ("300 ns") | `200 ns` |  |
@@ -187,6 +193,16 @@ Export echo/calibration/field preset copies and a fine-tuning YAML handoff.
 | `field_points` | integer (2..5001) | `200` |  |
 | `calibration_length` | time ("300 ns") | — | target length of the Rabi pulse the fine calibration sweeps; default: the preliminary pulse length |
 | `publish_dir` | directory path (relative to the protocol file) | `tuned` | where the handoff (fine_tuning.yaml and its presets) is published; the run directory keeps an archive copy |
+
+### tune.video_attenuation
+
+Adjust video attenuation on the final preset, preserving pulse lengths and zeroing sweep increments.
+
+| Parameter | Type | Default | Description |
+| --------- | ---- | ------- | ----------- |
+| `preset` | preset file | *required* |  |
+| `adjust_video` | boolean | — | omit to inherit tune.find_echo, or enable adjustment when run standalone |
+| `limit_mv` | number (0.001..200) | `200` | maximum allowed echo magnitude in mV |
 
 ## Field steps
 
