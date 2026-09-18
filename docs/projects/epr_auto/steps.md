@@ -170,8 +170,9 @@ Home RV; check magnitude at each of 60,40,20,10,5,0 dB; hard-stop above 100 mV.
 | Parameter | Type | Default | Description |
 | --------- | ---- | ------- | ----------- |
 | `if_mhz` | integer (1..280) | `50` | built-in SINE IF; must match the later echo preset DETECTION IF |
-| `max_length` | time ("300 ns") | `102.4 ns` | longest MW pulse any preliminary stage may use |
+| `pulse_length` | time ("300 ns") | `102.4 ns` | SINE pulse length of the ladder |
 | `field` | field ("3478 G") | `100 G` | nonresonant field for the ringing ladder |
+| `done` | boolean | `False` | the ladder already passed at this IF; record the limits, move nothing |
 
 ### tune.save_presets
 

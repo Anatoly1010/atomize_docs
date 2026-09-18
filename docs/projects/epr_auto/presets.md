@@ -16,7 +16,11 @@ The preliminary ringing check uses its internal `.phase_awg` with `+x,+x` phases
 
 ## Exported tuning presets
 
-`tune.save_presets` exports `echo.phase_awg`, `calibration.phase_awg`, `field.phase_awg` and `echo_cal.phase_awg` with `fine_tuning.yaml`. The calibration preset uses a Rabi pulse at `calibration_length` and the preliminary echo pair for detection. The generated fine-tuning protocol writes measured amplitudes into the field and calibrated-echo presets before using them. Its final `tune.apply_calibration` saves amplitudes, zero-order phase, echo window and field in `echo_cal.phase_awg` for a later run. See [Fine-tuning handoff](tuning.md#fine-tuning-handoff-and-bridge-control) for the sequence and publication paths.
+`tune.save_presets` exports `echo.phase_awg`, `calibration.phase_awg`, `field.phase_awg` and `echo_cal.phase_awg` with `fine_tuning.yaml`. The generated fine-tuning protocol writes measured amplitudes into the field and calibrated-echo presets before using them. Its final `tune.apply_calibration` saves amplitudes, zero-order phase, echo window and field in `echo_cal.phase_awg` for a later run. See [Fine-tuning handoff](tuning.md#fine-tuning-handoff-and-bridge-control) for the sequence and publication paths.
+
+`calibration_length` sets the Rabi pulse length and both echo-pulse lengths in the exported field and calibrated-echo presets. The Rabi preset retains the preliminary echo pair for detection. The chosen length is snapped to the AWG grid and is not limited by the ringing-check pulse length.
+
+Change `calibration_length` in the preliminary protocol and rerun it to export a different experiment pulse length. Editing only the Rabi pulse in `tuned/calibration.phase_awg` does not change the field or calibrated-echo pulse lengths; calibration is transferred to those lengths by the length ratio.
 
 `tune.apply_calibration` rewrites its named `preset` by default. Supply an absolute `destination` path to save a separate copy; `pulse_map` selects the π/2 and π roles when they cannot be inferred from the preset. The step requires a successful `tune.pi_calibration` in the current session.
 

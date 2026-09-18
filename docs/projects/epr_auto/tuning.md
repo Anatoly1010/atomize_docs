@@ -34,7 +34,11 @@ ringing check -> [resonator scan] -> echo field search -> amplitude/field optimi
 
 ### Ringing check
 
-`tune.ringing_check` sets a nonresonant field (`field: 100 G` by default), homes the rotary vane (RV) to 60 dB, then checks 60, 40, 20, 10, 5 and 0 dB. Choose a field away from the sample resonance so the ladder measures receiver ringing without a sample echo. Each move finishes before acquisition; the measured signal must pass before the next attenuation is commanded. The built-in sequence uses `+x,+x` on both DETECTION and its single SINE pulse, so phase cycling cannot cancel the ringing. Set `max_length` to cover the longest pulse that later preliminary steps may use; acquisition defaults are listed in the [step reference](steps.md).
+`tune.ringing_check` sets a nonresonant field (`field: 100 G` by default), homes the rotary vane (RV) to 60 dB, then checks 60, 40, 20, 10, 5 and 0 dB. Choose a field away from the sample resonance so the ladder measures receiver ringing without a sample echo. Each move finishes before acquisition; the measured signal must pass before the next attenuation is commanded. The built-in sequence uses `+x,+x` on both DETECTION and its single SINE pulse, so phase cycling cannot cancel the ringing. Acquisition defaults are listed in the [step reference](steps.md).
+
+`pulse_length` sets the ladder’s SINE pulse length and defaults to `102.4 ns`. Later steps must use the same IF and stay within the tested DAC amplitudes. The ladder does not limit their pulse lengths.
+
+For a same-day rerun on the same setup, `done: true` declares that the ladder has already passed at the same IF. The hardware-free preflight still runs and the limits are recorded, but this step does not touch the RV, field or receiver and takes no trace. The default is `done: false`, which runs the ladder.
 
 The limit is 100 mV on the maximum unsmoothed magnitude `sqrt(I² + Q²)` after protection. Missing or invalid data also fail the check. A failure stops the protocol and attempts a settled return to 60 dB; retries, `on_fail: skip` and a continuing series cannot override this safety stop. Operator cancellation during the ringing ladder also returns RV to 60 dB. Stopping at a checkpoint or in another step leaves RV unchanged.
 
@@ -44,15 +48,19 @@ The check starts after receiver protection ends, using timing derived from the p
 
 `tune.resonator` runs the built-in AWG SINE resonator procedure at RV = 10 dB. It measures reflected amplitude with the diode and oscilloscope. Frequency selection uses a common early-ringing time window, subtracts the pre-pulse baseline, and handles either diode polarity. Weak, competing, boundary or clipped peaks and centers that move excessively between nearby windows are rejected. The typical `precision_mhz` is 5. Set `window: 4 ns` for resonator selection; this is the recommended width from hardware runs, while the parameter default remains `2 ns`. Stability is checked with comparison windows shifted by 1 ns and 2 ns.
 
+When `region` is omitted, the ringing peak is searched only after the nominal pulse end. This avoids selecting the reflected-pulse plateau, which can exceed the trailing-edge ringing at off-resonance frequencies. An explicit `region` is searched in full.
+
 Both built-in steps have `if_mhz: 50` by default. Their IF values must match each other and the later echo preset's DETECTION IF. The scan axis is the bridge synthesizer frequency; the observation frequency is synthesizer minus IF. The selected synthesizer value is applied directly, without adding IF again. Omit this step to retain the existing synthesizer frequency.
 
 ### Echo search and optimization
 
 `tune.find_echo` scans the requested field range at the chosen `attenuation_db` (default 10 dB, allowed 0–60 dB), scores the full recorded magnitude, and confirms a resolved echo and its integration window. `pulse_length` sets a common length for both microwave pulses; when omitted, it uses the shortest active microwave pulse in the preset. No echo means stop and return to 60 dB. `frequency_shift_mhz` is a signed integer offset from the resonator-selected frequency, default 0. For a two-frequency experiment, `-50` puts the echo 50 MHz below the resonator center while keeping the AWG IF unchanged. Without a resonator scan, the reference is the bridge frequency at the first echo search; repeated searches do not accumulate the offset.
 
+`tune.find_echo` accepts a relative `frequency_shift_mhz`, not an absolute frequency. To choose an absolute synthesizer frequency instead of running the resonator scan, place a `bridge.set` step with `frequency_mhz` before the echo search. Leave `frequency_shift_mhz: 0` to use that frequency unchanged.
+
 `tune.maximize_echo` holds RV attenuation and pulse length fixed at the values chosen for `tune.find_echo`, unless you explicitly override them. It scans the π/2 amplitude `a` with the π amplitude at `2a`: first across `amplitude_range` (default 5–50 %), then on a finer grid around the best point. Both pulses have the same `pulse_length`, so their rotation angles differ through amplitude. Pulse roles come from `pulse_map: {P2: pi2, P3: pi}` or are inferred from the preset. The selected amplitudes are followed by a narrower field sweep and an echo confirmation.
 
-RV attenuation and pulse length are operator choices; this step searches neither. A maximum at the upper amplitude bound stops with `reduce attenuation`; a maximum at the lower bound stops with `increase attenuation`. Change `attenuation_db` before rerunning. Pulse lengths must stay within the ringing-tested maximum. Ringing is checked once in the initial ladder.
+RV attenuation and pulse length are operator choices; this step searches neither. A maximum at the upper amplitude bound stops with `reduce attenuation`; a maximum at the lower bound stops with `increase attenuation`. Change `attenuation_db` before rerunning. Ringing is checked in the initial ladder unless an earlier pass is declared with `done: true`. Later pulses must retain the tested IF and stay within the tested DAC amplitudes; their lengths are not limited by the ladder pulse.
 
 ### Fine-tuning handoff and bridge control
 
@@ -65,13 +73,15 @@ RV attenuation and pulse length are operator choices; this step searches neither
 | `field.phase_awg` | Echo-detected field sweep with both microwave pulses at `calibration_length`. |
 | `echo_cal.phase_awg` | Echo preset with both microwave pulses at `calibration_length`, for the second tuning pass and later experiments. |
 
-`calibration_length` defaults to the preliminary pulse length and cannot exceed the ringing-tested maximum. The initial amplitudes in `field.phase_awg` and `echo_cal.phase_awg` are placeholders until fine calibration replaces them.
+`calibration_length` defaults to the preliminary pulse length and is snapped to the AWG grid. It sets the Rabi pulse length in `calibration.phase_awg` and both echo-pulse lengths in `field.phase_awg` and `echo_cal.phase_awg`, so it also sets the pulse length used by a later experiment based on those presets. The initial amplitudes in the field and calibrated-echo presets are placeholders until fine calibration replaces them.
+
+To change the exported pulse length, set `calibration_length` and rerun the preliminary protocol. Editing the Rabi pulse length in `tuned/calibration.phase_awg` alone leaves the exported field and echo-pulse lengths unchanged. Fine calibration then transfers the measured amplitudes to those lengths using the ratio of the calibration pulse length to the target pulse length.
 
 The generated protocol restores RV and the selected synthesizer frequency with `bridge.set`, measures the echo window and receiver phase on `echo.phase_awg`, and runs amplitude calibration. It then calls `tune.apply_calibration` for both `field.phase_awg` and `echo_cal.phase_awg` before the EDFS. The field sweep covers the original `tune.find_echo` span, recentered on the tuned field, with 200 points by default; `field_span` and `field_points` in `tune.save_presets` override these settings. It does not use the narrower maximization span.
 
 After the EDFS, the protocol repeats the echo-window and phase measurements on `echo_cal.phase_awg`, then repeats amplitude calibration. A final `tune.apply_calibration` writes the resulting pulse amplitudes, zero-order phase, echo window and field into `echo_cal.phase_awg`. A later experiment can use this file with `window: preset` and `apply_cal: none`, without calibration results from the earlier session. The preset does not store RV or synthesizer frequency; retain those settings or restore them with `bridge.set`.
 
-Open the MW bridge control window before a live run and allow its vane homing to finish. It may stay open: manual bridge commands are blocked while the runner owns the bridge, and the window resynchronizes when control is released. The ringing step explicitly homes RV. A later `bridge.set` waits for any recorded move to finish and uses the recorded position; it homes again only when a stale runner lock indicates an interrupted run.
+Open the MW bridge control window before a live run and allow its vane homing to finish. It may stay open: manual bridge commands are blocked while the runner owns the bridge, and the window resynchronizes when control is released. The ringing step explicitly homes RV unless `done: true` is set. A later `bridge.set` waits for any recorded move to finish and uses the recorded position; it homes again only when a stale runner lock indicates an interrupted run.
 
 ```bash
 epr-auto validate protocols/preliminary_tuning.yaml

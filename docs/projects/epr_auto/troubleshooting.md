@@ -396,9 +396,11 @@ rate in Hz.
 
 A ringing measurement above a threshold or an invalid trace stops before the next RV point and attempts to return to 60 dB. Do not treat `on_fail: skip` as a way past this check. Allow the mechanical return to finish before starting another operation. A message containing `return to 60 dB FAILED` means the return was not completed successfully.
 
-If the resonator scan reports a mismatched IF or an untested pulse length, make both built-in `if_mhz` values match the echo preset's DETECTION IF and ensure `max_length` covers the requested pulses. Neither `tune.ringing_check` nor `tune.resonator` accepts `preset`.
+If the resonator scan reports a mismatched IF, make both built-in `if_mhz` values match the echo preset’s DETECTION IF. A tuning preset must also stay within the DAC amplitudes recorded by the ringing check. The check imposes no pulse-length limit. Neither `tune.ringing_check` nor `tune.resonator` accepts `preset`.
 
 For resonator selection, try the recommended `window: 4 ns`; the default is still `2 ns`. Comparison windows are shifted by 1 ns and 2 ns to check whether the selected frequency is stable.
+
+With no explicit `region`, the peak search starts after the nominal pulse end to exclude the reflected-pulse plateau. If you supply `region`, its full interval is searched; choose it to isolate the trailing-edge ringing.
 
 A rejected resonator peak leaves diagnostic sections and rejection reasons alongside the diode data when acquisition succeeded. Review the scan bounds, clipping, signal strength and early time region before rerunning. A missing echo stops field search; review the field center/span, frequency shift and echo preset. Bridge controls being read-only while the run owns the bridge is expected.
 
@@ -411,7 +413,7 @@ echo already falling at 5 %: increase attenuation
 
 Change the chosen `attenuation_db` in the indicated direction before rerunning: less attenuation supplies more microwave power; more attenuation supplies less. The runner does not search RV or pulse length to recover. Both echo pulses use the same `pulse_length`, with π/2 at amplitude `a` and π at `2a`.
 
-`calibration_length exceeds the ringing-tested pulse length` means the requested Rabi pulse is longer than the initial check covered. Keep `calibration_length` within `max_length`, or rerun preliminary tuning with a ringing check that covers the required length.
+If a later experiment still uses the old pulse length after you edit `tuned/calibration.phase_awg`, set `calibration_length` in the preliminary protocol and rerun it. Editing the Rabi pulse alone leaves the exported field and echo-pulse lengths unchanged; fine calibration scales amplitudes to those existing lengths.
 
 
 ## Next steps
