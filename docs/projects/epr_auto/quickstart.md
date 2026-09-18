@@ -150,6 +150,7 @@ Prepare a live session as follows:
 - **Launch the main Atomize GUI first, and keep it open.** A live run's
   acquisition worker pushes its traces to the main window's LivePlot server; a
   real run dies without it. (A dry-run needs no GUI — see above.)
+- **Open the MW bridge control window and let its vane homing finish.** It may remain open during the run; manual commands are blocked while the runner owns the bridge.
 - **Close the interactive field and temperature tools.** At run start the
   runner seizes the `field.param` and `temp_param` cross-process locks as
   `epr_auto`, the same discipline the four experiment-runner GUIs use to keep
@@ -200,7 +201,7 @@ directory already holds a `manifest.json` — a same-day re-run of the same
 sample — a `_run2` / `_run3` … suffix is appended so the earlier run is never
 overwritten.
 
-The directory holds three kinds of file:
+The directory holds the following files:
 
 - **`manifest.json`** — the crash-safe run record, rewritten atomically after
   every step so an interrupted run still leaves a valid file. It carries the
@@ -210,6 +211,7 @@ The directory holds three kinds of file:
   `{var, value, index}`.
 - **A copy of the protocol**, saved as `protocol_<name>.yaml`, so the exact
   YAML that produced the data always sits next to it.
+- **`worker_stdout.log`** — acquisition-worker output, including FPGA library messages, kept out of the main progress log. This file is created when a live acquisition worker starts.
 - **The acquisition CSVs**, named `NNN_tag.csv` with a per-session counter, for
   example `001_t2.csv`. Inside a `foreach` iteration the loop stamp is folded
   into the name, so a field or temperature series is self-identifying —
@@ -241,3 +243,7 @@ epr-auto run protocols/preliminary_tuning.yaml --test
 ```
 
 This covers ringing, the optional resonator scan, echo search, optimization and a simulated fine-tuning handoff. The dry-run uses canned data and writes no acquisition or handoff files. See [Preliminary tuning](tuning.md#preliminary-tuning) before a supervised live run. Answer live checkpoints in the launcher dialogs or in a real terminal.
+
+For daily use, keep `preliminary.yaml` and the experiment protocol in one working folder. Run them in this order: `preliminary.yaml` → `tuned/fine_tuning.yaml` → the experiment protocol. The preliminary run creates `tuned/` beside its YAML; the fine-tuning run updates `tuned/echo_cal.phase_awg` for the experiment. Use that preset with `window: preset` and `apply_cal: none`, keeping the tuned RV and synthesizer settings.
+
+Fine-tuning data are saved under `runs/<date>_fine` in the working folder. To keep preliminary data and the exported archive there too, use an output template such as `output: runs/{date}_preliminary` when launching from the working folder, or the equivalent absolute path when launching elsewhere. Relative `output` paths resolve from the launch directory; `publish_dir` resolves from the preliminary protocol's directory.

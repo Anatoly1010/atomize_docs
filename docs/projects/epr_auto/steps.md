@@ -28,6 +28,16 @@ Set RV and/or synthesizer with mechanical settling.
 
 ## Tuning steps
 
+### tune.apply_calibration
+
+Write the session calibration, zero-order phase, echo window and field into a preset file.
+
+| Parameter | Type | Default | Description |
+| --------- | ---- | ------- | ----------- |
+| `preset` | preset file | *required* | preset file to rewrite in place, or to copy from when destination is given |
+| `pulse_map` | mapping {P2..P9: pi \| pi2} \| 'none' | — | pi2/pi roles; inferred from the preset when omitted |
+| `destination` | string | — | absolute path of the file to write instead of rewriting the preset in place |
+
 ### tune.auto_phase
 
 Acquire an echo and zero the signal phase (principal-axis auto_phase_zero).
@@ -62,8 +72,9 @@ Full-window magnitude field search, then resolve the echo window.
 | `center` | field ("3478 G") | *required* |  |
 | `span` | field ("3478 G") | *required* |  |
 | `points` | integer (7..1001) | `41` |  |
-| `attenuation_db` | number (5..10) | `10` |  |
+| `attenuation_db` | number (0..60) | `10` | fixed RV for the echo search and maximization |
 | `frequency_shift_mhz` | integer | `0` | signed shift from resonator center, or current bridge frequency without a scan |
+| `pulse_length` | time ("300 ns") | — | target pi pulse length; every echo pulse takes it (default: the preset's shortest MW pulse) |
 | `scans` | integer (1..100) | `1` |  |
 | `averages` | integer (1..10000) | `10` |  |
 | `search_from` | time ("300 ns") | `200 ns` |  |
@@ -71,19 +82,20 @@ Full-window magnitude field search, then resolve the echo window.
 
 ### tune.maximize_echo
 
-Bounded RV (0.5 dB), field and optional mapped length optimization.
+Fixed-RV amplitude scan (pi/2 at a, pi at 2a), then field refinement.
 
 | Parameter | Type | Default | Description |
 | --------- | ---- | ------- | ----------- |
 | `preset` | preset file | `hahn_echo_4s.phase_awg` | AWG SINE echo preset; defines the IF |
-| `rv_range` | [number, number] | `[0, 10]` |  |
-| `coarse_step_db` | number (0.5..10) | `2` |  |
+| `attenuation_db` | number (0..60) | — | fixed RV; defaults to the find_echo setting |
+| `pulse_length` | time ("300 ns") | — | target pi pulse length for all echo pulses; defaults to the find_echo setting |
+| `amplitude_range` | [number, number] | `[5, 50]` | pi/2 amplitude bounds in % |
+| `coarse_step` | number (1..25) | `5` |  |
+| `fine_step` | number (0.5..5) | `1` |  |
 | `field_span` | field ("3478 G") | `10 G` |  |
 | `points` | integer (7..1001) | `21` |  |
 | `improvement` | number (0.001..1) | `0.05` |  |
-| `length_range` | [time ("300 ns"), time ("300 ns")] | — | pi/2 length bounds; mapped lengths scale together |
-| `length_points` | integer (2..101) | `5` |  |
-| `pulse_map` | mapping {P2..P9: pi \| pi2} \| 'none' | — | explicit two-pulse map, e.g. {P2: pi2, P3: pi} |
+| `pulse_map` | mapping {P2..P9: pi \| pi2} \| 'none' | — | pi2/pi roles, e.g. {P2: pi2, P3: pi}; inferred from the preset when omitted |
 | `scans` | integer (1..100) | `1` |  |
 | `averages` | integer (1..10000) | `10` |  |
 | `search_from` | time ("300 ns") | `200 ns` |  |
@@ -159,6 +171,7 @@ Home RV; check magnitude at each of 60,40,20,10,5,0 dB; hard-stop above 100 mV.
 | --------- | ---- | ------- | ----------- |
 | `if_mhz` | integer (1..280) | `50` | built-in SINE IF; must match the later echo preset DETECTION IF |
 | `max_length` | time ("300 ns") | `102.4 ns` | longest MW pulse any preliminary stage may use |
+| `field` | field ("3478 G") | `100 G` | nonresonant field for the ringing ladder |
 
 ### tune.save_presets
 
@@ -169,6 +182,10 @@ Export echo/calibration/field preset copies and a fine-tuning YAML handoff.
 | `preset` | preset file | `hahn_echo_4s.phase_awg` | AWG SINE echo preset; defines the IF |
 | `calibration_preset` | preset file | `ampl_4s.phase_awg` |  |
 | `field_preset` | preset file | `ed_4s.phase_awg` |  |
+| `field_span` | field ("3478 G") | — | EDFS span of the handoff, centered on the tuned field; default: the find_echo span |
+| `field_points` | integer (2..5001) | `200` |  |
+| `calibration_length` | time ("300 ns") | — | target length of the Rabi pulse the fine calibration sweeps; default: the preliminary pulse length |
+| `publish_dir` | directory path (relative to the protocol file) | `tuned` | where the handoff (fine_tuning.yaml and its presets) is published; the run directory keeps an archive copy |
 
 ## Field steps
 

@@ -14,6 +14,12 @@ results flow between steps see [The tune-up chain](tuning.md).
 
 The preliminary ringing check uses its internal `.phase_awg` with `+x,+x` phases; the resonator scan uses a built-in procedure. Neither step takes an external preset. Their `if_mhz` must match the later echo preset. The preliminary workflow uses `.phase_awg`; legacy `.phase` presets are not supported by this AWG automation path. See [Preliminary tuning](tuning.md#preliminary-tuning).
 
+## Exported tuning presets
+
+`tune.save_presets` exports `echo.phase_awg`, `calibration.phase_awg`, `field.phase_awg` and `echo_cal.phase_awg` with `fine_tuning.yaml`. The calibration preset uses a Rabi pulse at `calibration_length` and the preliminary echo pair for detection. The generated fine-tuning protocol writes measured amplitudes into the field and calibrated-echo presets before using them. Its final `tune.apply_calibration` saves amplitudes, zero-order phase, echo window and field in `echo_cal.phase_awg` for a later run. See [Fine-tuning handoff](tuning.md#fine-tuning-handoff-and-bridge-control) for the sequence and publication paths.
+
+`tune.apply_calibration` rewrites its named `preset` by default. Supply an absolute `destination` path to save a separate copy; `pulse_map` selects the π/2 and π roles when they cannot be inferred from the preset. The step requires a successful `tune.pi_calibration` in the current session.
+
 ## Where presets come from
 
 A preset is not written by hand. It is saved from the endstation's

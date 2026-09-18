@@ -304,7 +304,7 @@ engine error and fails the step:
 
 These are genuine hardware / driver faults (or a preset the pre-flight let
 through that the live driver rejects); the child's traceback is the place to
-look.
+look. The run directory's `worker_stdout.log` contains acquisition-worker stdout, including FPGA library messages, for the same run.
 
 ## (d) Warnings that are not errors
 
@@ -398,7 +398,20 @@ A ringing measurement above a threshold or an invalid trace stops before the nex
 
 If the resonator scan reports a mismatched IF or an untested pulse length, make both built-in `if_mhz` values match the echo preset's DETECTION IF and ensure `max_length` covers the requested pulses. Neither `tune.ringing_check` nor `tune.resonator` accepts `preset`.
 
+For resonator selection, try the recommended `window: 4 ns`; the default is still `2 ns`. Comparison windows are shifted by 1 ns and 2 ns to check whether the selected frequency is stable.
+
 A rejected resonator peak leaves diagnostic sections and rejection reasons alongside the diode data when acquisition succeeded. Review the scan bounds, clipping, signal strength and early time region before rerunning. A missing echo stops field search; review the field center/span, frequency shift and echo preset. Bridge controls being read-only while the run owns the bridge is expected.
+
+An amplitude maximum at a scan bound stops preliminary maximization. For the default 5–50 % range, the messages can be:
+
+```text
+echo still growing at 50 % (pi at 100 %): reduce attenuation
+echo already falling at 5 %: increase attenuation
+```
+
+Change the chosen `attenuation_db` in the indicated direction before rerunning: less attenuation supplies more microwave power; more attenuation supplies less. The runner does not search RV or pulse length to recover. Both echo pulses use the same `pulse_length`, with π/2 at amplitude `a` and π at `2a`.
+
+`calibration_length exceeds the ringing-tested pulse length` means the requested Rabi pulse is longer than the initial check covered. Keep `calibration_length` within `max_length`, or rerun preliminary tuning with a ringing check that covers the required length.
 
 
 ## Next steps
