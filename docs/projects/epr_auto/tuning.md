@@ -31,7 +31,7 @@ Use [protocols/preliminary_tuning.yaml](https://github.com/Anatoly1010/Atomize_I
 **RV** (rotary-vane attenuator) controls the microwave excitation power at the sample. **VA** (video attenuation) controls the level of the received electrical signal sent to the ADC. It is set using two bridge controls: **VA1** (Video Attenuation 1, `video1_db`: 0–30 dB in 2 dB steps) and **VA2** (Video Attenuation 2, `video2_db`: 0–31.5 dB in 0.5 dB steps). Increasing either video attenuation reduces the measured signal amplitude; an additional 6 dB approximately halves it.
 
 ```text
-ringing check -> [resonator scan] -> echo field search -> amplitude/field optimization -> video check -> fine-tuning handoff
+ringing check -> [resonator scan] -> echo field search -> repetition-rate scan -> amplitude/field optimization -> video check -> fine-tuning handoff
 ```
 
 ### Ringing check
@@ -72,7 +72,9 @@ Each coarse or fine amplitude scan keeps the FPGA initialized across its points.
 
 Field and amplitude scans check received traces once data for all receiver phases are available. Above 200 mV, the scan stops and saves its partial data, VA is increased, and the field and pulse settings of the reported point are remeasured. The field search then restarts; amplitude optimization repeats its coarse, fine and field comparisons, discarding scores from the previous VA setting. The optimized final pulse pair is checked again.
 
-`rep_rate` optionally sets the repetition rate in Hz for `tune.find_echo`, up to 10000 Hz. Without it, the preset rate is used. `tune.maximize_echo` inherits the selected rate and accepts an override. All four handoff presets carry the resulting rate; the ringing check remains at 500 Hz.
+`rep_rate` optionally sets the repetition rate in Hz for `tune.find_echo`, from 0.1 to 10000 Hz. Without it, the preset rate is used. `tune.maximize_echo` inherits the selected rate and accepts an override. Both steps accept `rep_rate: auto` to use an earlier accepted `tune.rep_rate` result in the same session. A missing or temperature-invalidated result, or a recommendation outside the preliminary range, fails the step. All four handoff presets carry the resulting rate; the ringing check remains at 500 Hz.
+
+The preliminary example finds an echo first, runs `tune.rep_rate` on its selected pulse settings, then runs `tune.maximize_echo` with `rep_rate: auto`. Keep the same `preset` for those steps so the scan uses the selected preliminary pulse lengths and amplitudes. It also inherits the selected field and echo window. The example uses `mode: quantitative`; sensitivity mode permits partial saturation and should not supply a quantitative relaxation experiment without a new rate check.
 
 RV attenuation and pulse length are operator choices; this step searches neither. A maximum at the upper amplitude bound stops with `reduce attenuation`; a maximum at the lower bound stops with `increase attenuation`. Change `attenuation_db` before rerunning. Ringing is checked in the initial ladder unless an earlier pass is declared with `done: true`. Later pulses must retain the tested IF and stay within the tested DAC amplitudes; their lengths are not limited by the ladder pulse.
 
@@ -330,11 +332,13 @@ with no coarse stage to fall back to, the rail failure is reported as-is.
 
 ## Repetition rate — `tune.rep_rate`
 
-`tune.rep_rate` is not in `tune_up.yaml` (it belongs before a relaxation run
-rather than in the basic tune-up), but it is part of the same chain and feeds the
-experiment steps. It runs one quick echo acquisition per rate on a log grid,
-slowest first, and fits the steady-state saturation of the sequence repeated
-every period `T = 1/rate`:
+`tune.rep_rate` keeps the FPGA open at a fixed field and fixed τ while scanning a logarithmic grid of rates, slowest first. Each ordinary, nonempty curve returned by `digitizer_get_curve(live_mode=1)` provides a complex echo integral in the selected integration window. The result is consumed as returned, including when its underlying buffer contains old or mixed-rate packets; no packet tags or epoch filtering are used. The card continues running between rates; there is no separate warmup train or one-second delay.
+
+By default, three consecutive curves qualify when `(max |sig| − min |sig|) / mean |sig| ≤ 0.05`. Their mean complex signal supplies the amplitude at that rate, and the acquisition advances to the next rate. `points` sets the number of consecutive curves (default and minimum 3); it no longer sweeps τ. `scans` requests disjoint stable groups (default 1), with the combined groups also required to agree within 5%.
+
+The scanned `tune.rep_rate` grid has a 10 Hz lower bound and a 10 Hz default `rate_min`. This floor applies only to the tuning grid; ordinary acquisition rates and fitted recommendations may still use the hardware's 0.1 Hz lower bound, subject to sequence timing. During tuning the Worker pins the ADC stream buffer to 512 KB before opening the card, regardless of the ADC window or rate, then restores the previous value after the card closes, including on Stop or failure. This tuning-only allocation does not add live-rate-specific changes to `Insys_FPGA`. `max_wait: 120 s` limits the wait at each rate, including buffer arrival; low rates or greater averaging may need a longer limit. A timeout fails the step without a new recommendation. The numbered `*_rep_rate_live.csv` file retains observations and their validity flags, including partial history on failure or Stop. The completed amplitude curve is saved separately as `*_rep_rate_curve.csv`.
+
+The step applies automatic fine pulse calibration when available and otherwise preserves the selected preliminary pulse values; field, echo window and phase are inherited. Nd:YAG has a fixed 9.9 Hz repetition rate, so variable-rate tuning is rejected. It fits the saturation of the sequence repeated every period `T = 1/rate`:
 
 ```text
 A(T) = A0 * (1 - exp(-T / T1_eff))
@@ -350,24 +354,13 @@ step recommends a working rate in one of two modes:
   maximises echo per unit √time. It accepts partial saturation and is fine for
   tuning and EDFS but **not** for quantitative relaxation runs.
 
-A recommendation is never extrapolated above the fastest tested rate. Two edge
-cases are handled explicitly: if the amplitude is flat across the whole grid the
-sequence never saturates even at the fastest rate, so that rate is reported as
-safe with `T1_eff` below the grid; if even the slowest rate is still saturated
-the fit is an extrapolation beyond the grid and no recommendation is stored —
-the advice is to extend `rate_min` lower. The stored recommendation is what
-`exp.t1` / `exp.t2` pick up with `rep_rate: auto`.
+A recommendation never exceeds the fastest tested rate, including after rounding. If the fitted recovery period requires less than the supported minimum of 0.1 Hz, the step fails instead of shortening that period. A non-flat curve must pass the saturation fit quality check (adjusted R² at least 0.9); a poor fit fails the hard `rep_rate_fit` check and stores no new recommendation.
 
-The step refuses to recommend a rate off something that is not an echo: all
-acquisitions concatenated must share one phase (the same resultant-length
-gate auto-phase uses), and on a strongly saturating curve the amplitude
-deviations must additionally lie on that phase axis — a constant
-instrumental phasor (LO leakage surviving the phase cycle) can fake the
-shared phase but not the structure, and is rejected with a note naming it.
-The preset should be a plain echo sweep: a Log Time (inversion-recovery) or
-Amplitude (nutation) preset flips the echo sign across its own sweep points,
-which cancels the step's amplitude metric — the step warns up front when it
-sees one, naming the mistake before the coherence gate rejects the run.
+Two edge cases are handled explicitly. If the amplitude spread is below 5% across the grid, the step reports the fastest tested rate with no resolved `T1_eff`. This tolerance does not establish the quantitative mode’s nominal under-1% saturation bound. If the fitted residual saturation at the slowest rate is 15% or more, the grid is insufficient and no recommendation is stored; when `rate_min` is above 10 Hz, extend it toward the 10 Hz floor, while a grid already starting at 10 Hz reports that the recovery is not covered at the tuning limit. Accepted recommendations are available through `rep_rate: auto` on `tune.find_echo`, `tune.maximize_echo`, `exp.t1` and `exp.t2`.
+
+The recovery model still assumes the sequence sufficiently resets longitudinal magnetization. A 5% stability result is a live-buffer steadiness check, not proof of quantitative 1% saturation accuracy. A flat curve selects the fastest tested rate under the same 5% tolerance; existing fit and coverage gates still apply. Check stability against a hand-measured recovery curve and with increased averaging before relying on the recommendation for quantitative work, especially after pulse calibration changes. Offline checks cover convergence, rate transitions, partial history and cleanup; validation on the spectrometer remains pending.
+
+The step refuses to recommend a rate off something that is not an echo: all acquisitions concatenated must share one phase (the same resultant-length gate auto-phase uses), and on a strongly saturating curve the amplitude deviations must additionally lie on that phase axis — a constant instrumental phasor (LO leakage surviving the phase cycle) can fake the shared phase but not the structure, and is rejected with a note naming it. The live step requires exactly two active microwave pulses after DETECTION and clears their sweep increments, so Log Time or Amplitude labels are not themselves a hard rejection; a wrong pulse count fails with `tune.rep_rate needs a two-pulse echo preset at fixed tau`.
 
 The `--test` dry-run pre-flights **every** rate of the grid, so a `rate_max`
 whose period is shorter than the sequence fits in fails the dry-run rather than
@@ -385,7 +378,7 @@ repeated:
 | `tune.echo_window` | the integration window of every later acquisition |
 | `tune.auto_phase` | the demodulator zero-order of every later acquisition |
 | `field.edfs` / `field.set` | the working field of every later acquisition |
-| `tune.rep_rate` | `exp.*` steps that set `rep_rate: auto` |
+| `tune.rep_rate` | `tune.find_echo`, `tune.maximize_echo` and `exp.*` steps that set `rep_rate: auto` |
 | `tune.pi_calibration` | `exp.*` steps via `apply_cal` |
 
 The pulse calibration reaches the experiment presets through the `apply_cal`
@@ -408,9 +401,9 @@ are grounded in measured behaviour of this endstation:
 
 | Change | Dropped | Kept | Why |
 | ------ | ------- | ---- | --- |
-| Rotary-vane move | `auto_phase` **and** `pi_calibration` | `rep_rate` | The vane changes B₁ for everything: both the phase and the amplitude calibration are stale. T₁ does not depend on B₁, so the rep-rate recommendation holds. |
+| Rotary-vane move | `auto_phase` **and** `pi_calibration` | `rep_rate` state | The current policy clears phase and pulse calibration but retains the stored rate. Effective recovery depends on the complete sequence; remeasure after changing RV or pulse calibration before relying on the rate for quantitative work. |
 | Temperature setpoint move (beyond `rephase_delta`) | `auto_phase` **and** `rep_rate` | `pi_calibration` | Temperature detunes the resonator, so the demod zero-order drifts — a measured temperature series showed a monotonic swing of roughly a degree of phase per kelvin, which sets the small default `rephase_delta`. And T₁ — the whole basis of the `tune.rep_rate` recommendation — changes strongly with temperature, often by orders of magnitude across a cryostat range. B₁ is untouched, so the amplitude calibration still holds. |
-| Field move | nothing | all three | A field move changes neither the resonator tuning nor B₁, and its effect on T₁ is minor (it appears only in systems with two different spins), so no calibration is affected. |
+| Field move | nothing | all three | The current policy retains these results across field moves. This is a reuse policy, not a guarantee of identical recovery at every field; remeasure when the sample or selected transition requires it. |
 
 The temperature rule compares the new setpoint against the temperature each
 value was actually measured at (auto-phase and rep-rate both record it, and

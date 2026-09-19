@@ -98,16 +98,13 @@ verifies the five defaults and reports OK / MISMATCH).
 
 ## Sweep-type families
 
-Every preset carries a **sweep type**, and each step accepts only the
-family that matches the physics it measures. Handing a step the wrong
-family is rejected before any hardware moves — in the `--test` pre-flight as
-well as live — with a message naming the family it wanted:
+Every preset carries a **sweep type**. Choose the sequence or sweep family appropriate to the measurement, as listed below. Experiment and calibration steps check their required sweep types and pulse structure before acquisition; the fixed-tau live repetition-rate scan uses the pulse structure instead of the sweep label.
 
-| Step | Sweep type it needs | Shipped default |
+| Step | Sequence or sweep family | Shipped default |
 | --- | --- | --- |
 | `tune.auto_phase` | Linear Time (echo) | `hahn_echo_4s.phase_awg` |
 | `tune.echo_window` | Linear Time (echo) | `hahn_echo_4s.phase_awg` |
-| `tune.rep_rate` | Linear Time (plain echo) | `hahn_echo_4s.phase_awg` |
+| `tune.rep_rate` | Two-pulse echo at fixed τ; sweep label ignored | `hahn_echo_4s.phase_awg` |
 | `tune.pi_calibration` `mode: amplitude` | Amplitude | `ampl_4s.phase_awg` |
 | `tune.pi_calibration` `mode: length` | Linear Time (length nutation) | `rabi_echo_4s.phase_awg` |
 | `tune.power_for_length` | Linear Time (length nutation) | `rabi_echo_4s.phase_awg` |
@@ -126,11 +123,7 @@ Two of these carry an extra structural requirement beyond the sweep type:
   sweep moves (nonzero start increment in an Amplitude preset, nonzero length
   increment in a length nutation). Zero or more than one is rejected.
 
-`tune.rep_rate` additionally *warns* (it does not reject) when handed a Log
-Time or Amplitude preset: those sweeps flip the echo sign across their own
-points, which cancels the amplitude metric rep-rate fits, so the warning
-names the mistake before the coherence gate rejects the run. Use a plain
-Linear Time echo sweep for it.
+`tune.rep_rate` requires exactly two active microwave pulses after the DETECTION slot and fixes their start and length increments to zero for the live fixed-tau scan. The sweep-family label is not a hard gate: a Log Time or Amplitude source is accepted when it has that two-pulse structure, because the live step clears its sweep increments. A preset with the wrong number of active microwave pulses fails with `tune.rep_rate needs a two-pulse echo preset at fixed tau`; Nd:YAG presets fail separately because their repetition rate is fixed at 9.9 Hz.
 
 ## The demodulated 1-D acquisition mode
 

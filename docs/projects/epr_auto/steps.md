@@ -78,7 +78,7 @@ Full-window magnitude field search, then resolve the echo window.
 | `frequency_shift_mhz` | integer | `0` | signed shift from resonator center, or current bridge frequency without a scan |
 | `pulse_length` | time ("300 ns") | — | target pi pulse length; every echo pulse takes it (default: the preset's shortest MW pulse) |
 | `adjust_video` | boolean | `True` | adjust video attenuation to keep the echo at or below 200 mV |
-| `rep_rate` | number (0.1..10000) | — | repetition rate in Hz; omitted keeps the preset value |
+| `rep_rate` | 'auto' \| number | — | repetition rate in Hz, 0.1–10000; 'auto' uses an earlier tune.rep_rate recommendation within that range; omitted keeps the preset value |
 | `scans` | integer (1..100) | `1` |  |
 | `averages` | integer (1..10000) | `10` |  |
 | `search_from` | time ("300 ns") | `200 ns` |  |
@@ -101,7 +101,7 @@ Fixed-RV amplitude scan (pi/2 at a, pi at 2a), then field refinement.
 | `improvement` | number (0.001..1) | `0.05` |  |
 | `pulse_map` | mapping {P2..P9: pi \| pi2} \| 'none' | — | pi2/pi roles, e.g. {P2: pi2, P3: pi}; inferred from the preset when omitted |
 | `adjust_video` | boolean | — | omit to inherit tune.find_echo; true adjusts video attenuation to 200 mV |
-| `rep_rate` | number (0.1..10000) | — | repetition rate in Hz; omitted inherits tune.find_echo |
+| `rep_rate` | 'auto' \| number | — | repetition rate in Hz, 0.1–10000; 'auto' uses an earlier tune.rep_rate recommendation within that range; omitted inherits tune.find_echo |
 | `scans` | integer (1..100) | `1` |  |
 | `averages` | integer (1..10000) | `10` |  |
 | `search_from` | time ("300 ns") | `200 ns` |  |
@@ -136,16 +136,17 @@ Coarse stage: step the rotary vane until pi lands at the target length (see ARCH
 
 ### tune.rep_rate
 
-Repetition-rate saturation scan: quick echo per rate on a log grid, fit A = A0*(1 - exp(-T/T1_eff)); stores the recommendation for the exp.* steps' rep_rate: auto.
+Fixed-tau live repetition-rate scan with a temporary 512 KB ADC buffer: consecutive fresh curves stable to 5%, fit A = A0*(1 - exp(-T/T1_eff)); stores the recommendation for preliminary tuning and exp.* steps using rep_rate: auto.
 
 | Parameter | Type | Default | Description |
 | --------- | ---- | ------- | ----------- |
-| `preset` | preset file | `hahn_echo_4s.phase_awg` | echo preset for the per-rate quick acquisitions |
-| `rate_min` | number (0.1..100000) | `20.0` | slowest rate (Hz) — must reach the unsaturated plateau |
-| `rate_max` | number (0.1..100000) | `2000.0` | fastest rate (Hz); recommendations are never extrapolated above it |
+| `preset` | preset file | `hahn_echo_4s.phase_awg` | two-pulse echo preset; tau remains fixed during live tuning |
+| `rate_min` | number (10..100000) | `10.0` | slowest rate (Hz), at least 10 — must reach the unsaturated plateau |
+| `rate_max` | number (10..100000) | `2000.0` | fastest rate (Hz); recommendations are never extrapolated above it |
 | `steps` | integer (3..20) | `6` | log-grid rates between rate_min and rate_max |
-| `points` | integer (>= 2) | `4` | sweep points per quick acquisition |
-| `scans` | integer (>= 1) | `1` | scans per quick acquisition |
+| `points` | integer (>= 3) | `3` | consecutive fresh live curves within 5%; no tau sweep |
+| `scans` | integer (>= 1) | `1` | disjoint stable groups required per rate; all groups must agree within 5% |
+| `max_wait` | time ("300 ns") | `120 s` | time limit per rate, including arrival of fresh ADC buffers |
 | `factor` | number (1..20) | `5.0` | quantitative-mode period = factor x T1_eff (5 -> <1% residual saturation) |
 | `mode` | quantitative \| sensitivity | `quantitative` | sensitivity: period = 1.26 x T1_eff, max S/sqrt(time) — tuning/EDFS only, NOT for quantitative relaxation runs |
 
@@ -268,6 +269,8 @@ Inversion recovery (T1), log-time sweep, with fit.
 | `preset` | preset file | <code>inversion_recovery_echo_4s_log<wbr>.phase_awg</code> | Log Time inversion-recovery preset |
 | `t_start` | time ("300 ns") | `500 ns` | shortest recovery delay; also sets the log-spacing density |
 | `t_end` | time ("300 ns") | `5 ms` | longest recovery delay — physically several times the expected T1 |
+| `adjust_range` | boolean | `False` | check the range during the first 1–3 scans before SNR stopping; only a clearly unfinished tail gets one early extension; plan 45–50 plateau points for the next temperature; reused/repaired ranges use the maximum timing-compatible rate |
+| `adjust_max_points` | integer (60..100000) | `4096` | point ceiling when automatically resizing a sweep; reduce log-grid density if needed |
 | `points` | integer (>= 2) | *required* | log-grid points; the worker deduplicates the grid-rounded axis, so the saved curve may hold fewer |
 | `scans` | integer (>= 1) | `1` | scan count — the ceiling when target_snr or max_duration shrink the run |
 | `window` | auto \| preset | `auto` | auto: tune.echo_window result; preset: stored values |
@@ -285,6 +288,8 @@ Hahn echo decay (T2/Tm), linear tau sweep, with fit.
 | `preset` | preset file | `hahn_echo_4s.phase_awg` | Linear Time moving-echo (Hahn) preset |
 | `tau_start` | time ("300 ns") | `300 ns` | first tau; the saved axis is the evolution time 2*tau |
 | `tau_step` | time ("300 ns") | `12 ns` | tau increment per point |
+| `adjust_range` | boolean | `False` | check the range during the first 1–3 scans before SNR stopping; only a clearly unfinished tail gets one early extension; plan 50–60% baseline for the next temperature |
+| `adjust_max_points` | integer (60..100000) | `4096` | point ceiling when automatically resizing a sweep; increase the grid step if needed |
 | `points` | integer (>= 2) | *required* | sweep points |
 | `scans` | integer (>= 1) | `1` | scan count — the ceiling when target_snr or max_duration shrink the run |
 | `window` | auto \| preset | `auto` | auto: tune.echo_window result; preset: stored values |

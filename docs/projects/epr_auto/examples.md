@@ -1,21 +1,40 @@
 # Examples
 
-Two shipped protocols, walked through step by step. Both live in the
-`protocols/` directory of the Atomize_ITC checkout and both dry-run with no
-hardware and no GUI:
+The `protocols/` directory in the Atomize_ITC checkout contains examples for a single T2, a field series, temperature series and preliminary tuning. The temperature examples below keep confirmed T1/T2 curves and use their measured baseline to prepare the next temperature's range. Read [Writing protocols](protocols.md) for YAML syntax and [The tune-up chain](tuning.md) for calibration order.
 
-```bash
-epr-auto run protocols/overnight_t2.yaml --test
-epr-auto run protocols/field_series_t1t2.yaml --test
+## A single T2 with automatic 2τ range — `t2_auto_range.yaml`
+
+[`t2_auto_range.yaml`](https://github.com/Anatoly1010/Atomize_ITC/blob/main/protocols/t2_auto_range.yaml) measures one T2 at the current temperature and checks its time range along the physical evolution axis 2τ. It sets the selected field, phases the signal and calibrates the pulse amplitudes before the decay measurement. `adjust_range: true` checks the measured tail during the first one to three complete scans. A sufficient range continues accumulating toward SNR 20 in the same acquisition; excess baseline is retained. A clearly short range can receive one early extension within the shared 600 s budget. The 64 scans are a ceiling, and the requested SNR is not guaranteed.
+
+```yaml
+# Set the sample, field and initial T2 range for the experiment.
+sample: t2_auto_range
+autonomy: checkpointed
+notify: none
+
+steps:
+  - field.set:
+      value: 3318 G
+  - tune.auto_phase
+  - tune.pi_calibration:
+      mode: amplitude
+  - exp.t2:
+      preset: hahn_echo_4s.phase_awg
+      tau_start: 300 ns
+      tau_step: 20 ns
+      points: 400
+      scans: 64
+      target_snr: 20
+      max_duration: 600 s
+      adjust_range: true
 ```
 
-The first is the smallest useful protocol — tune, then measure one T2 with a
-fixed scan budget. The second is the pattern most real campaigns follow —
-tune once, then repeat a measurement group across a series of fields, letting
-each position spend only the scans it needs. Read
-[Writing protocols](protocols.md) for the YAML dialect and
-[The tune-up chain](tuning.md) for the physics behind the tuning steps; this
-page is about how the pieces fit together in a working file.
+Set `sample`, the 3318 G field and the initial `tau_start`, `tau_step` and `points` for the experiment. The saved time axis is 2τ, so its increment is twice the hardware-rounded `tau_step`. This example uses the shipped Hahn-echo and amplitude-calibration presets; its repetition rate and echo integration window come from the presets. It does not change temperature or run `tune.echo_window`. Set `adjust_range: false` to retain the initial time range.
+
+```bash
+python3 -m atomize.epr_auto validate protocols/t2_auto_range.yaml
+python3 -m atomize.epr_auto run protocols/t2_auto_range.yaml --test
+```
 
 ## A single T2 — `overnight_t2.yaml`
 
@@ -218,12 +237,156 @@ to measure and recommend a rate; see
     `target_snr` and `max_duration` are set the smaller resulting scan count
     wins.
 
+## A temperature series — T1 and T2
+
+[`temperature_series_t1t2.yaml`](https://github.com/Anatoly1010/Atomize_ITC/blob/main/protocols/temperature_series_t1t2.yaml) sets the field to an editable 3318 G, reaches 80 K, and measures the echo window, phase and fine pulse calibration once at that starting temperature. Its `foreach` then sets and waits at 80, 100, 120 and 140 K, refreshes the echo window and phase, and acquires T2 and T1 with `adjust_range: true`. The initial T2 seed is 300 ns plus 400 points at a 20 ns tau step; T1 begins at 500 ns and ends at 5 ms with an explicit 100 Hz rate.
+
+Each experiment requests `target_snr: 20`, with `scans: 64` as a ceiling and a projected 600 s budget shared between its initial and any extended acquisition. The range is checked after the first full scan, with up to three scans when noisy. A suitable range keeps accumulating in the same acquisition; a clearly unfinished tail can trigger one early extension before spending the full SNR budget. If the early check remains uncertain, accumulation continues without a late repeat. For a carried or repaired T1 range, the runner recomputes the maximum timing-compatible rate; on Nd:YAG this is fixed at 9.9 Hz and the step fails if the sequence does not fit. Scan/time limits and an optimistic SNR projection can leave the final SNR below the target.
+
+The accepted measured curve can guide the next temperature's range; the current curve with a confirmed plateau is kept even if it has excess baseline. The fine calibration remains valid across temperature moves while the phase and window are refreshed.
+
+```yaml
+# Set the sample, field, and shipped presets for the real setup before acquisition.
+sample: temperature_series_t1t2
+autonomy: checkpointed
+notify: none
+
+steps:
+  - field.set:
+      value: 3318 G
+  - temp.set:
+      setpoint: 80
+      heater_range: 5 W
+  - temp.wait:
+      band: 0.3
+      timeout: 1800 s
+  - tune.echo_window
+  - tune.auto_phase
+  - tune.pi_calibration:
+      mode: amplitude
+
+  - foreach:
+      var: T
+      values: [80, 100, 120, 140]
+      on_fail: continue
+      steps:
+        - temp.set:
+            setpoint: $T
+            heater_range: 5 W
+        - temp.wait:
+            band: 0.3
+            timeout: 1800 s
+        - tune.echo_window
+        - tune.auto_phase
+        # Seed the first curve; later temperatures reuse accepted measured ranges.
+        - exp.t2:
+            tau_start: 300 ns
+            tau_step: 20 ns
+            points: 400
+            scans: 64
+            target_snr: 20
+            max_duration: 600 s
+            adjust_range: true
+        - exp.t1:
+            t_start: 500 ns
+            t_end: 5 ms
+            points: 200
+            scans: 64
+            target_snr: 20
+            max_duration: 600 s
+            rep_rate: 100
+            adjust_range: true
+```
+
+```bash
+python3 -m atomize.epr_auto validate protocols/temperature_series_t1t2.yaml
+python3 -m atomize.epr_auto run protocols/temperature_series_t1t2.yaml --test
+```
+
+## A temperature series — T2 only
+
+[`temperature_series_t2.yaml`](https://github.com/Anatoly1010/Atomize_ITC/blob/main/protocols/temperature_series_t2.yaml) uses the same starting-temperature calibration and temperature loop. It adds a quantitative `tune.rep_rate` at every temperature before `exp.t2` with `rep_rate: auto`, because temperature moves make the earlier rate recommendation stale. It also combines `target_snr: 20`, `scans: 64` and `max_duration: 600 s` with the same early range checks. The range memory carries only the sampled range, never the old rate.
+
+```yaml
+# Set the sample, field, and shipped presets for the real setup before acquisition.
+sample: temperature_series_t2
+autonomy: checkpointed
+notify: none
+
+steps:
+  - field.set:
+      value: 3318 G
+  - temp.set:
+      setpoint: 80
+      heater_range: 5 W
+  - temp.wait:
+      band: 0.3
+      timeout: 1800 s
+  - tune.echo_window
+  - tune.auto_phase
+  - tune.pi_calibration:
+      mode: amplitude
+
+  - foreach:
+      var: T
+      values: [80, 100, 120, 140]
+      on_fail: continue
+      steps:
+        - temp.set:
+            setpoint: $T
+            heater_range: 5 W
+        - temp.wait:
+            band: 0.3
+            timeout: 1800 s
+        - tune.echo_window
+        - tune.auto_phase
+        - tune.rep_rate:
+            mode: quantitative
+            rate_min: 10
+            rate_max: 2000
+        # Seed the first curve; later temperatures reuse accepted measured ranges.
+        - exp.t2:
+            tau_start: 300 ns
+            tau_step: 20 ns
+            points: 400
+            scans: 64
+            target_snr: 20
+            max_duration: 600 s
+            rep_rate: auto
+            adjust_range: true
+```
+
+```bash
+python3 -m atomize.epr_auto validate protocols/temperature_series_t2.yaml
+python3 -m atomize.epr_auto run protocols/temperature_series_t2.yaml --test
+```
+
+Run these commands from the Atomize_ITC checkout. Set `sample`, the field, both initial and loop temperatures, heater range, pulse presets, target SNR, scan ceilings and initial time ranges for the experiment. The initial range should be long enough to include a plateau at the first temperature; it is used again when a new run starts. Omitted presets select the shipped defaults; add `preset:` to the tuning and experiment steps to use your own matching sequences. `on_fail: continue` records a failed temperature point and proceeds to the next temperature. After checking the dry-run, omit `--test` for acquisition. Files and `manifest.json` are saved under `~/epr_data/epr_auto_<date>_<sample>` unless `output` is set. Both dry-runs complete with canned data; they check protocol wiring and device test paths, not the measured plateau or live range carryover. [Adaptive relaxation ranges](protocols.md#adaptive-relaxation-ranges) explains the acceptance and extension rules.
+
 ## Next steps
 
 - [Writing protocols](protocols.md) — the full YAML schema behind these
   files.
 - [Troubleshooting](troubleshooting.md) — what the failures these protocols
   can hit mean, verbatim.
+
+## A live repetition-rate check — `rep_rate_live.yaml`
+
+[`rep_rate_live.yaml`](https://github.com/Anatoly1010/Atomize_ITC/blob/main/protocols/rep_rate_live.yaml) fixes the field at 3318 G, runs `tune.auto_phase`, and keeps one digitizer card open while scanning 10–2000 Hz. Each rate accepts three fresh nonempty complex echo curves within 5%; `scans: 1` requests one disjoint stable group. The protocol uses a 120 s timeout per rate and quantitative fitting. Set the sample and field for your experiment. The protocol passes test mode; live transitions still need validation on the spectrometer.
+
+```yaml
+steps:
+  - field.set: {value: 3318 G}
+  - tune.auto_phase
+  - tune.rep_rate:
+      rate_min: 10
+      rate_max: 2000
+      steps: 6
+      points: 3
+      scans: 1
+      max_wait: 120 s
+      mode: quantitative
+```
 
 ## Preliminary tuning and handoff
 

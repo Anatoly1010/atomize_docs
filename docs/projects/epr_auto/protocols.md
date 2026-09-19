@@ -102,7 +102,7 @@ Video attenuation (VA) sets the receiver signal level sent to the ADC. The bridg
 
 `tune.find_echo` enables video-attenuation adjustment by default. Set `adjust_video: false` to retain the current VA settings; `tune.maximize_echo` and `tune.video_attenuation` inherit this choice unless they explicitly override it. When enabled, the RV approach uses live receiver monitoring and a 200 mV threshold. See [Preliminary tuning](tuning.md#preliminary-tuning) for the approach and recovery sequence.
 
-`rep_rate` on the preliminary echo search and maximization is in Hz and must be between 0.1 and 10000. `bridge.set` accepts `video1_db` from 0 to 30 in 2 dB steps and `video2_db` from 0 to 31.5 in 0.5 dB steps; values between hardware settings are rejected. At least one RV, synthesizer or video setting is required.
+`rep_rate` on the preliminary echo search and maximization accepts a number between 0.1 and 10000 Hz, or `auto` from an earlier accepted `tune.rep_rate` result. The resolved automatic rate must also be within this range. `tune.rep_rate` uses a fixed field/fixed tau and ordinary nonempty `digitizer_get_curve(live_mode=1)` results, including old or mixed-rate packet content; there is no packet tagging or epoch filtering. Its tuning grid has a 10 Hz lower bound and a 10 Hz default `rate_min`; ordinary rates and recommendations retain the 0.1 Hz hardware floor. `points` is the minimum 3-curve 5% stability window and `scans` counts disjoint stable groups. During tuning the Worker pins a 512 KB ADC buffer regardless of the ADC window or rate, then restores the previous setting after the card closes, including on Stop or failure. `max_wait` is a per-rate timeout including buffer arrival. `bridge.set` accepts `video1_db` from 0 to 30 in 2 dB steps and `video2_db` from 0 to 31.5 in 0.5 dB steps; values between hardware settings are rejected. At least one RV, synthesizer or video setting is required.
 
 ## Steps
 
@@ -163,10 +163,7 @@ number where a unit string is expected is rejected.
 `scans: 16` (a count), `amplitude: 95` (AWG percent), `setpoint: 80.0`
 (kelvin), `rep_rate: 100` (Hz), `g: 2.0023`.
 
-**`auto`** is a literal keyword accepted by a few parameters in place of an
-explicit value: `range: auto` on `field.edfs` centres the sweep on the
-resonance computed from the synthesizer readout, and `rep_rate: auto` on the
-experiment steps pulls in the `tune.rep_rate` recommendation (see below).
+**`auto`** is a literal keyword accepted by a few parameters in place of an explicit value: `range: auto` on `field.edfs` centres the sweep on the resonance computed from the synthesizer readout, and `rep_rate: auto` on preliminary echo tuning and experiment steps pulls in the `tune.rep_rate` recommendation (see below).
 
 **Mappings** are used where a parameter carries structured data. The clearest
 example is `apply_cal` on the experiment steps, a pulse-slot-to-role map:
@@ -388,21 +385,50 @@ always kept.
       max_duration: 21600 s
 ```
 
-When both `target_snr` and `max_duration` are set, the smaller resulting scan
-count wins — the run stops at whichever limit it reaches first.
+When both `target_snr` and `max_duration` are set, the smaller resulting scan count wins. With `adjust_range: true` on T1/T2, SNR stopping and projection wait for the initial range assessment, which takes at most three full scans; the duration and scan ceilings remain active. See [Adaptive relaxation ranges](#adaptive-relaxation-ranges).
+
+## Adaptive relaxation ranges
+
+Set `adjust_range: true` on `exp.t2` or `exp.t1` to assess the measured tail after the first complete scan, before stopping or projecting the scan count from `target_snr`. The default is `false`. A confirmed plateau keeps the same acquisition and all accumulated data, then normal SNR control continues. Excess baseline or a confirmed but short plateau does not repeat the current curve.
+
+If noise makes the first decision uncertain, the runner checks the accumulated curve after up to three full scans, or fewer when the scan ceiling is lower. SNR stopping and projection wait during this initial assessment, while duration and scan limits remain active. If the tail is still uncertain after these scans, accumulation continues with normal SNR control on the current range. The runner reports the final plateau assessment and does not restart a long completed accumulation.
+
+Only a clearly unfinished tail can trigger one early extension of about twice the sampled span. The runner preflights the revised sequence and checks the point ceiling and remaining `max_duration` budget before stopping at the completed scan. If extension is unavailable, the current acquisition continues. Otherwise, the short initial acquisition is saved and one extended acquisition accumulates toward the requested SNR within the remaining time budget. Both files are retained; data from their different grids are not combined. The extended acquisition cannot trigger another automatic repair.
+
+The plateau check uses measured late data independently of the fit. Block means must agree with the late reference within 1% of measured early-to-late contrast, including a noise margin; the reference must be stable, and at least one qualifying block must precede it. Fewer than 60 points, invalid data or insufficient contrast cannot support a recommendation. Noise alone does not justify an extension.
+
+After the final curve has a confirmed plateau and passes the hard `relaxation_fit` judge, it recommends a range for the next temperature in the same run: about 55% of actual T2 points on the baseline or 47 T1 points on the recovery plateau. The recommendation contains only range settings. It is kept for the current session and matching sample, experiment kind, field, preset, calibrated pulse settings and seed controls; temperature is excluded. A new run or changed context starts from the protocol's seed. Warming can shorten the next span by at most 25%; cooling or unknown temperature cannot shorten the latest measured span. The current temperature must have passed `temp.wait` before range reuse when temperature state exists. RV movement that invalidates fine pulse calibration clears the recommendation. Dry-runs, failed fits, skipped steps and Stop do not update it. The current integration window and receiver phase are applied afresh.
+
+```yaml
+  - foreach:
+      var: T
+      values: [80, 100, 120, 140]
+      steps:
+        - temp.set:
+            setpoint: $T
+        - temp.wait:
+            band: 0.3
+        - tune.echo_window
+        - tune.auto_phase
+        - exp.t2:
+            tau_start: 300 ns
+            tau_step: 20 ns
+            points: 400
+            scans: 64
+            target_snr: 20
+            max_duration: 600 s
+            adjust_range: true
+```
+
+Here `scans: 64` is the ceiling for each acquisition, not a mandatory count. A suitable range keeps its initial scans while accumulating toward SNR 20. A clearly insufficient range is replaced after the early assessment, before spending the full SNR budget. Scan/time limits and an optimistic SNR projection can leave the final SNR below the target. The shipped [T1/T2](examples.md#a-temperature-series-t1-and-t2) and [T2-only](examples.md#a-temperature-series-t2-only) examples include a starting-temperature fine calibration. Edit their sample, field, temperature values and preset choices for the actual setup.
+
+T2 keeps its selected repetition rate; the T2-only example refreshes `tune.rep_rate` at each temperature before using `rep_rate: auto`. The first seeded T1 acquisition uses the protocol's explicit, automatic or preset rate. A carried or repaired T1 range recalculates the maximum timing-compatible rate in 0.1 Hz steps using the full Log Time worker/driver preflight across all points; for Nd:YAG this resolves to the fixed 9.9 Hz rate and fails if the sequence does not fit that period. The cache does not carry an old `tune.rep_rate` recommendation. Timing compatibility does not prove physical recovery between shots.
+
+`adjust_max_points` caps automatically resized sweeps at 4096 requested points by default (allowed range: 60–100000); it does not trim an unchanged range or the initial protocol range. T2 preserves grid spacing and T1 logarithmic density where possible; the actual T1 grid may contain fewer points after rounding and deduplication. The `range_adjustment` result records the early check, measured coverage, reason and both CSV paths if there was an extension. Top-level `start_s` and `end_s` are saved-axis bounds; T1's `t_start` and `t_end` control the log grid. The final curve supplies the fit and hard judge. `max_duration` covers analysis, preflights and both acquisitions as a shared projected budget, not a hard deadline; Stop aborts normally. In `--test` mode canned data cannot establish measured range carryover.
 
 ## rep_rate: auto
 
-The experiment steps accept `rep_rate` as a number in Hz (defaulting to the
-preset's own value) or the literal `auto`. `rep_rate: auto` uses the
-recommendation stored by an earlier `tune.rep_rate` step; if no
-`tune.rep_rate` result is in the session it is an error, so `auto` requires
-`tune.rep_rate` to have run first. `epr-auto validate` catches the statically
-dead case — a `rep_rate: auto` with no earlier `tune.rep_rate` in the step
-order — as a load-time **warning**, so you see it at your desk rather than at
-the abort. The runner still checks that the sweep fits
-one repetition period — a T1 sweep, for instance, needs `1/rep_rate` beyond
-`t_end` plus the sequence tail.
+`exp.t1`, `exp.t2`, `tune.find_echo` and `tune.maximize_echo` accept `rep_rate` as a number in Hz or the literal `auto`. Without it, the experiment steps and first echo search use the preset rate; maximization inherits the search rate. Preliminary rates, including resolved automatic values, must lie within 0.1–10000 Hz. `rep_rate: auto` uses the recommendation stored by an earlier `tune.rep_rate` step; if no `tune.rep_rate` result is in the session it is an error, so `auto` requires `tune.rep_rate` to have run first. `epr-auto validate` catches the statically dead case — a `rep_rate: auto` with no earlier `tune.rep_rate` in the step order — as a load-time **warning**, so you see it at your desk rather than at the abort. The runner still checks that the sweep fits one repetition period — a T1 sweep, for instance, needs `1/rep_rate` beyond `t_end` plus the sequence tail.
 
 ```yaml
   - tune.rep_rate
@@ -410,6 +436,26 @@ one repetition period — a T1 sweep, for instance, needs `1/rep_rate` beyond
       points: 400
       rep_rate: auto
 ```
+
+For a new preliminary setup, find an echo at an explicit or preset rate before measuring its saturation. Use the same echo preset for the scan and maximization:
+
+```yaml
+  - tune.find_echo:
+      preset: hahn_echo_4s.phase_awg
+      center: 3445 G
+      span: 100 G
+  - tune.rep_rate:
+      preset: hahn_echo_4s.phase_awg
+      mode: quantitative
+      rate_max: 2000
+  - tune.maximize_echo:
+      preset: hahn_echo_4s.phase_awg
+      rep_rate: auto
+```
+
+This fragment follows the ringing check and optional resonator scan in the [preliminary workflow](tuning.md#preliminary-tuning). Automatic rate selection consumes a stored recommendation; it does not start an implicit scan. All four exported presets carry the rate used by maximization.
+
+For a focused live-rate check at a fixed field, use [`rep_rate_live.yaml`](https://github.com/Anatoly1010/Atomize_ITC/blob/main/protocols/rep_rate_live.yaml): it sets 3318 G, phases once, then tests 10–2000 Hz with six rates, three returned curves per stable group, one group, a 120 s per-rate timeout and quantitative fitting. The card remains open across the grid; a timeout or Stop preserves the partial live history.
 
 ## Retries versus judges
 

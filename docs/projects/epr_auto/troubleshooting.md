@@ -306,6 +306,22 @@ These are genuine hardware / driver faults (or a preset the pre-flight let
 through that the live driver rejects); the child's traceback is the place to
 look. The run directory's `worker_stdout.log` contains acquisition-worker stdout, including FPGA library messages, for the same run.
 
+**Empty Insys configuration.** `Empty Insys configuration: ...` means that the driver found an empty `libs/exam_adc.ini` or `libs/exam_edac.ini`. Restore the affected file from a known working copy before starting the hardware. `change_three_ini_files` writes in test mode for compatibility; test-mode initialization can therefore update `BaseClockValue`, while the other INI setters retain their test guards. Configuration updates write a complete temporary file before replacing the original, so a failed write preserves the existing configuration.
+
+**Live-rate buffer restoration failed.** Tuning temporarily uses a 512 KB ADC buffer and restores the previous `streamBufSizeKb` after closing the card. If cleanup or restoration fails, the worker reports `Live rate cleanup or ADC buffer restoration failed: ...` and does not report successful completion. A failed INI replacement leaves the last complete configuration intact.
+
+**Invalid live-rate sequence or timeout.** `tune.rep_rate` is a fixed-tau live scan. It clears sweep increments after loading the preset and requires exactly two active microwave pulses after DETECTION; a different structure is a hard step failure:
+
+```text
+      tune.rep_rate needs a two-pulse echo preset at fixed tau
+```
+
+Log Time and Amplitude family labels are not themselves rejected when the source has the required two-pulse structure. Nd:YAG variable-rate tuning is a separate hard failure because its repetition rate is fixed at 9.9 Hz. During a live scan, ordinary nonempty `digitizer_get_curve(live_mode=1)` results are consumed as returned, including old or mixed-rate packet content; failure to obtain three stable curves within 5% before `max_wait` is an error and leaves the partial `*_rep_rate_live.csv` history intact:
+
+```text
+      echo did not stabilize within 120 s at 20 Hz (5%, 3 fresh live curves)
+```
+
 ## (d) Warnings that are not errors
 
 Some lines look alarming but are advisory — the run continues. They appear in
@@ -320,15 +336,6 @@ the `--test` pre-flight too, so you see them before the bench.
 
 Set `scans` to the largest budget you are willing to spend and let
 `target_snr` cut it short.
-
-**Wrong preset family for `tune.rep_rate`.** Unlike the hard sweep-type checks
-elsewhere, `tune.rep_rate` only warns when handed a Log Time or Amplitude
-preset, then proceeds (and the coherence gate rejects the run if the metric
-does cancel):
-
-```text
-      warning: 'Log Time' preset — its sweep flips the echo sign across the points, so the |mean| amplitude metric cancels; use a plain echo preset (Linear Time tau sweep) for rep_rate
-```
 
 **Canned-calibration skip (dry-run only).** In a dry-run the calibration is a
 placeholder, so an over-rail scaling proves nothing about the real preset —
