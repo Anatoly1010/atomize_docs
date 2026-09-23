@@ -332,7 +332,7 @@ with no coarse stage to fall back to, the rail failure is reported as-is.
 
 ## Repetition rate — `tune.rep_rate`
 
-`tune.rep_rate` keeps the FPGA open at a fixed field and fixed τ while scanning a logarithmic grid of rates, slowest first. Each ordinary, nonempty curve returned by `digitizer_get_curve(live_mode=1)` provides a complex echo integral in the selected integration window. The result is consumed as returned, including when its underlying buffer contains old or mixed-rate packets; no packet tags or epoch filtering are used. The card continues running between rates; there is no separate warmup train or one-second delay.
+`tune.rep_rate` keeps the FPGA open at a fixed field and fixed τ while scanning a logarithmic grid of rates, slowest first. Each ordinary, nonempty curve returned by `digitizer_get_curve(live_mode=1)` provides a complex echo integral in the selected integration window. Each curve holds one complete phase cycle, which may span several ADC buffers when the cycle is longer than one buffer. The result is consumed as returned, including when its underlying buffers contain old or mixed-rate packets; no packet tags or epoch filtering are used. The card continues running between rates; there is no separate warmup train or one-second delay.
 
 By default, three consecutive curves qualify when `(max |sig| − min |sig|) / mean |sig| ≤ 0.05`. Their mean complex signal supplies the amplitude at that rate, and the acquisition advances to the next rate. `points` sets the number of consecutive curves (default and minimum 3); it no longer sweeps τ. `scans` requests disjoint stable groups (default 1), with the combined groups also required to agree within 5%.
 
