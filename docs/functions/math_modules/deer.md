@@ -285,8 +285,6 @@ print(f"peak r = {val['peak']:.2f} nm  over {val['n_trials']} trials")
 #         median:  plot(val['r'], val['P_density'])
 ```
 
-In the Data Treatment GUI this is the **"Validate (background sweep → P(r) band)"** checkbox; the distance view then shows the median curve over its shaded band.
-
 ---
 
 ### deer_invert_mellin() { #deer_invert_mellin data-toc-label="deer_invert_mellin" }

@@ -405,7 +405,7 @@ steps:
       if_mhz: 50
       pulse_length: 102.4 ns
   # Optional:
-  #   done: true
+  #     done: true
   # Optional: omit this step to keep the current synthesizer frequency.
   - tune.resonator:
       if_mhz: 50
