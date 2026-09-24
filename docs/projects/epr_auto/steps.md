@@ -59,7 +59,7 @@ Set the integration window from an averaged echo trace (center = smoothed |V| ma
 | --------- | ---- | ------- | ----------- |
 | `preset` | preset file | `hahn_echo_4s.phase_awg` | echo preset the trace is taken with |
 | `factor` | number (1..10) | `2.0` | window width as a multiple of the echo FWHM |
-| `sweeps` | integer (>= 1) | `3` | full phase cycles to average for the trace |
+| `sweeps` | integer (>= 1) | `3` | minimum full phase cycles to average for the trace |
 | `search_from` | time ("300 ns") | `200 ns` | start the echo search at this time relative to DETECTION; exclude early receiver transients while retaining the echo |
 | `min_width` | time ("300 ns") | `20 ns` | reject a peak whose FWHM is below this as a transient (masked out, the search goes on); nothing wider left = the echo_in_trace judge fails |
 | `apply_cal` | mapping {P2..P9: pi \| pi2} \| 'none' | — | slot -> pi/pi2 map; none = do not patch; omitted = patch from the session pi_calibration when one exists (inferred from the preset amplitude levels), else the stored values |
