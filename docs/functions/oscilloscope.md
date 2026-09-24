@@ -155,6 +155,24 @@ For Keysight 3000 and 4000 X-series the start function already waits for acquisi
 
 ---
 
+### oscilloscope_timeout(*timeout) { #oscilloscope_timeout data-toc-label="oscilloscope_timeout" }
+
+```python
+oscilloscope_timeout()        # -> str (query)
+oscilloscope_timeout('5 s')   # set the communication timeout to 5 s
+```
+
+This function queries or sets the communication timeout of the oscilloscope connection, that is, how long a single query may wait for an answer before an error is raised. If there is no argument the function will return the current timeout. If there is an argument the specified timeout will be set. The initial value is taken from the `timeout` field of the configuration file.
+
+A short timeout is useful when the acquisition is armed with [`oscilloscope_command(':SINGle')`](#oscilloscope_command) and its state is polled with [`oscilloscope_query()`](#oscilloscope_query) instead of waiting with [`oscilloscope_wait_acquisition()`](#oscilloscope_wait_acquisition): no query then has to wait for the whole accumulation, and a lost connection is reported within the timeout.
+
+**Output format:** `'number'` + `'s'` | `'ms'` | `'us'` | `'ns'`
+
+!!! note
+    This function is only available for Keysight 2000 X-series oscilloscopes.
+
+---
+
 ### oscilloscope_preamble(channel) { #oscilloscope_preamble data-toc-label="oscilloscope_preamble" }
 
 ```python
