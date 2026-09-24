@@ -223,6 +223,7 @@ Echo-detected field sweep; pick the working field and set the magnet. range: aut
 | `span` | field ("3478 G") | `250 G` | half-width of the range: auto sweep |
 | `offset` | field offset ("-15 G") | `-7.5 G` | known magnet-calibration shift added to the range: auto center; set for your magnet calibration |
 | `target_snr` | number (>= 3) | — | SNR-driven scan count: scans becomes the ceiling; stop early once the accumulated sweep reaches this echo_snr score (min = the judge pass floor: a lower target would stop on a sweep the hard judge then rejects) |
+| `save_2d` | boolean | `False` | also save the full I/Q matrices of every sweep point as a _2d.h5 file beside the CSV (datasets I, Q, t, sweep); size is points x window samples x 8 bytes |
 | `apply_cal` | mapping {P2..P9: pi \| pi2} \| 'none' | — | slot -> pi/pi2 map; none = do not patch; omitted = patch from the session pi_calibration when one exists (inferred from the preset amplitude levels), else the stored values |
 
 ### field.set
@@ -271,6 +272,7 @@ Inversion recovery (T1), log-time sweep, with fit.
 | `t_end` | time ("300 ns") | `5 ms` | longest recovery delay — physically several times the expected T1 |
 | `adjust_range` | boolean | `False` | check the range during the first 1–3 scans before SNR stopping; only a clearly unfinished tail gets one early extension; plan 45–50 plateau points for the next temperature; reused/repaired ranges use the maximum timing-compatible rate |
 | `adjust_max_points` | integer (60..100000) | `4096` | point ceiling when automatically resizing a sweep; reduce log-grid density if needed |
+| `save_2d` | boolean | `False` | also save the full I/Q matrices of every sweep point as a _2d.h5 file beside the CSV (datasets I, Q, t, sweep); size is points x window samples x 8 bytes |
 | `points` | integer (>= 2) | *required* | log-grid points; the worker deduplicates the grid-rounded axis, so the saved curve may hold fewer |
 | `scans` | integer (>= 1) | `1` | scan count — the ceiling when target_snr or max_duration shrink the run |
 | `window` | auto \| preset | `auto` | auto: tune.echo_window result; preset: stored values |
@@ -290,6 +292,7 @@ Hahn echo decay (T2/Tm), linear tau sweep, with fit.
 | `tau_step` | time ("300 ns") | `12 ns` | tau increment per point |
 | `adjust_range` | boolean | `False` | check the range during the first 1–3 scans before SNR stopping; only a clearly unfinished tail gets one early extension; plan 50–60% baseline for the next temperature |
 | `adjust_max_points` | integer (60..100000) | `4096` | point ceiling when automatically resizing a sweep; increase the grid step if needed |
+| `save_2d` | boolean | `False` | also save the full I/Q matrices of every sweep point as a _2d.h5 file beside the CSV (datasets I, Q, t, sweep); size is points x window samples x 8 bytes |
 | `points` | integer (>= 2) | *required* | sweep points |
 | `scans` | integer (>= 1) | `1` | scan count — the ceiling when target_snr or max_duration shrink the run |
 | `window` | auto \| preset | `auto` | auto: tune.echo_window result; preset: stored values |

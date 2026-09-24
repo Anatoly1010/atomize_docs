@@ -426,6 +426,22 @@ T2 keeps its selected repetition rate; the T2-only example refreshes `tune.rep_r
 
 `adjust_max_points` caps automatically resized sweeps at 4096 requested points by default (allowed range: 60–100000); it does not trim an unchanged range or the initial protocol range. T2 preserves grid spacing and T1 logarithmic density where possible; the actual T1 grid may contain fewer points after rounding and deduplication. The `range_adjustment` result records the early check, measured coverage, reason and both CSV paths if there was an extension. Top-level `start_s` and `end_s` are saved-axis bounds; T1's `t_start` and `t_end` control the log grid. The final curve supplies the fit and hard judge. `max_duration` covers analysis, preflights and both acquisitions as a shared projected budget, not a hard deadline; Stop aborts normally. In `--test` mode canned data cannot establish measured range carryover.
 
+## Full 2D data: save_2d
+
+`exp.t2`, `exp.t1` and `field.edfs` save one demodulated I/Q integral per sweep point as their CSV result. With `save_2d: true` the step also keeps the complete matrices behind those integrals, one time-domain trace per sweep point for I and for Q, in an HDF5 file next to the CSV, named after it with a `_2d.h5` suffix (`003_t2.csv` → `003_t2_2d.h5`). The step result and `manifest.json` record it as `data_file_2d` beside `data_file`; an automatic range extension records both matrices under `range_adjustment`.
+
+```yaml
+  - exp.t2:
+      preset: hahn_echo_4s.phase_awg
+      tau_start: 300 ns
+      tau_step: 20 ns
+      points: 400
+      scans: 64
+      save_2d: true
+```
+
+The file holds the datasets `I` and `Q` (sweep points × window samples, float32), the axes `t` (window time, s) and `sweep` (the sweep axis in the worker's unit: seconds for the time sweeps, Gauss for the field sweep), the attributes `t_unit` / `sweep_unit`, and the full acquisition header (field, bridge settings, repetition rate, temperatures, pulse lists) as file attributes. Adaptive scan control, `adjust_range` and Stop are unaffected: the runner keeps deciding on the per-point integrals, and the matrix is written by the acquisition worker when the acquisition ends, so a Stop mid-run still leaves a partial matrix. Size is points × window samples × 8 bytes: a 400-point T2 with a 15 µs window at decimation 1 is about 120 MB, so leave the option off on long series unless the traces are needed. A dry-run writes no file.
+
 ## rep_rate: auto
 
 `exp.t1`, `exp.t2`, `tune.find_echo` and `tune.maximize_echo` accept `rep_rate` as a number in Hz or the literal `auto`. Without it, the experiment steps and first echo search use the preset rate; maximization inherits the search rate. Preliminary rates, including resolved automatic values, must lie within 0.1–10000 Hz. `rep_rate: auto` uses the recommendation stored by an earlier `tune.rep_rate` step; if no `tune.rep_rate` result is in the session it is an error, so `auto` requires `tune.rep_rate` to have run first. `epr-auto validate` catches the statically dead case — a `rep_rate: auto` with no earlier `tune.rep_rate` in the step order — as a load-time **warning**, so you see it at your desk rather than at the abort. The runner still checks that the sweep fits one repetition period — a T1 sweep, for instance, needs `1/rep_rate` beyond `t_end` plus the sequence tail.
