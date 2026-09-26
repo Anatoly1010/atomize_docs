@@ -51,7 +51,7 @@ The keyword arguments:
 
 This function sets a pulse with specified parameters. The default argument is `name = 'P0'`, `channel = 'DETECTION'`, `start = '0 ns'`, `length = '100 ns'`, `delta_start = '0 ns'`, `length_increment = '0 ns'`, `phase_list = []`. The pulse sequence will be checked for overlap. In the auto defence mode (default option; can be changed in the config file) channels `AMP_ON` and `LNA_PROTECT` will be added automatically according to the delays indicated in the config file. In this mode `AMP_ON` and `LNA_PROTECT` pulses will be joined in one pulse if the distance between them is less than 12 ns (can be changed in the config file).
 
-**Allowed channels:** `'DETECTION'`, `'TRIGGER'`, `'AMP_ON'`, `'LNA_PROTECT'`, `'MW'`, `'-X'`, `'+Y'`, `'TRIGGER_AWG'`, `'AWG'`, `'LASER'`, `'SYNT2'`, `'CH10'`, …, `'CH20'`
+**Allowed channels:** `'DETECTION'`, `'TRIGGER'`, `'AMP_ON'`, `'LNA_PROTECT'`, `'MW'`, `'-X'`, `'+Y'`, `'TRIGGER_AWG'`, `'AWG'`, `'LASER_1'`, `'LASER_2'` (`'LASER'` is accepted as `'LASER_1'`), `'SYNT2'` (Insys FM214x3GDA only), and the free channels `'CH10'`, …, `'CH20'` (Pulse Blaster ESR 500 Pro) or `'CH11'`, …, `'CH14'` (Insys FM214x3GDA). Pulse Blaster Micran has no free channels.
 
 **Allowed phase_list values:** `'+x'`, `'-x'`, `'+y'`, `'-y'`
 
@@ -60,6 +60,8 @@ This function sets a pulse with specified parameters. The default argument is `n
 **Range (Pulse Blaster ESR 500 Pro):** pulse length `10 ns` – `1900 ns`; sequence ≈ `10 s` max
 
 **Range (Insys FM214x3GDA):** pulse length `3.2 ns` – `1900 ns`; sequence ≈ `10 s` max
+
+`LASER_1` and `LASER_2` are trigger pulses for two lasers, or for the flash lamp and the Q-switch of one laser. They can be up to `15 µs` long (`15001.6 ns` for Insys FM214x3GDA) and may overlap other pulses.
 
 In the case of Insys FM214x3GDA `start`, `length`, `delta_start`, and `length_increment` will be rounded to a multiple of 3.2 (`TRIGGER_AWG` timing, and the `DETECTION` `start`/`delta_start`, follow the grid set by [`awg_time_resolution()`](#awg_time_resolution): 3.2 ns by default, optionally 0.8 ns).
 
