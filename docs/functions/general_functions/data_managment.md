@@ -256,4 +256,3 @@ np.savetxt(path_to_file, data_to_save, fmt='%.4e', delimiter=' ',
 ```
 
 For saving inside the script by [`create_file_dialog()`](#create_file_dialog) a standard numpy function should be used.
-

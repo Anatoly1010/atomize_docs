@@ -83,8 +83,10 @@ nav:
       - Magnet power supplies: functions/magnet_power_supply.md
       - Microwave bridges: functions/microwave_bridge.md
       - Moisture meters: functions/moisture_meter.md
+      - Multimeters: functions/multimeter.md
       - Oscilloscopes: functions/oscilloscope.md
       - Other devices: functions/other_device.md
+      - Preamplifiers: functions/preamplifier.md
       - Power supplies: functions/power_supply.md
       - Pulse programmers: functions/pulse_programmer.md
       - Synthetizers: functions/synthetizer.md
