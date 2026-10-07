@@ -34,7 +34,7 @@ Right-click in the Current Plots dock area to access:
 | ------ | ------ |
 | Middle-click curve name in legend  | Remove the curve from the graph |
 | Left-click curve name in legend    | Bring the curve to the top layer |
-| Drag a curve                       | Shift it vertically or horizontally |
+| `Alt` + drag a curve[^alt-drag]     | Shift it vertically or horizontally |
 | `Ctrl` + drag a curve              | Scale it vertically |
 | `Alt` + Left-click a curve         | Reset its shift and scale to original values |
 | Double-click                       | Show/hide cross-hair (1D) or cross-section (2D) widget |
@@ -53,3 +53,5 @@ Right-click in the Current Plots dock area to access:
 | Export Data  | Save 2D data from the displayed contour plot |
 | Hide Label   | Toggle the visibility of labels on the cross-hair or cross-section widgets |
 | Clear Ruler  | Remove the current ruler overlay from the 1D or 2D plot |
+
+[^alt-drag]: Some Linux desktops (XFCE, MATE, Cinnamon, KDE Plasma 5) use `Alt` + drag to move windows, so the plot never receives `Alt` + drag or `Alt` + click. GNOME and KDE Plasma 6 use `Super` and are not affected. To free `Alt`, set the desktop's window-move key to `Super`: in XFCE, Window Manager Tweaks → Accessibility; in MATE, `gsettings set org.mate.Marco.general mouse-button-modifier '<Super>'`; in Cinnamon, System Settings → Windows → Behavior; in KDE, Window Management → Window Behavior → Window Actions.
