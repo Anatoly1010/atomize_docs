@@ -248,13 +248,26 @@ The Liveplot tab has the following additional features in the Plots list (availa
 
 A **green dot** beside a plot means it is receiving data. After 10 seconds without an update, the dot turns **grey** while the source remains connected; new data turns it green again. The dot remains visible when the plot is hidden and disappears when the source disconnects. Hover over a plot name to see its connection status and the time of its last data update. An idle connected plot shows **Source connected, idle since HH:MM:SS**.
 
-Click **Show current run** to restore all connected plots (green or grey dots), including any you have hidden, and follow incoming plots from connected sources. The button is highlighted while this complete live view is active. Browsing a plot without a dot, entering Grid or hiding a live plot removes the highlight. The button is disabled when there are no connected plots.
+Click **Show current run** to restore all connected plots (green or grey dots), including any you have hidden, and follow incoming plots from connected sources. Pinned plots stay visible next to them. The button is highlighted while this complete live view is active. Browsing a plot without a dot or hiding a live plot removes the highlight. The button is disabled when there are no connected plots.
 
-Use **Pin** to keep a plot visible while browsing other plots or using Grid. Pinned plots appear in bold in the Plots list; select one and click **Unpin** to release it. **Show current run** displays only connected plots (green or grey dots): other pinned plots keep their pins but are hidden in this view.
+Click a plot in the Plots list to show it together with any pinned plots. **Ctrl**+click adds a plot to the view or removes it, so several plots can be shown at once. During a run, **Ctrl**+click on a plot without a dot keeps the run's plots on screen and adds that plot.
 
-Enable **Grid** to display several plots together. Click entries in the Plots list to add or remove them from the view. Pinned plots stay visible. Turn Grid off to return to the current plot plus any pinned plots.
+Use **Pin** to keep the selected plots visible while browsing other plots and across new experiments. Select several plots with **Ctrl**+click to pin them together. Pinned plots appear in bold in the Plots list. When all selected plots are pinned, the button reads **Unpin** and releases them. The button is disabled when no plot is selected.
 
-When a new experiment starts, Grid turns off and live plots appear together automatically. Plots from finished runs leave the workspace but remain available in the Plots list. When an experiment finishes, its dots disappear, but the displayed plots remain on screen until you change the view or start a new experiment.
+**Hide all** hides every shown plot, including plots in separate windows. The plots remain in the Plots list: click one to show it again, or click **Show current run**. The plots of a new experiment appear when its data arrives.
+
+The **Layout** menu sets how the shown plots are arranged. The active choice is ticked and remembered after a restart:
+
+- **Free** keeps the arrangement made by hand: new plots appear at the bottom, and plots already on screen keep their places and sizes;
+- **Rows** places each plot in its own row, **Columns** places all plots side by side;
+- **2 per row** and **3 per row** fill rows of two or three plots; beyond four or nine plots, the extra plots become tabs.
+
+With any choice other than **Free**, the shown plots are rearranged whenever a plot appears, is hidden or is added to the view, and sizes set by hand are reset. Plots moved to a separate window (double-click the plot header) stay there; choosing a layout from the menu brings them back.
+
+!!! note
+    To keep an arrangement made by hand across experiments, choose **Free**, arrange the plots, select them with **Ctrl**+click and click **Pin**.
+
+When a new experiment starts, its live plots appear together automatically next to the pinned plots. If several plots are selected, the view is kept and the new plots are added to it. Plots from finished runs leave the workspace but remain available in the Plots list. When an experiment finishes, its dots disappear, but the displayed plots remain on screen until you change the view or start a new experiment.
 
 The buttons in each plot header control its view:
 
