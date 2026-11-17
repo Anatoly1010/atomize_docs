@@ -471,7 +471,7 @@ For a new preliminary setup, find an echo at an explicit or preset rate before m
 
 This fragment follows the ringing check and optional resonator scan in the [preliminary workflow](tuning.md#preliminary-tuning). Automatic rate selection consumes a stored recommendation; it does not start an implicit scan. All four exported presets carry the rate used by maximization.
 
-For a focused live-rate check at a fixed field, use [`rep_rate_live.yaml`](https://github.com/Anatoly1010/Atomize_ITC/blob/main/protocols/rep_rate_live.yaml): it sets 3318 G, phases once, then tests 10–2000 Hz with six rates, three returned curves per stable group, one group, a 120 s per-rate timeout and quantitative fitting. The card remains open across the grid; a timeout or Stop preserves the partial live history.
+For a focused live-rate check at a fixed field, use [`rep_rate_live.yaml`](https://github.com/Anatoly1010/Atomize_stations/blob/main/itc/protocols/rep_rate_live.yaml): it sets 3318 G, phases once, then tests 10–2000 Hz with six rates, three returned curves per stable group, one group, a 120 s per-rate timeout and quantitative fitting. The card remains open across the grid; a timeout or Stop preserves the partial live history.
 
 ## Retries versus judges
 

@@ -272,16 +272,18 @@ runner releases its own locks in a `finally` block and on `atexit`, so a crash
 never leaves them stranded — and a dry-run never touches the lock files at
 all.
 
-**Run from the repository root.** The CLI changes into `libs/` itself, because
-the Insys FPGA driver reads its `brd.ini` / `exam_adc.ini` relative to the
-working directory at instantiation time. If it cannot find `libs/`:
+**The station's `libs/` must be found.** The CLI changes into the ITC station's
+`libs/` itself, from any working folder, because the Insys FPGA driver reads its
+`brd.ini` / `exam_adc.ini` relative to the working directory at instantiation
+time. If it cannot find `libs/`:
 
 ```text
 Cannot find the libs/ directory (looked at /home/.../libs); the Insys driver needs cwd=libs.
 ```
 
-means you launched from the wrong place — run from the Atomize_ITC checkout
-root.
+means the station was installed without `-e`: a regular install copies only
+its `atomize` folder, not `libs/`. Reinstall it in editable mode as described in
+[Stations](../../usage.md#stations).
 
 **The GUI must be open for a live run.** A live acquisition worker pushes its
 traces to the main window's LivePlot server; a real run started with no main

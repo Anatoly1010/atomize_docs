@@ -4,13 +4,13 @@ Atomize is a modular software designed to control a wide range of scientific and
 
 Atomize[^1] uses [liveplot library](https://github.com/PhilReinhold/liveplot) based on pyqtgraph as a main graphics library. [Liveplot](https://github.com/PhilReinhold/liveplot) was originally developed by Phil Reinhold. Since then, several improvements have been made to use it in Atomize, and it has been directly embedded into Atomize.
 
-[Python Programming Language](https://www.python.org/) is used inside experimental scripts, which opens up almost unlimited possibilities for raw experimental data treatment. In addition, with PyQt, one can create experimental scripts with a simple graphical interface, allowing users not familiar with Python to use it. Several examples of scripts are provided in /atomize/script_examples/ directory, including a GUI script with extended comments inside. Also a variant of the Atomize with GUI Control Window extension can be found [here.](https://github.com/Anatoly1010/Atomize_ITC)
+[Python Programming Language](https://www.python.org/) is used inside experimental scripts, which opens up almost unlimited possibilities for raw experimental data treatment. In addition, with PyQt, one can create experimental scripts with a simple graphical interface, allowing users not familiar with Python to use it. Several examples of scripts are provided in /atomize/script_examples/ directory, including a GUI script with extended comments inside. Spectrometer-specific parts, such as GUI control centers, extra instrument modules and their settings, are kept as stations in the [Atomize_stations](https://github.com/Anatoly1010/Atomize_stations) repository and installed on top of Atomize; see [Stations](usage.md#stations).
 
 The list of available instruments is given [here.](instruments.md) Information about protocol settings for instruments can be found [here.](protocol_settings.md) If you would like to write a module for the instrument that is not currently available, please, read this [instruction.](writing_modules.md)
 
 ## Status
 
-At the moment, Atomize has been tested and is currently used for controlling several EPR spectrometers using a broad range of different devices. The program has been tested on Ubuntu 18.04 LTS, 20.04 LTS, and 22.04 LTS; Windows 10.
+At the moment, Atomize has been tested and is currently used for controlling several EPR spectrometers using a broad range of different devices. Two of them, the EPR endstation and the ITC2 CW / TR EPR spectrometer, run as stations on top of Atomize 0.5. The program has been tested on Ubuntu 18.04 LTS, 20.04 LTS, and 22.04 LTS; Windows 10.
 
 ## General Structure
 

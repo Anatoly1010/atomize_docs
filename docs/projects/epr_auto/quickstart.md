@@ -8,19 +8,23 @@ in the [step reference](steps.md).
 
 ## Install
 
-`epr_auto` ships **only** with Atomize_ITC — the EPR-endstation variant of
-Atomize. It is not part of plain Atomize and is not published to PyPI, so the
-only way to get it is a source checkout of the ITC repository. Clone it and
-install in editable mode, exactly as for the rest of the endstation build:
+`epr_auto` ships **only** with the ITC station — the EPR-endstation folder
+`itc/` of [Atomize_stations](https://github.com/Anatoly1010/Atomize_stations).
+It is not part of plain Atomize and is not published to PyPI. Install Atomize
+and the station in editable mode, as described in
+[Stations](../../usage.md#stations):
 
 ```bash
-git clone https://github.com/Anatoly1010/Atomize_ITC.git
-cd Atomize_ITC
-pip3 install -e .
+git clone https://github.com/Anatoly1010/Atomize.git
+git clone https://github.com/Anatoly1010/Atomize_stations.git
+pip3 install -e "Atomize[serial,modbus,math,bots]"
+pip3 install -e Atomize_stations/itc
+cd Atomize_stations/itc
 ```
 
-The editable install registers the console entry point `epr-auto`
-(defined in `pyproject.toml` as `atomize.epr_auto.cli:main`). Everything below
+The station install registers the console entry point `epr-auto`
+(defined in `itc/pyproject.toml` as `atomize.epr_auto.cli:main`). The
+examples below use paths relative to the station folder. Everything below
 can be typed either way — the two forms are identical:
 
 ```bash
@@ -157,9 +161,9 @@ Prepare a live session as follows:
   the interactive tools off the GPIB devices. If either lock is already held by
   another tool, the runner refuses to start; it releases the locks in `finally`
   and on `atexit`, so a crash never leaves them stranded.
-- **Run from the repository root.** The CLI changes into `libs/` itself,
-  because the Insys FPGA driver reads `brd.ini` / `exam_adc.ini` relative to
-  the working directory at instantiation time; it also re-provisions the device
+- **The CLI changes into the station's `libs/` itself**, from any working
+  folder, because the Insys FPGA driver reads `brd.ini` / `exam_adc.ini`
+  relative to the working directory at instantiation time; it also re-provisions the device
   config store and pre-flights every step in test mode before touching
   hardware.
 - **Start in supervised autonomy until the chain is trusted.** In
@@ -235,7 +239,7 @@ The directory holds the following files:
 
 ## Preliminary tuning
 
-From the ITC checkout, set the sample and scan bounds in `protocols/preliminary_tuning.yaml`, then validate and dry-run it:
+From the ITC station folder, set the sample and scan bounds in `protocols/preliminary_tuning.yaml`, then validate and dry-run it:
 
 ```bash
 epr-auto validate protocols/preliminary_tuning.yaml

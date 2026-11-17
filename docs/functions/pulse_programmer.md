@@ -5,12 +5,12 @@
 | Device                                                                 | Tested  | Library                                                                                       |
 | ---------------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------- |
 | **Pulse Blaster ESR 500 Pro**                                          | 06/2021 | [SpinCore SpinAPI](http://www.spincore.com/support/spinapi/using_spin_api_pb.shtml)           |
-| **[Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda)** (as multichannel TTL pulse generator) | 03/2025 | [Atomize_ITC libs](https://github.com/Anatoly1010/Atomize_ITC/tree/master/libs)               |
+| **[Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda)** (as multichannel TTL pulse generator) | 03/2025 | [ITC station libs](https://github.com/Anatoly1010/Atomize_stations/tree/main/itc/libs)               |
 | **Pulse Blaster Micran**                                               | 12/2023 | —                                                                                             |
 
 The device is available via `ctypes`. [The original C library](http://www.spincore.com/support/spinapi/using_spin_api_pb.shtml) was written by SpinCore Technologies.
 
-The Insys device is available via `ctypes`. The original library can be found [here](https://github.com/Anatoly1010/Atomize_ITC/tree/master/libs).
+The Insys device is available via `ctypes`. The original library can be found [here](https://github.com/Anatoly1010/Atomize_stations/tree/main/itc/libs).
 
 ## Functions
 

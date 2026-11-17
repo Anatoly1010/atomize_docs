@@ -93,6 +93,44 @@ atomize
 If you installed Atomize into an isolated environment, activate it first (see
 [Isolated environment](#isolated-environment-recommended) above).
 
+### Stations
+
+A station holds the files of one spectrometer: its GUI control centers, extra instrument modules, device settings and vendor libraries. It is installed on top of Atomize and joins it under the same `atomize` name, so scripts import station and Atomize modules in the same way. Stations are kept in the [Atomize_stations](https://github.com/Anatoly1010/Atomize_stations) repository, one folder per spectrometer:
+
+| Folder  | Spectrometer                                      | Commands                  |
+| ------- | ------------------------------------------------- | ------------------------- |
+| `itc/`  | [EPR endstation](projects/endstation.md)          | `atomize-itc`, `epr-auto` |
+| `itc2/` | ITC2 CW / TR EPR spectrometer                     | `atomize-itc2`, `epr-auto` |
+
+Install Atomize from source first, then the station folder:
+
+=== "Linux / macOS"
+
+    ```bash
+    git clone https://github.com/Anatoly1010/Atomize.git
+    git clone https://github.com/Anatoly1010/Atomize_stations.git
+    pip3 install -e "Atomize[serial,modbus,math,bots]"
+    pip3 install -e Atomize_stations/itc
+    atomize-itc
+    ```
+
+=== "Windows"
+
+    ```powershell
+    git clone https://github.com/Anatoly1010/Atomize.git
+    git clone https://github.com/Anatoly1010/Atomize_stations.git
+    pip install -e "Atomize[serial,modbus,math,bots]"
+    pip install -e Atomize_stations/itc
+    atomize-itc
+    ```
+
+The station command opens the main window with the station's own tabs; `python3 -m atomize` does the same when a station is installed. A station keeps its settings in its own folder named after its command, e.g. `~/.config/atomize-itc/`, so it does not share them with plain Atomize. A station states the oldest Atomize version it works with and stops at start with a message if the installed one is older; pull and reinstall Atomize in that case.
+
+![The ITC station window with its EPR Endstation Control tab](images/atomize-station.png)
+
+!!! note
+    Install one station per Python environment. Stations use the same module names, so two of them in one environment overwrite each other.
+
 ## General Configuration
 
 In the terminal where you launched Atomize, the paths to the configuration files and some other details are displayed as follows:
@@ -181,7 +219,7 @@ The Main tab contains the Script Editor, Output and Queue panels. Use the script
 
 The Liveplot tab displays live plots and lists them in the Plots panel. Long names in Queue and Plots are shortened in the middle; hover over an entry to see the full path or name. Right-click a list or plot to access its available actions.
 
-![Liveplot showing three green-dot plots with Show current run active and synthetic demonstration data](images/atomize-liveplot.png)
+![Liveplot showing two live plots with Show current run active and synthetic demonstration data](images/atomize-liveplot.png)
 
 ### Output panel
 
@@ -235,10 +273,10 @@ Drag waiting entries to change their execution order. The running entry stays fi
 Press **Stop** to interrupt the running script and clear the entire queue.
 
 !!! note
-    In Atomize_ITC, **Start** also checks whether the Insys FPGA is in use, including by a RECT/AWG preview or experiment. This check applies when script tests are disabled or a previous test result is reused. A blocked launch leaves waiting scripts in the queue. Press **Start** again after the active acquisition finishes.
+    In the ITC station, **Start** also checks whether the Insys FPGA is in use, including by a RECT/AWG preview or experiment. This check applies when script tests are disabled or a previous test result is reused. A blocked launch leaves waiting scripts in the queue. Press **Start** again after the active acquisition finishes.
 
 !!! warning
-    In Atomize_ITC, if the acquisition process terminates without releasing the FPGA, the computer must be rebooted before another acquisition. See [`pulser_close()`](functions/pulse_programmer.md#pulser_close) for recovery requirements.
+    In the ITC station, if the acquisition process terminates without releasing the FPGA, the computer must be rebooted before another acquisition. See [`pulser_close()`](functions/pulse_programmer.md#pulser_close) for recovery requirements.
 
 The Liveplot tab has the following additional features in the Plots list (available via right-click menu):
 

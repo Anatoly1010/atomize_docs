@@ -5,7 +5,7 @@
 | Device                                                                                   | Tested  | Notes                                                                                                                                            |
 | ---------------------------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Spectrum M4I 6631 X8                                                                     | 07/2021 | [Library](https://spectrum-instrumentation.com/en/m4i6631-x8) by Spectrum                                                                        |
-| [Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda) (as DAC)                   | 03/2025 | Available via `ctypes`; library in [Atomize_ITC](https://github.com/Anatoly1010/Atomize_ITC/tree/master/libs)                                    |
+| [Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda) (as DAC)                   | 03/2025 | Available via `ctypes`; library in the [ITC station](https://github.com/Anatoly1010/Atomize_stations/tree/main/itc/libs)                                    |
 
 ## [Delay generators](functions/delay_generator.md)
 
@@ -19,7 +19,7 @@
 | --------------------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Spectrum M4I 4450 X8                                                              | 08/2021 | [Library](https://spectrum-instrumentation.com/en/m4i4450-x8) by Spectrum                                                                        |
 | Spectrum M4I 2211 X8                                                              | 01/2021 | [Library](https://spectrum-instrumentation.com/en/m4i4450-x8) by Spectrum                                                                        |
-| [Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda) (as ADC)            | 03/2025 | Available via `ctypes`; library in [Atomize_ITC](https://github.com/Anatoly1010/Atomize_ITC/tree/master/libs)                                    |
+| [Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda) (as ADC)            | 03/2025 | Available via `ctypes`; library in the [ITC station](https://github.com/Anatoly1010/Atomize_stations/tree/main/itc/libs)                                    |
 | L card L-502 (as ADC)                                                             | 03/2022 | Available via `ctypes`; [library](https://www.lcard.ru/products/boards/l-502?qt-ltab=6#qt-ltab)                                                  |
 
 ## [Frequency counters](functions/freq_counter.md)
@@ -118,7 +118,7 @@
 | --------------------------------------------------------------------------------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Pulse Blaster ESR 500 Pro                                                                                                               | 06/2021 | Available via `ctypes`; original [C library](http://www.spincore.com/support/spinapi/using_spin_api_pb.shtml) by SpinCore Technologies                |
 | Pulse Programmer Micran (based on [Insys FMC126P](https://www.insys.ru/fmc/fmc126p))                                                    | 12/2023 |                                                                                                                                                      |
-| [Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda) (as multichannel TTL pulse generator)                                     | 03/2025 | Available via `ctypes`; library in [Atomize_ITC](https://github.com/Anatoly1010/Atomize_ITC/tree/master/libs)                                        |
+| [Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda) (as multichannel TTL pulse generator)                                     | 03/2025 | Available via `ctypes`; library in the [ITC station](https://github.com/Anatoly1010/Atomize_stations/tree/main/itc/libs)                                        |
 
 ## [Synthetizers](functions/synthetizer.md)
 

@@ -14,9 +14,9 @@ runner executes them in order, applies a pass/fail judge to each result, carries
 calibrations forward (a measured field or phase feeds later steps), and pauses
 or notifies according to the protocol's autonomy policy.
 
-It ships only with [Atomize_ITC](https://github.com/Anatoly1010/Atomize_ITC),
-the EPR-endstation variant of Atomize — not with plain Atomize and not from
-PyPI. The machine it drives is described on the [endstation page](../endstation.md).
+It ships only with the [ITC station](https://github.com/Anatoly1010/Atomize_stations/tree/main/itc)
+(see [Stations](../../usage.md#stations)) — not with plain Atomize and not
+from PyPI. The machine it drives is described on the [endstation page](../endstation.md).
 
 ## How it relates to the GUI tools
 
@@ -33,7 +33,7 @@ working directory into `libs/` before touching hardware: the Insys FPGA driver
 reads its `brd.ini` / `exam_adc.ini` relative to the current directory at
 instantiation time.
 
-The [preliminary-tuning workflow](tuning.md#preliminary-tuning) adds a ringing check, an optional resonator scan, echo search and optimization, and a preset handoff for fine tuning. Start from `protocols/preliminary_tuning.yaml` in the ITC repository.
+The [preliminary-tuning workflow](tuning.md#preliminary-tuning) adds a ringing check, an optional resonator scan, echo search and optimization, and a preset handoff for fine tuning. Start from `protocols/preliminary_tuning.yaml` in the ITC station folder.
 
 Launch protocols with **Run protocol** on the EPR Endstation Control tab, or from a terminal while the Atomize GUI is open for live plotting. The launcher has a separate **Dry run** checkbox, checked by default. See [Running from the main window](quickstart.md#running-from-the-main-window).
 

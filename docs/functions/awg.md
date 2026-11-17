@@ -15,7 +15,7 @@ header_dir = /path/to/python/header/of/Spectrum/library
 device = /dev/spcm0
 ```
 
-The [Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda) device is available via `ctypes`. The original library can be found [here](https://github.com/Anatoly1010/Atomize_ITC/tree/master/libs).
+The [Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda) device is available via `ctypes`. The original library can be found [here](https://github.com/Anatoly1010/Atomize_stations/tree/main/itc/libs).
 
 ## Functions
 

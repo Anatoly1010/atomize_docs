@@ -424,7 +424,7 @@ This function queries (if called with one argument) or sets (if called with two 
 oscilloscope_read_settings()    # read all settings from digitizer.param
 ```
 
-This function reads all the settings from a special text file [digitizer.param](https://github.com/Anatoly1010/Atomize_ITC/tree/master/atomize/control_center). It also reads the zero-, first-, and second-order phase-correction coefficients stored in the file; these become the default phase corrections used by the [`oscilloscope_demodulate()`](#oscilloscope_demodulate) function when its corresponding arguments are omitted. The phasing control centers store their Zero Order there and always write `0` for the first and second orders, because their First/Second Order controls apply only to the FFT view.
+This function reads all the settings from a special text file [digitizer.param](https://github.com/Anatoly1010/Atomize_stations/tree/main/itc/atomize/control_center). It also reads the zero-, first-, and second-order phase-correction coefficients stored in the file; these become the default phase corrections used by the [`oscilloscope_demodulate()`](#oscilloscope_demodulate) function when its corresponding arguments are omitted. The phasing control centers store their Zero Order there and always write `0` for the first and second orders, because their First/Second Order controls apply only to the FFT view.
 
 !!! note
     This function is only available for Keysight 2000, 3000, 4000 X-Series and Rigol MSO8000 Series oscilloscopes.
@@ -437,7 +437,7 @@ This function reads all the settings from a special text file [digitizer.param](
 oscilloscope_window()    # -> float; integration window of the oscilloscope
 ```
 
-This function returns the integration window of the oscilloscope. The integration window is used in the [`oscilloscope_get_curve()`](#oscilloscope_get_curve-integral) function and is set via a special text file [digitizer.param](https://github.com/Anatoly1010/Atomize_ITC/tree/master/atomize/control_center).
+This function returns the integration window of the oscilloscope. The integration window is used in the [`oscilloscope_get_curve()`](#oscilloscope_get_curve-integral) function and is set via a special text file [digitizer.param](https://github.com/Anatoly1010/Atomize_stations/tree/main/itc/atomize/control_center).
 
 !!! note
     This function is only available for Keysight 2000, 3000, 4000 X-Series and Rigol MSO8000 Series oscilloscopes.

@@ -6,7 +6,7 @@
 | ------------------------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------- |
 | **Spectrum M4I 4450 X8**                                                        | 08/2021 | [Spectrum](https://spectrum-instrumentation.com/en/m4i4450-x8)                                |
 | **Spectrum M4I 2211 X8**                                                        | 01/2023 | [Spectrum](https://spectrum-instrumentation.com/en/m4i4450-x8)                                |
-| **[Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda)**               | 03/2025 | [Atomize_ITC libs](https://github.com/Anatoly1010/Atomize_ITC/tree/master/libs)               |
+| **[Insys FM214x3GDA](https://www.insys.ru/mezzanine/fm214x3gda)**               | 03/2025 | [ITC station libs](https://github.com/Anatoly1010/Atomize_stations/tree/main/itc/libs)               |
 | **L card L-502**                                                                | 03/2022 | [L card](https://www.lcard.ru/products/boards/l-502?qt-ltab=6#qt-ltab)                        |
 
 The original [library](https://spectrum-instrumentation.com/en/m4i4450-x8) was written by Spectrum. The path to the library header files (`pyspcm.py`, `spcm_tools.py`) and the card device node are read from the device configuration file (the `[SPECIFIC]` section, keys `header_dir` and `device`), so they can be set per machine without editing the module:
@@ -17,7 +17,7 @@ header_dir = /path/to/python/header/of/Spectrum/library
 device = /dev/spcm0
 ```
 
-The Insys device is available via `ctypes`. The original library can be found [here](https://github.com/Anatoly1010/Atomize_ITC/tree/master/libs).
+The Insys device is available via `ctypes`. The original library can be found [here](https://github.com/Anatoly1010/Atomize_stations/tree/main/itc/libs).
 
 The L card device is available via `ctypes`. The original library can be found [here](https://www.lcard.ru/products/boards/l-502?qt-ltab=6#qt-ltab). The path to the installed library should be provided directly in the device module file.
 
@@ -516,7 +516,7 @@ This function sets or queries enabled flows of data. If there is no argument the
 digitizer_read_settings()    # read settings from digitizer.param
 ```
 
-This function reads all the settings from a special text file [`digitizer.param`](https://github.com/Anatoly1010/Atomize_ITC/tree/master/atomize/control_center) and writes them to the digitizer using the [`digitizer_setup()`](#digitizer_setup) function. It also reads the zero-, first-, and second-order phase-correction coefficients stored in the file; these become the default phase corrections used by the [`digitizer_demodulate()`](#digitizer_demodulate) function when its corresponding arguments are omitted. The phasing control centers store their Zero Order there and always write `0` for the first and second orders, because their First/Second Order controls apply only to the FFT view.
+This function reads all the settings from a special text file [`digitizer.param`](https://github.com/Anatoly1010/Atomize_stations/tree/main/itc/atomize/control_center) and writes them to the digitizer using the [`digitizer_setup()`](#digitizer_setup) function. It also reads the zero-, first-, and second-order phase-correction coefficients stored in the file; these become the default phase corrections used by the [`digitizer_demodulate()`](#digitizer_demodulate) function when its corresponding arguments are omitted. The phasing control centers store their Zero Order there and always write `0` for the first and second orders, because their First/Second Order controls apply only to the FFT view.
 
 !!! note
     This function is not available for L card L-502.
@@ -529,7 +529,7 @@ This function reads all the settings from a special text file [`digitizer.param`
 digitizer_window()    # -> float; integration window
 ```
 
-This function returns the integration window of the digitizer. The integration window is used in the [`digitizer_get_curve()`](#digitizer_get_curve-integral) function and is set via a special text file [`digitizer.param`](https://github.com/Anatoly1010/Atomize_ITC/tree/master/atomize/control_center).
+This function returns the integration window of the digitizer. The integration window is used in the [`digitizer_get_curve()`](#digitizer_get_curve-integral) function and is set via a special text file [`digitizer.param`](https://github.com/Anatoly1010/Atomize_stations/tree/main/itc/atomize/control_center).
 
 !!! note
     This function is not available for L card L-502.

@@ -42,8 +42,8 @@ EPR spectroscopy endstation is a multi-functional setup located at [the Novosibi
 
 The pulsed machine can be driven unattended by
 [epr_auto](epr_auto/index.md), a YAML protocol runner that ships with the
-endstation's [Atomize_ITC](https://github.com/Anatoly1010/Atomize_ITC)
-build: it tunes the spectrometer (vane power, working field, integration
+endstation's [ITC station](https://github.com/Anatoly1010/Atomize_stations/tree/main/itc)
+(see [Stations](../usage.md#stations)): it tunes the spectrometer (vane power, working field, integration
 window, phase, pulse calibration, repetition rate), runs T2 / T1
 measurements with SNR- and time-budget-driven scan counts, judges every
 result and records a full run manifest. See the

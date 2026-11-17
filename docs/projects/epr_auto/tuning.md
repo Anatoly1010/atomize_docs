@@ -26,7 +26,7 @@ the measurement temperature.
 
 ## Preliminary tuning
 
-Use [protocols/preliminary_tuning.yaml](https://github.com/Anatoly1010/Atomize_ITC/blob/master/protocols/preliminary_tuning.yaml) to establish a working point before fine tuning. Set the sample name, synthesizer scan bounds, field center and field span for your experiment. All transmit pulses in this workflow use the AWG SINE channel. The first two steps use built-in sequences and do not accept a `preset` parameter; echo steps use `.phase_awg` files.
+Use [protocols/preliminary_tuning.yaml](https://github.com/Anatoly1010/Atomize_stations/blob/main/itc/protocols/preliminary_tuning.yaml) to establish a working point before fine tuning. Set the sample name, synthesizer scan bounds, field center and field span for your experiment. All transmit pulses in this workflow use the AWG SINE channel. The first two steps use built-in sequences and do not accept a `preset` parameter; echo steps use `.phase_awg` files.
 
 **RV** (rotary-vane attenuator) controls the microwave excitation power at the sample. **VA** (video attenuation) controls the level of the received electrical signal sent to the ADC. It is set using two bridge controls: **VA1** (Video Attenuation 1, `video1_db`: 0–30 dB in 2 dB steps) and **VA2** (Video Attenuation 2, `video2_db`: 0–31.5 dB in 0.5 dB steps). Increasing either video attenuation reduces the measured signal amplitude; an additional 6 dB approximately halves it.
 
