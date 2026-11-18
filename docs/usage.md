@@ -102,14 +102,16 @@ A station holds the files of one spectrometer: its GUI control centers, extra in
 | `itc/`  | [EPR endstation](projects/endstation.md)          | `atomize-itc`, `epr-auto` |
 | `itc2/` | ITC2 CW / TR EPR spectrometer                     | `atomize-itc2`, `epr-auto` |
 
-Install Atomize from source first, then the station folder:
+Install Atomize from source first, then the [data treatment tools](#data-treatment-tools), which both stations use, then the station folder:
 
 === "Linux / macOS"
 
     ```bash
     git clone https://github.com/Anatoly1010/Atomize.git
     git clone https://github.com/Anatoly1010/Atomize_stations.git
+    git clone https://github.com/Anatoly1010/Atomize_treatment.git
     pip3 install -e "Atomize[serial,modbus,math,bots]"
+    pip3 install -e Atomize_treatment
     pip3 install -e Atomize_stations/itc
     atomize-itc
     ```
@@ -119,7 +121,9 @@ Install Atomize from source first, then the station folder:
     ```powershell
     git clone https://github.com/Anatoly1010/Atomize.git
     git clone https://github.com/Anatoly1010/Atomize_stations.git
+    git clone https://github.com/Anatoly1010/Atomize_treatment.git
     pip install -e "Atomize[serial,modbus,math,bots]"
+    pip install -e Atomize_treatment
     pip install -e Atomize_stations/itc
     atomize-itc
     ```
@@ -130,6 +134,41 @@ The station command opens the main window with the station's own tabs; `python3 
 
 !!! note
     Install one station per Python environment. Stations use the same module names, so two of them in one environment overwrite each other.
+
+### Data treatment tools
+
+The analysis windows are an optional add-on kept in the [Atomize_treatment](https://github.com/Anatoly1010/Atomize_treatment) repository. They work with plain Atomize or with a station. Like a station, they join Atomize under the same `atomize` name, as `atomize.treatment`.
+
+| Command                | Tool                                                                  |
+| ---------------------- | --------------------------------------------------------------------- |
+| `atomize-treatment`    | 1D data treatment: baseline, smoothing, FFT, fitting, batch processing |
+| `atomize-treatment-2d` | 2D data treatment: FFT along an axis, 2D FFT, slices, projections      |
+| `atomize-deer`         | DEER / PDS analysis: background fit and distance distributions         |
+| `atomize-seqcalc`      | Pulse sequence timing and phase-cycling calculator                     |
+| `atomize-excitation`   | Pulse excitation and inversion profiles                                |
+| `atomize-spin-sim`     | Density-matrix simulation of pulse sequences                           |
+
+=== "Linux / macOS"
+
+    ```bash
+    git clone https://github.com/Anatoly1010/Atomize.git
+    git clone https://github.com/Anatoly1010/Atomize_treatment.git
+    pip3 install -e "Atomize[math]"
+    pip3 install -e Atomize_treatment
+    atomize-treatment
+    ```
+
+=== "Windows"
+
+    ```powershell
+    git clone https://github.com/Anatoly1010/Atomize.git
+    git clone https://github.com/Anatoly1010/Atomize_treatment.git
+    pip install -e "Atomize[math]"
+    pip install -e Atomize_treatment
+    atomize-treatment
+    ```
+
+A station starts the tools from its main window. Right-click a plot in the plot list and choose **Send to Data Treatment** to hand it to the 1D or 2D tool. The tools keep their files in the settings folder of the running program, e.g. `~/.config/atomize-itc/` with the ITC station or `~/.config/atomize-py/` with plain Atomize.
 
 ## General Configuration
 

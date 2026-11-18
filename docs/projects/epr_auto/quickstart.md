@@ -17,7 +17,9 @@ and the station in editable mode, as described in
 ```bash
 git clone https://github.com/Anatoly1010/Atomize.git
 git clone https://github.com/Anatoly1010/Atomize_stations.git
+git clone https://github.com/Anatoly1010/Atomize_treatment.git
 pip3 install -e "Atomize[serial,modbus,math,bots]"
+pip3 install -e Atomize_treatment
 pip3 install -e Atomize_stations/itc
 cd Atomize_stations/itc
 ```
