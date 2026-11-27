@@ -59,6 +59,7 @@
 | Bruker ER032M                                                                             | GPIB                                | —       | Available via BH15 module   |
 | Bruker ER031M                                                                             | RS-232 (arduino emulated keyboard)  | 01/2021 |                             |
 | [Homemade magnetic field controller](https://patents.google.com/patent/RU2799103C1/en?oq=RU2799103C1) | RS-232                          | 04/2023 |                             |
+| Bruker field controllers via Xepr API                                                     | SSH                                 | 11/2026 | Needs Xepr with the API on  |
 
 ## [Magnet power supplies](functions/magnet_power_supply.md)
 
